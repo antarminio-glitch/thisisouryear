@@ -98,7 +98,7 @@ import ShopData from '../components/ShopData.astro';
       const thumb = el('div', 'thumb stage');
       paint(thumb, city);
       const g = el('div');
-      drawGarment(g, { style: product?.style ?? 'tee', audience: product?.audience ?? 'adult', designId: item.designId });
+      drawGarment(g, { style: product?.style ?? 'tee', audience: product?.audience ?? 'adult', designId: item.designId, slug: item.slug });
       thumb.append(g);
 
       const info = el('div', 'info');

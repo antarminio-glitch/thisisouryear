@@ -1,0 +1,80 @@
+{
+  "AthlMaroon": {
+    "src": "/images/garments/pc54-athlmaroon.jpg",
+    "name": "Athletic Maroon",
+    "sourcePage": "https://www.sanmar.com/p/3985_AthlMaroon",
+    "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hdc/h8b/30951897006110/624Wx724H_3985_AthlMaroon-12-PC54AthlMaroonFlatFront5/624Wx724H-3985-AthlMaroon-12-PC54AthlMaroonFlatFront5.jpg"
+  },
+  "Cardinal": {
+    "src": "/images/garments/pc54-cardinal.jpg",
+    "name": "Cardinal",
+    "sourcePage": "https://www.sanmar.com/p/3985_Cardinal",
+    "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hc9/haa/30951897923614/624Wx724H_3985_Cardinal-12-PC54CardinalFlatFront5/624Wx724H-3985-Cardinal-12-PC54CardinalFlatFront5.jpg"
+  },
+  "DkChocBrn": {
+    "src": "/images/garments/pc54-dkchocbrn.jpg",
+    "name": "Dark Chocolate Brown",
+    "sourcePage": "https://www.sanmar.com/p/3985_DkChocBrn",
+    "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/he6/h91/30951899496478/624Wx724H_3985_DkChocBrn-12-PC54DkChocBrnFlatFront5/624Wx724H-3985-DkChocBrn-12-PC54DkChocBrnFlatFront5.jpg"
+  },
+  "DarkGreen": {
+    "src": "/images/garments/pc54-darkgreen.jpg",
+    "name": "Dark Green",
+    "sourcePage": "https://www.sanmar.com/p/3985_DarkGreen",
+    "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/ha5/h95/30951899365406/624Wx724H_3985_DarkGreen-12-PC54DarkGreenFlatFront5/624Wx724H-3985-DarkGreen-12-PC54DarkGreenFlatFront5.jpg"
+  },
+  "JetBlack": {
+    "src": "/images/garments/pc54-jetblack.jpg",
+    "name": "Jet Black",
+    "sourcePage": "https://www.sanmar.com/p/3985_JetBlack",
+    "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hee/h05/30951901462558/624Wx724H_3985_JetBlack-12-PC54JetBlackFlatFront4/624Wx724H-3985-JetBlack-12-PC54JetBlackFlatFront4.jpg"
+  },
+  "Purple": {
+    "src": "/images/garments/pc54-purple.jpg",
+    "name": "Purple",
+    "sourcePage": "https://www.sanmar.com/p/3985_Purple",
+    "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h27/hcc/30951904346142/624Wx724H_3985_Purple-12-PC54PurpleFlatFront5/624Wx724H-3985-Purple-12-PC54PurpleFlatFront5.jpg"
+  },
+  "Red": {
+    "src": "/images/garments/pc54-red.jpg",
+    "name": "Red",
+    "sourcePage": "https://www.sanmar.com/p/3985_Red",
+    "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h68/hc8/30951904477214/624Wx724H_3985_Red-12-PC54RedFlatFront5/624Wx724H-3985-Red-12-PC54RedFlatFront5.jpg"
+  },
+  "Sapphire": {
+    "src": "/images/garments/pc54-sapphire.jpg",
+    "name": "Sapphire",
+    "sourcePage": "https://www.sanmar.com/p/3985_Sapphire",
+    "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h8e/h65/30951905263646/624Wx724H_3985_Sapphire-12-PC54SapphireFlatFront5/624Wx724H-3985-Sapphire-12-PC54SapphireFlatFront5.jpg"
+  },
+  "Teal": {
+    "src": "/images/garments/pc54-teal.jpg",
+    "name": "Teal",
+    "sourcePage": "https://www.sanmar.com/p/3985_Teal",
+    "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h31/h51/30951905853470/624Wx724H_3985_Teal-12-PC54TealFlatFront5/624Wx724H-3985-Teal-12-PC54TealFlatFront5.jpg"
+  },
+  "TeamPurple": {
+    "src": "/images/garments/pc54-teampurple.jpg",
+    "name": "Team Purple",
+    "sourcePage": "https://www.sanmar.com/p/3985_TeamPurple",
+    "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h32/h4e/30951905919006/624Wx724H_3985_TeamPurple-12-PC54TeamPurpleFlatFront5/624Wx724H-3985-TeamPurple-12-PC54TeamPurpleFlatFront5.jpg"
+  },
+  "TrueNavy": {
+    "src": "/images/garments/pc54-truenavy.jpg",
+    "name": "True Navy",
+    "sourcePage": "https://www.sanmar.com/p/3985_TrueNavy",
+    "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h19/h07/30951906312222/624Wx724H_3985_TrueNavy-12-PC54TrueNavyFlatFront1/624Wx724H-3985-TrueNavy-12-PC54TrueNavyFlatFront1.jpg"
+  },
+  "TrueRoyal": {
+    "src": "/images/garments/pc54-trueroyal.jpg",
+    "name": "True Royal",
+    "sourcePage": "https://www.sanmar.com/p/3985_TrueRoyal",
+    "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hd8/h0a/30951906443294/624Wx724H_3985_TrueRoyal-12-PC54TrueRoyalFlatFront4/624Wx724H-3985-TrueRoyal-12-PC54TrueRoyalFlatFront4.jpg"
+  },
+  "White": {
+    "src": "/images/garments/pc54-white.jpg",
+    "name": "White",
+    "sourcePage": "https://www.sanmar.com/p/3985_White",
+    "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/ha6/h14/30951906705438/624Wx724H_3985_White-12-PC54WhiteFlatFront5/624Wx724H-3985-White-12-PC54WhiteFlatFront5.jpg"
+  }
+}

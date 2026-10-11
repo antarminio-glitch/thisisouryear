@@ -6,7 +6,7 @@
       "name": "This Is Our Year",
       "lines": ["THIS IS", "OUR YEAR"],
       "status": "live",
-      "artworkVersion": "store-v1"
+      "artworkVersion": "reference-v1"
     },
     {
       "id": "wait-til-next-year",

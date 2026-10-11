@@ -10,9 +10,9 @@ export const productFor = (style, audience) => shop.findProduct(style, audience)
 
 // Redraws the garment for a style, fit and design. Colors come from CSS
 // variables on a parent element, so changing city doesn't need a redraw.
-export function drawGarment(holder, { style, audience, designId }, label = '') {
+export function drawGarment(holder, { style, audience, designId, slug = '' }, label = '') {
   if (!holder) return;
-  holder.innerHTML = garmentSvg({ style, audience, lines: designById(designId).lines, label, decorative: !label });
+  holder.innerHTML = garmentSvg({ style, audience, slug, lines: designById(designId).lines, label, decorative: !label });
 }
 
 const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
