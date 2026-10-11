@@ -6,14 +6,24 @@ import { photoFor, productIdFor } from '../lib/photos.js';
 
 export { dollars };
 
+// What a stage shows before a city is picked.
+export const EMPTY_STAGE_TEXT = 'Pick your city to see it in your colors.';
+export const emptyStageHtml = () => `<div class="stage-empty" role="status"><p>${EMPTY_STAGE_TEXT}</p></div>`;
+
 export const designById = (id) => data.catalog.designs.find((d) => d.id === id) ?? data.catalog.designs[0];
 export const productFor = (style, audience) => shop.findProduct(style, audience);
 
 // Redraws the garment for a style, fit, design and city. Lettering colors come
 // from CSS variables on a parent element. The city picks which photo of the
-// blank is shown; without one, the drawing is used.
+// blank is shown; a city with no photo gets the drawing. With no city chosen
+// there is no shirt at all, only the prompt to pick one: a blank garment in
+// no city's colors would not mean anything.
 export function drawGarment(holder, { style, audience, designId, slug = '' }, label = '') {
   if (!holder) return;
+  if (!slug) {
+    holder.innerHTML = emptyStageHtml();
+    return;
+  }
   const photo = photoFor(data.photos, productIdFor(data.catalog.products, style, audience), slug);
   holder.innerHTML = garmentSvg({ style, audience, lines: designById(designId).lines, label, decorative: !label, photo });
 }

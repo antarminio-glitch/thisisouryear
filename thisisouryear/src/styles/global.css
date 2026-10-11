@@ -373,13 +373,6 @@ a {
 .tile:has(.shirt-real) {
   background: #fff;
 }
-.stage.is-neutral:has(.shirt-real) {
-  --line1: #7b8087;
-  --line2: #7b8087;
-  --outline: #c3c7cb;
-  --border: #4b5057;
-}
-
 /* ---------- Shopping interface: stage, fields, size buttons ---------- */
 .stage {
   padding: 4% 6%;
@@ -955,4 +948,19 @@ tbody th {
   .builder-stage .model-strip ul {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
+
+/* ---------- A stage with no city picked yet: no shirt, just the prompt ---------- */
+.stage-empty {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: 24px;
+  text-align: center;
+}
+.stage-empty p {
+  max-width: 18ch;
+  font: 600 1.25rem/1.3 var(--body);
+  color: var(--soft);
+  text-wrap: balance;
 }
