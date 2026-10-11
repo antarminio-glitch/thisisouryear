@@ -21,6 +21,7 @@ import { placeName } from '../lib/cities.js';
 import { counterFor, todayIn } from '../lib/counter.js';
 import { cardPath, cardAlt } from '../lib/og.js';
 import { productJsonLd, sellableStyles } from '../lib/seo.js';
+import specs from '../data/specs.json';
 
 export function getStaticPaths() {
   return teams.map((team) => ({ params: { slug: team.slug }, props: { team } }));
@@ -28,6 +29,9 @@ export function getStaticPaths() {
 
 const { team } = Astro.props;
 const theme = themeFor(team);
+
+// What the tee is, from the maker's spec sheet.
+const tee = specs.products['adult-tee'];
 
 // One small on-model thumbnail, only when a blank this city is printed on
 // has a model shot. Most cities have none, and then nothing extra shows.
@@ -137,11 +141,15 @@ const counterData = {
       <dl class="details">
         <div>
           <dt>Fabric</dt>
-          <dd>100% cotton, midweight <Confirm /></dd>
+          <dd>{tee.fabric}</dd>
         </div>
         <div>
           <dt>Fit</dt>
-          <dd>Unisex, true to size <Confirm /></dd>
+          <dd>{tee.fit}. <a href="/size-chart/#adult-tee">Size chart</a></dd>
+        </div>
+        <div>
+          <dt>Care</dt>
+          <dd>{tee.care}</dd>
         </div>
         <div>
           <dt>Print</dt>

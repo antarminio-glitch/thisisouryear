@@ -140,10 +140,10 @@ test('the setup report says exactly what is missing and never shows a secret', a
   assert.ok(!JSON.stringify(body).includes('abc123secret'));
   assert.ok(!JSON.stringify(body).includes(TOKEN));
   const names = body.missing.map((m) => m.name);
-  for (const n of ['STRIPE_WEBHOOK_SECRET', 'BUILD_HOOK_URL', 'catalog.json > adult-hoodie', 'catalog.json > kids-tee', 'catalog.json > kids-hoodie', 'catalog.json > designs > wait-til-next-year', 'store.json > collectMarketingConsent', 'CAMPAIGNS_LIVE', 'EMAIL_PROVIDER', 'Analytics']) {
+  for (const n of ['STRIPE_WEBHOOK_SECRET', 'BUILD_HOOK_URL', 'catalog.json > kids-hoodie', 'catalog.json > designs > wait-til-next-year', 'store.json > collectMarketingConsent', 'CAMPAIGNS_LIVE', 'EMAIL_PROVIDER', 'Analytics']) {
     assert.ok(names.includes(n), `missing list should name ${n}`);
   }
-  assert.deepEqual(body.products.map((p) => [p.id, p.sellable]), [['adult-tee', true], ['adult-hoodie', false], ['kids-tee', false], ['kids-hoodie', false]]);
+  assert.deepEqual(body.products.map((p) => [p.id, p.sellable]), [['adult-tee', true], ['adult-hoodie', true], ['kids-tee', true], ['kids-hoodie', false]]);
   assert.equal(body.email.ready, false);
   assert.equal(body.colors.vendorApprovedCities, 0);
   assert.equal(body.colors.customSurfaces.length, 4);

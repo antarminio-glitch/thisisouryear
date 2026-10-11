@@ -173,7 +173,8 @@ The list is `src/data/hero-photos.json`: style number plus SanMar color code, ei
   ],
   "products": [
     { "id": "adult-tee", "name": "Tee", "style": "tee", "audience": "adult", "sellable": true, "priceCents": 1999, "designs": ["this-is-our-year"], "fulfillment": { "provider": "manual", "providerProductId": null }, "sizeChart": "/size-chart/#adult-tee", "variants": [{ "size": "S", "extraCents": 0, "inStock": true, "providerVariantId": null }, ...] },
-    { "id": "adult-hoodie", "name": "Hoodie", "style": "hoodie", "audience": "adult", "sellable": false, "priceCents": null, "designs": [], "variants": [], ... }
+    { "id": "adult-hoodie", "name": "Hoodie", "style": "hoodie", "audience": "adult", "sellable": true, "priceCents": 4999, "designs": ["this-is-our-year"], "fulfillment": { "provider": "manual", "providerProductId": null }, "sizeChart": "/size-chart/#adult-hoodie", "variants": [...] },
+    { "id": "kids-hoodie", "name": "Kids hoodie", "style": "hoodie", "audience": "kids", "sellable": false, "priceCents": null, "designs": [], "variants": [], ... }
   ],
   "bulk": { "quoteRequests": true, "tiers": [] },
   "sets": { "discountCents": 0 }
@@ -182,7 +183,7 @@ The list is `src/data/hero-photos.json`: style number plus SanMar color code, ei
 
 Money is in cents, so `1999` is $19.99.
 
-Right now only the adult tee is for sale. The hoodie, kids tee and kids hoodie are **preview only**: shoppers can see them in any city's colors, but can't add them to the cart, and no price is shown or published anywhere. The "Wait 'Til Next Year" design is a **concept**: it can be previewed and never bought.
+Right now the tee ($19.99), the hoodie ($49.99) and the kids tee ($9.99) are for sale. The kids hoodie is **preview only**: shoppers can see it in any city's colors, but can't add it to the cart, and no price is shown or published anywhere. The "Wait 'Til Next Year" design is a **concept**: it can be previewed and never bought.
 
 To put a product on sale, fill in all of these, then set `sellable` to `true`:
 
@@ -361,8 +362,8 @@ In Netlify, open **Domain management**, choose **Add a domain**, and enter `this
 
 Anything still waiting on you or the print vendor is marked with a yellow `[CONFIRM]` tag on the site. To find them all, search this folder for `Confirm />`. Fix the text next to each one, then delete the `<Confirm />` tag.
 
-- **City pages** (`src/pages/[slug].astro`): fabric, fit, print method, delivery time, shipping price
-- **Size chart** (`src/pages/size-chart.astro`): the measurements are typical numbers for a standard tee, not your vendor's
+- **City pages** (`src/pages/[slug].astro`): print method, delivery time, shipping price. Fabric, fit and care now come from the maker's spec sheet (`src/data/specs.json`)
+- **Size chart**: done. Every measurement is the maker's own, from `src/data/specs.json`. If the vendor switches blanks, update that file
 - **Shipping and returns**: shipping price, delivery time, the returns policy, the cancellation policy
 - **Privacy** and **Terms**: starter text. Have someone qualified read both. Terms also needs who operates the shop and which state's law applies
 - **Contact email**: `hello@thisisouryear.team` is a placeholder. Set up that mailbox or change it in `store.json`
