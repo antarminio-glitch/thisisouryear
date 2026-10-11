@@ -148,6 +148,18 @@ Pages and small images are kept in `.cache/` (ignored by git) so re-runs are qui
 
 A city with no photo for a garment falls back to the drawing, and `npm test` tells you which. SanMar allows its customers to use this photography to sell SanMar products. Don't use the photos for anything else, and keep the source links that `garment-photos.json` records.
 
+**Which color is matched.** The blank is chosen against the shirt's Pantone reference, turned into a screen color by `src/lib/pantone.js`: the city's own `pantone` field in `teams.json` if it has one, otherwise the Pantone of the palette color its `apply.shirt` points at. A city with no Pantone we know (the black cities, Cleveland and Houston today) is matched on the hex it shows instead, and the run says so. To fix one, add `"pantone":"289 C"` to the city in `teams.json` and run the photos again.
+
+### On-model photos
+
+A handful of SanMar's on-model shots, for hero spots only: two on the home page, a short "how it looks on" strip on the shop and gift pages, and one small thumbnail on a city page when a blank that city is printed on has one. The flat-front photo stays the product image everywhere else, and the share cards never use them.
+
+```
+npm run photos:models
+```
+
+The list is `src/data/hero-photos.json`: style number plus SanMar color code, eight pairs to start. Each is saved to `public/images/models/` at 600 by 900 with its studio background kept, and `src/data/model-photos.json` is written. Both are committed. The lettering's place on a model shot is `modelPrint` in `garments.json`, one per style (`x`, `top`, `width`, `capHeight`, `rowGap`, `rotate`), so every color of a style uses the same placement. Run `npm run photos` first so the styles' SanMar codes are known.
+
 ---
 
 ## What's for sale: `src/data/catalog.json`

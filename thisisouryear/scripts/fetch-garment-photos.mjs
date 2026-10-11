@@ -5,6 +5,7 @@
 //   npm run photos -- --dry-run    only show which blank color each city gets
 //   npm run photos -- --force      fetch everything again
 //   npm run photos -- --only adult-tee
+//   npm run photos:models          the few on-model photos in hero-photos.json
 //
 // For every garment in src/data/garments.json it:
 //   1. looks the style number up on sanmar.com and reads the list of colors
@@ -29,6 +30,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { nearestColor, hexOf, skipTest, colorDistance } from '../src/lib/photos.js';
+import { shirtHexFor } from '../src/lib/pantone.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const DATA = path.join(root, 'src/data');
@@ -46,6 +48,9 @@ const opt = (name) => {
 const DRY = flag('dry-run');
 const FORCE = flag('force');
 const ONLY = opt('only');
+const MODELS = flag('models');
+const MODELS_DIR = path.join(root, 'public/images/models');
+const MODELS_JSON = path.join(DATA, 'model-photos.json');
 
 const readJson = async (file) => JSON.parse(await fs.readFile(file, 'utf8'));
 const exists = (file) =>
@@ -264,12 +269,109 @@ async function processPhoto(buffer, file, size, print) {
   return hex;
 }
 
+// ---- on-model photos: a short list, for hero spots only
+//
+// SanMar also photographs every color on a model. Only the few pairs listed
+// in src/data/hero-photos.json are fetched, and they show only on the home
+// page, the shop and gift strips, and one thumbnail per city page. The
+// flat-front photo stays the product image. Same terms as the flat photos:
+// SanMar customers only, and only for selling SanMar products.
+
+// The front on-model shot of one color, biggest version first.
+function modelFrontOf(product) {
+  const images = product.images ?? [];
+  const pick = (format) => images.find((i) => i.imageType === 'GALLERY' && i.format === format && /ModelFront/i.test(i.mediaCode));
+  return pick('zoom') || pick('mainImage') || null;
+}
+
+// Kept whole: the studio frame, white background and all, sized to 600 by
+// 900 so every style's print placement means the same thing. The fabric is
+// measured where the print goes, like the flat photos.
+async function processModelPhoto(buffer, file, print) {
+  const framed = await sharp(buffer).resize(600, 900, { fit: 'contain', background: '#ffffff' }).toBuffer();
+  const height = print.capHeight * 2 + print.rowGap;
+  const hex = await averageHex(framed, { left: Math.round(print.x - 30), top: Math.round(print.top), width: 60, height: Math.round(height) });
+  if (!DRY) await sharp(framed).webp({ quality: 82 }).toFile(file);
+  return hex;
+}
+
+async function fetchModels(config, previous) {
+  const list = (await readJson(path.join(DATA, 'hero-photos.json'))).models ?? [];
+  const prior = (await exists(MODELS_JSON)) ? await readJson(MODELS_JSON) : { photos: {} };
+  const out = { vendor: config.vendor, vendorSite: config.vendorSite, fetched: new Date().toISOString().slice(0, 10), photos: {} };
+  const problems = [];
+  await fs.mkdir(MODELS_DIR, { recursive: true });
+  console.log(`\non-model photos: ${list.length} listed in hero-photos.json`);
+
+  for (const { style, color } of list) {
+    const entry = Object.entries(config.garments).find(([, g]) => g.style.toUpperCase() === String(style).toUpperCase());
+    if (!entry) {
+      problems.push(`${style} ${color}: ${style} is not a style in garments.json.`);
+      continue;
+    }
+    const [id, g] = entry;
+    const code = previous.garments?.[id]?.code;
+    if (!code) {
+      problems.push(`${style} ${color}: run "npm run photos" first, so ${style}'s SanMar code is known.`);
+      continue;
+    }
+    if (!g.modelPrint) {
+      problems.push(`${style} ${color}: ${id} has no modelPrint in garments.json.`);
+      continue;
+    }
+    const key = `${g.style}:${color}`;
+    const file = path.join(MODELS_DIR, `${g.style.toLowerCase()}-${String(color).toLowerCase()}-model.webp`);
+    const src = `/images/models/${path.basename(file)}`;
+    if (!FORCE && prior.photos?.[key]?.src === src && (await exists(file))) {
+      out.photos[key] = prior.photos[key];
+      console.log(`  ${key}: already fetched`);
+      continue;
+    }
+    let page;
+    try {
+      page = await productPage(`${code}_${color}`);
+    } catch (e) {
+      problems.push(`${key}: ${e.message}`);
+      continue;
+    }
+    const image = modelFrontOf(page);
+    if (!image) {
+      problems.push(`${key}: SanMar has no on-model front photo of that color.`);
+      continue;
+    }
+    const name = colorsOf(page).find((c) => c.code === color)?.name ?? color;
+    process.stdout.write(`  ${key} (${name})...`);
+    if (DRY) {
+      console.log(' would download');
+      out.photos[key] = { ...(prior.photos?.[key] ?? {}), style: g.style, productId: id, color, name, src, pending: true };
+      continue;
+    }
+    const buffer = await cached(absolute(image.url));
+    const hex = await processModelPhoto(buffer, file, g.modelPrint);
+    console.log(` ${hex}`);
+    out.photos[key] = { style: g.style, productId: id, color, name, src, hex, width: 600, height: 900, sourcePage: `https://www.sanmar.com/p/${code}_${color}`, sourceImage: absolute(image.url) };
+  }
+
+  if (DRY) console.log('\nDry run: nothing was downloaded or written.');
+  else {
+    await fs.writeFile(MODELS_JSON, JSON.stringify(out, null, 2) + '\n');
+    console.log(`\nWrote ${path.relative(root, MODELS_JSON)} with ${Object.keys(out.photos).length} photos in ${path.relative(root, MODELS_DIR)}/`);
+  }
+  if (problems.length) {
+    console.error(`\n${problems.length} problem(s):`);
+    for (const p of problems) console.error(`  - ${p}`);
+    process.exitCode = 1;
+  }
+}
+
 // ---- main
 
 async function main() {
   const config = await readJson(path.join(DATA, 'garments.json'));
   const teams = await readJson(path.join(DATA, 'teams.json'));
+  const palettes = await readJson(path.join(DATA, 'palettes.json'));
   const previous = (await exists(OUT_JSON)) ? await readJson(OUT_JSON) : { garments: {} };
+  if (MODELS) return fetchModels(config, previous);
   const skip = skipTest(config.skipColors);
   const size = config.imageSize ?? 1000;
   const out = { vendor: config.vendor, vendorSite: config.vendorSite, fetched: new Date().toISOString().slice(0, 10), garments: { ...previous.garments } };
@@ -322,6 +424,10 @@ async function main() {
       // "blank" in teams.json names the vendor color by hand: one code for
       // every garment, or an object keyed by product id or style number.
       const override = typeof t.blank === 'string' ? t.blank : (t.blank?.[id] ?? t.blank?.[g.style]);
+      // The color to match: the shirt's Pantone reference (the city's own
+      // `pantone` field, else its palette row) turned into sRGB. A city with
+      // no reference we know matches on the hex it shows, and is reported.
+      const target = shirtHexFor(t, palettes);
       let chosen;
       let how;
       let d;
@@ -332,9 +438,9 @@ async function main() {
           problems.push(`${id}: ${t.slug} asks for blank "${override}", which is not one of ${g.style}'s colors. Codes look like: ${colors.slice(0, 6).map((c) => c.code).join(', ')}`);
           continue;
         }
-        d = chosen.hex ? colorDistance(t.shirt, chosen.hex) : null;
+        d = chosen.hex ? colorDistance(target.hex, chosen.hex) : null;
       } else {
-        const best = nearestColor(t.shirt, matchable);
+        const best = nearestColor(target.hex, matchable);
         if (!best) {
           problems.push(`${id}: no matchable colors, so ${t.slug} has no photo.`);
           continue;
@@ -343,10 +449,11 @@ async function main() {
         how = 'auto';
         d = best.distance;
       }
-      cities[t.slug] = { color: chosen.code, how, distance: d == null ? null : Math.round(d * 10) / 10 };
+      cities[t.slug] = { color: chosen.code, how, distance: d == null ? null : Math.round(d * 10) / 10, matchedTo: target.hex, pantone: target.pantone, matchedBy: target.source };
       want(chosen);
       const far = d != null && d > 15 ? '  <- not a close match; consider a "blank" override in teams.json' : '';
-      console.log(`  ${t.slug.padEnd(20)} ${t.shirt}  ->  ${chosen.name.padEnd(22)} ${chosen.code.padEnd(12)} ${how === 'blank' ? '(chosen by hand)' : `distance ${cities[t.slug].distance}`}${far}`);
+      const by = target.source === 'pantone' ? `Pantone ${target.pantone}` : target.source;
+      console.log(`  ${t.slug.padEnd(20)} ${target.hex} (${by.padEnd(26)})  ->  ${chosen.name.padEnd(22)} ${chosen.code.padEnd(12)} ${how === 'blank' ? '(chosen by hand)' : `distance ${cities[t.slug].distance}`}${far}`);
     }
 
     // 4. the photos

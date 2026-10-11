@@ -145,6 +145,54 @@ export function blankFor(photos, productId, slug) {
   return c ? { style: g.style, code, name: c.name } : null;
 }
 
+// ---- on-model photos (src/data/model-photos.json): a short list, hero spots only
+
+export const modelKey = (style, color) => `${style}:${color}`;
+
+export function modelPhotoFor(models, style, color) {
+  return models?.photos?.[modelKey(style, color)] ?? null;
+}
+
+// The model photo closest to a city: the blank the city is printed on, per
+// product in the order given, until one of those blanks has a model shot.
+// Null when none does, in which case the page shows nothing extra.
+export function modelPhotoForCity(models, photos, slug, productIds = ['adult-tee', 'adult-hoodie', 'kids-tee', 'kids-hoodie']) {
+  for (const id of productIds) {
+    const blank = blankFor(photos, id, slug);
+    const hit = blank ? modelPhotoFor(models, blank.style, blank.code) : null;
+    if (hit) return { ...hit, productId: id };
+  }
+  return null;
+}
+
+// The first city printed on a given blank, so a model shot has real colors
+// to wear. `teams` decides the order.
+export function cityForBlank(photos, teams, productId, color) {
+  return (teams ?? []).find((t) => photos?.garments?.[productId]?.cities?.[t.slug]?.color === color) ?? null;
+}
+
+// One item from a list, changing with the day, so hero spots rotate with the
+// daily rebuild. Same day, same pick.
+export function rotatingPick(list, date = new Date()) {
+  if (!list?.length) return null;
+  const day = Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / 86400000);
+  return list[day % list.length];
+}
+
+// A short strip of model shots: one per product, in the order the products
+// are given, each worn by a city printed on that blank. Rotates by day.
+export function stripPicks(models, photos, teams, productIds, count = 4, date = new Date()) {
+  const out = [];
+  for (const productId of productIds) {
+    const options = Object.values(models?.photos ?? {}).filter((m) => m.productId === productId);
+    const photo = rotatingPick(options, date);
+    const team = photo ? cityForBlank(photos, teams, productId, photo.color) : null;
+    if (photo && team) out.push({ photo, team, productId });
+    if (out.length >= count) break;
+  }
+  return out;
+}
+
 // The slimmed-down copy that goes to the browser: only what drawing needs.
 export function photosForBrowser(photos) {
   const garments = {};
