@@ -60,7 +60,7 @@ const kidsReady = shop.isSellable(shop.product('kids-tee')) || shop.isSellable(s
       }
     </div>
 
-    <p class="concept">Concept previews. They're drawings, not photos of the finished items, and screen colors are approximate.</p>
+    <p class="concept">Design mockups. Adult tees use representative product photos; other garments are illustrations. Final colors and fit may vary.</p>
 
     <div class="checkout-bar">
       <dl class="total" data-total hidden>
@@ -110,7 +110,7 @@ const kidsReady = shop.isSellable(shop.product('kids-tee')) || shop.isSellable(s
       const stage = $('[data-stage]', box);
       if (city) paint(stage, city);
       stage?.classList.toggle('is-neutral', !city);
-      drawGarment($('[data-garment]', box), { style: state[audience].style, audience, designId }, city ? `${product.name} in ${city.name} colors` : '');
+      drawGarment($('[data-garment]', box), { style: state[audience].style, audience, designId, slug: state.slug }, city ? `${product.name} in ${city.name} colors` : '');
       if (resize.includes(audience)) state[audience].size = renderSizes($('[data-sizes]', box), product, `set-${audience}-size`, state[audience].size);
       $('[data-size-field]', box)!.hidden = !shop.isSellable(product);
       show($('[data-size-note]', box), sizeNote(product));

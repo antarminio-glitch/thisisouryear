@@ -1,7 +1,4 @@
 ---
-// The chest print as a standalone piece, for use inside an <svg>. Used for the
-// home page headline. See src/lib/garment.js for the options.
-import { letteringSvg } from '../lib/garment.js';
+import { varsityArtwork } from '../lib/varsity-artwork.js';
 ---
-
-<Fragment set:html={letteringSvg(Astro.props)} />
+<Fragment set:html={varsityArtwork({ x: 310, top: 8, width: 420, capHeight: 101, rowGap: 13 })} />

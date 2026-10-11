@@ -18,6 +18,6 @@ const usePhoto = team?.image && style === 'tee' && audience === 'adult';
   usePhoto ? (
     <img class:list={['shirt', 'shirt-photo', className]} src={team.image} alt={decorative ? '' : label} />
   ) : (
-    <Fragment set:html={garmentSvg({ style, audience, lines, label, decorative, className })} />
+    <Fragment set:html={garmentSvg({ style, audience, lines, label, decorative, className, slug: team?.slug })} />
   )
 }

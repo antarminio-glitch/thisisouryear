@@ -902,3 +902,9 @@ tbody th {
     animation: none !important;
   }
 }
+
+/* Product photography sits on a clean studio background. */
+.shirt-real { background: #fff; border-radius: 8px; }
+.stage:has(.shirt-real) { background: #fff; }
+.tile:has(.shirt-real) { background: #fff; }
+.shirt-real .lt { filter: drop-shadow(0 0.3px 0.35px rgb(0 0 0 / 12%)); }

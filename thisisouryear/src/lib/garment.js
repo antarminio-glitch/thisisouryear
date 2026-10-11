@@ -1,9 +1,11 @@
+import { varsityArtwork, REFERENCE_LAYOUT } from './varsity-artwork.js';
+import photos from '../data/garment-photos.json' with { type: 'json' };
 // Draws the garment previews as SVG text. Plain strings in, plain strings out,
 // so the exact same drawing code runs when the site is built and in the browser
 // when someone changes a choice in the picker.
 //
-// Every preview is a drawing, not a photo. Pages that show one label it as a
-// concept preview.
+// Adult tees use supplier photos with an editable print overlay. Other
+// garments remain concept illustrations until their blanks are selected.
 //
 // Colors are never baked in. The drawing reads four CSS variables from whatever
 // wraps it: --shirt, --line1, --line2, --outline.
@@ -103,6 +105,32 @@ const HOODIE = {
   pocket: 'M224 428L376 428L404 506Q406 512 400 512L200 512Q194 512 196 506Z',
 };
 
+// Supplier photography is a visual reference, not a selected production blank.
+// Explicit city mappings keep photo selection independent of the print references.
+const PHOTO_COLORS = {
+  arizona: 'Cardinal', atlanta: 'JetBlack', baltimore: 'TeamPurple', buffalo: 'TrueRoyal',
+  carolina: 'JetBlack', chicago: 'TrueNavy', cincinnati: 'JetBlack', cleveland: 'DkChocBrn',
+  dallas: 'TrueNavy', denver: 'TrueNavy', detroit: 'Sapphire', 'green-bay': 'DarkGreen',
+  houston: 'TrueNavy', indianapolis: 'TrueRoyal', jacksonville: 'Teal', 'kansas-city': 'Red',
+  'las-vegas': 'JetBlack', 'los-angeles-powder': 'Sapphire', 'los-angeles-royal': 'TrueRoyal',
+  miami: 'Teal', minnesota: 'Purple', 'new-england': 'TrueNavy', 'new-orleans': 'JetBlack',
+  'new-york-blue': 'TrueRoyal', 'new-york-green': 'DarkGreen', philadelphia: 'Teal',
+  pittsburgh: 'JetBlack', 'san-francisco': 'Red', seattle: 'TrueNavy',
+  'tampa-bay': 'Cardinal', tennessee: 'TrueNavy', washington: 'AthlMaroon',
+};
+
+export function photoFor(slug) {
+  return photos[PHOTO_COLORS[slug] ?? 'White'];
+}
+
+// Shared proportions reconstructed from the customer's reference shirt.
+export const PHOTO_PRINT = REFERENCE_LAYOUT;
+function photoTeeSvg(lines, slug) {
+  const photo = photoFor(slug);
+  return `<image href="${photo.src}" x="0" y="-45" width="600" height="899.38" preserveAspectRatio="none"/>` +
+    varsityArtwork({ lines, x: PHOTO_PRINT.centerX, ...PHOTO_PRINT });
+}
+
 function teeSvg(lines) {
   const size = fitSize(lines, 290, 48);
   return (
@@ -121,7 +149,7 @@ function teeSvg(lines) {
     `<path class="tee-seam" d="M231 54C243 118 357 118 369 54"/><path class="tee-seam-hi" d="M240 48C251 98 349 98 360 48"/>` +
     `</g>` +
     `<path class="tee-edge" d="${TEE.body}"/>` +
-    letteringSvg({ x: 300, y: 262, size, lines })
+    varsityArtwork({ x: 300, top: 162, width: 244, capHeight: 59, rowGap: 9, lines })
   );
 }
 
@@ -148,17 +176,18 @@ function hoodieSvg(lines) {
     `<path class="hood-tip" d="M266 204L265 216M334 204L335 216"/>` +
     `</g>` +
     `<path class="tee-edge" d="${HOODIE.body}"/>` +
-    letteringSvg({ x: 300, y: 292, size, lines })
+    varsityArtwork({ x: 300, top: 224, width: 224, capHeight: 54, rowGap: 9, lines })
   );
 }
 
 // One garment, any colors. `style` is "tee" or "hoodie". Kids' items use the
 // same drawing, a little smaller.
-export function garmentSvg({ style = 'tee', audience = 'adult', lines = DEFAULT_LINES, label = '', decorative = false, className = '' } = {}) {
-  const inner = style === 'hoodie' ? hoodieSvg(lines) : teeSvg(lines);
+export function garmentSvg({ style = 'tee', audience = 'adult', lines = DEFAULT_LINES, label = '', decorative = false, className = '', slug = '' } = {}) {
+  const isPhoto = style === 'tee' && audience === 'adult';
+  const inner = isPhoto ? photoTeeSvg(lines, slug) : style === 'hoodie' ? hoodieSvg(lines) : teeSvg(lines);
   const body = audience === 'kids' ? `<g transform="translate(42 44) scale(0.86)">${inner}</g>` : inner;
   const a11y = decorative ? 'aria-hidden="true"' : `role="img" aria-label="${esc(label)}"`;
-  const cls = ['shirt', `shirt-${style}`, className].filter(Boolean).join(' ');
+  const cls = ['shirt', `shirt-${style}`, isPhoto ? 'shirt-real' : '', className].filter(Boolean).join(' ');
   return `<svg class="${cls}" viewBox="0 0 600 600" ${a11y}>${body}</svg>`;
 }
 
