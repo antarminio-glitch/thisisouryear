@@ -6,3 +6,11 @@ dist/
 .env.*
 !.env.example
 .DS_Store
+
+# Private reference files. These name things the site is not allowed to name,
+# so they stay out of the repository.
+handoff/
+hand off/
+private/
+*Color_Master*.json
+Store_Color_Map.json
