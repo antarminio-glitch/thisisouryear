@@ -136,7 +136,7 @@ const rows = catalog.products.map((p) => {
       tile.className = 'tile stage';
       paint(tile, c);
       const g = document.createElement('span');
-      drawGarment(g, { style: p.style, audience: p.audience, designId });
+      drawGarment(g, { style: p.style, audience: p.audience, designId, slug: c.slug });
       tile.append(g);
       const name = document.createElement('span');
       name.className = 'city';

@@ -109,7 +109,7 @@ import store from '../../data/store.json';
     const stage = $('[data-stage]');
     if (city) paint(stage, city);
     stage?.classList.toggle('is-neutral', !city);
-    drawGarment($('[data-garment]'), state, city ? `${product.name} in ${city.name} colors, ${city.colors}` : '');
+    drawGarment($('[data-garment]'), { ...state, slug: state.wear }, city ? `${product.name} in ${city.name} colors, ${city.colors}` : '');
     if (sizesChanged) state.size = renderSizes($('[data-sizes]'), product, 'gift-size', state.size);
     $('[data-size-field]')!.hidden = !shop.isSellable(product);
     show($('[data-size-note]'), sizeNote(product));
