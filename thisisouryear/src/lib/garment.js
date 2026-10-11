@@ -106,6 +106,25 @@ export function garmentSvg({ style = 'tee', audience = 'adult', lines = DEFAULT_
   return `<svg class="${cls}" viewBox="0 0 600 600" ${a11y}>${body}</svg>`;
 }
 
+// A photo of the blank on a model, with the lettering placed on the chest.
+// `photo` comes from model-photos.json and `print` is the style's modelPrint
+// in garments.json: the same placement for every color of a style, with a
+// slight tilt so the print follows the body. Hero spots only.
+export function modelPhotoSvg({ photo, print = null, lines = DEFAULT_LINES, label = '', decorative = false, className = '' } = {}) {
+  const p = print ?? { x: 300, top: 300, width: 170, capHeight: 40, rowGap: 7, rotate: 0 };
+  const cx = p.x;
+  const cy = p.top + (p.capHeight * 2 + p.rowGap) / 2;
+  const art = varsityArtwork({ lines, x: p.x, top: p.top, width: p.width, capHeight: p.capHeight, rowGap: p.rowGap });
+  const a11y = decorative ? 'aria-hidden="true"' : `role="img" aria-label="${esc(label)}"`;
+  const cls = ['shirt', 'shirt-model', className].filter(Boolean).join(' ');
+  return (
+    `<svg class="${cls}" viewBox="0 0 600 900" ${a11y}>` +
+    `<image href="${esc(photo.src)}" x="0" y="0" width="600" height="900" preserveAspectRatio="xMidYMid meet"/>` +
+    `<g class="print" style="--shirt:${esc(photo.hex ?? '')}" transform="rotate(${Number(p.rotate ?? 0)} ${cx} ${cy})">${art}</g>` +
+    `</svg>`
+  );
+}
+
 // Shared shading for every garment on the page. Included once by the layout.
 // It is only black and white at low opacity, so it works over any color.
 export function defsSvg() {

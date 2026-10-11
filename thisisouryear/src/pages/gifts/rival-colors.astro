@@ -2,7 +2,17 @@
 import Layout from '../../layouts/Layout.astro';
 import ShopData from '../../components/ShopData.astro';
 import Shirt from '../../components/Shirt.astro';
+import ModelShot from '../../components/ModelShot.astro';
 import store from '../../data/store.json';
+import models from '../../data/model-photos.json';
+import photos from '../../data/garment-photos.json';
+import { teams } from '../../lib/cities.js';
+import { shop } from '../../lib/shop.js';
+import { stripPicks } from '../../lib/photos.js';
+
+// A few on-model shots, one per garment, each worn in the colors of a city
+// printed on that blank. They rotate with the daily rebuild.
+const strip = stripPicks(models, photos, teams, ['adult-tee', 'adult-hoodie', 'kids-tee'], 3).map((s) => ({ ...s, garment: shop.product(s.productId)?.name ?? '' }));
 ---
 
 <Layout
@@ -23,6 +33,20 @@ import store from '../../data/store.json';
           <div data-garment><Shirt decorative /></div>
         </div>
         <p class="concept">Mockup. A photo of the blank garment with the design placed on it digitally. Print size and ink colors on the finished item may differ slightly.</p>
+        {
+          strip.length > 0 && (
+            <section class="model-strip" aria-labelledby="gift-models-h">
+              <h2 id="gift-models-h">How it looks on</h2>
+              <ul>
+                {strip.map((s) => (
+                  <li>
+                    <ModelShot photo={s.photo} team={s.team} label={`${s.garment} in ${s.team.name} colors, on a model`} caption={`${s.team.name} ${s.garment.toLowerCase()}`} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
       </div>
 
       <form novalidate>

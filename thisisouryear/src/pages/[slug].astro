@@ -5,7 +5,11 @@ import Layout from '../layouts/Layout.astro';
 import Picker from '../components/Picker.astro';
 import ShopData from '../components/ShopData.astro';
 import Confirm from '../components/Confirm.astro';
+import ModelShot from '../components/ModelShot.astro';
 import teams from '../data/teams.json';
+import models from '../data/model-photos.json';
+import photos from '../data/garment-photos.json';
+import { modelPhotoForCity } from '../lib/photos.js';
 import store from '../data/store.json';
 import history from '../data/history.json';
 import stories from '../data/stories.json';
@@ -24,6 +28,11 @@ export function getStaticPaths() {
 
 const { team } = Astro.props;
 const theme = themeFor(team);
+
+// One small on-model thumbnail, only when a blank this city is printed on
+// has a model shot. Most cities have none, and then nothing extra shows.
+const modelShot = modelPhotoForCity(models, photos, team.slug);
+const modelGarment = modelShot ? (shop.product(modelShot.productId)?.name ?? 'Shirt') : '';
 const place = placeName(team);
 const story = stories[team.slug];
 
@@ -66,6 +75,18 @@ const counterData = {
         <h1>This is our year, {place}.</h1>
         <p class="colorway">{team.colors}</p>
       </div>
+      {
+        modelShot && (
+          <ModelShot
+            slot="stage-extra"
+            class="model-thumb"
+            photo={modelShot}
+            team={team}
+            label={`${modelGarment} in ${team.name} colors, on a model`}
+            caption={`On a model: the ${modelGarment.toLowerCase()} in ${modelShot.name}`}
+          />
+        )
+      }
     </Picker>
   </div>
 

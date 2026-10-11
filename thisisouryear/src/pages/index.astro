@@ -4,11 +4,25 @@ import Lettering from '../components/Lettering.astro';
 import Picker from '../components/Picker.astro';
 import CityGrid from '../components/CityGrid.astro';
 import ShopData from '../components/ShopData.astro';
+import ModelShot from '../components/ModelShot.astro';
 import teams from '../data/teams.json';
+import models from '../data/model-photos.json';
+import photos from '../data/garment-photos.json';
 import { shop } from '../lib/shop.js';
 import { dollars, fromPriceCents } from '../lib/money.js';
+import { cityForBlank, rotatingPick } from '../lib/photos.js';
 
 const price = dollars(fromPriceCents());
+
+// Two on-model shots for the hero, one tee and one hoodie, each worn in the
+// colors of a city printed on that blank. They rotate with the daily rebuild.
+const heroShot = (productId) => {
+  const options = Object.values(models.photos).filter((m) => m.productId === productId);
+  const photo = rotatingPick(options);
+  const team = photo ? cityForBlank(photos, teams, productId, photo.color) : null;
+  return photo && team ? { photo, team, garment: shop.product(productId)?.name ?? '' } : null;
+};
+const heroShots = [heroShot('adult-tee'), heroShot('adult-hoodie')].filter(Boolean);
 const sizes = shop.product('adult-tee').variants.map((v) => v.size);
 const status = (id) => (shop.isSellable(shop.product(id)) ? `From ${dollars(shop.priceRange(id).lowCents)}` : 'Preview only for now');
 
@@ -43,6 +57,15 @@ const ways = [
         <a class="btn" href="#find">Find my colors</a>
         <a class="btn btn-quiet" href="/gifts/rival-colors/">Make it someone else's problem</a>
       </div>
+      {
+        heroShots.length > 0 && (
+          <div class="hero-models">
+            {heroShots.map((s) => (
+              <ModelShot photo={s.photo} team={s.team} label={`${s.garment} in ${s.team.name} colors, on a model`} caption={`${s.team.name} ${s.garment.toLowerCase()}`} />
+            ))}
+          </div>
+        )
+      }
     </div>
   </section>
 
