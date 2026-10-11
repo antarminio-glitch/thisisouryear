@@ -85,6 +85,12 @@ export function show(el, text) {
   el.hidden = !text;
 }
 
+// Hides something without touching what's inside it. Use this, not show(),
+// for elements that hold a link or other markup.
+export function hide(el) {
+  if (el) el.hidden = true;
+}
+
 export async function postJson(url, body) {
   const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) });
   const json = await res.json().catch(() => ({}));

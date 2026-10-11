@@ -17,12 +17,13 @@ const chart = {
 };
 ---
 
-<Layout title="Size chart" description="Measurements for the This Is Our Year tee, S through 3XL.">
+<Layout title="Size chart" description={`Measurements for the This Is Our Year tee, ${sizes[0]} through ${sizes.at(-1)}.`}>
   <div class="wrap page">
     <div class="prose">
       <h1>Size chart</h1>
       <p class="lede">Unisex fit, true to size. Between sizes? Go up if you like room, down if you like it snug.</p>
 
+      <h2 id="adult-tee">Adult tee</h2>
       <div class="table-scroll">
         <table>
           <thead>
@@ -50,13 +51,18 @@ const chart = {
         vendor before launch.
       </p>
 
+      <h2>Hoodies and kids sizes</h2>
+      <p>
+        Not for sale yet, so there's no chart yet. When they go on sale, their measurements go here first.
+      </p>
+
       <h2>How to measure</h2>
       <p>
         Grab a tee that fits you well and lay it flat. Chest width is straight across, one inch below the armpits.
         Length is from the top of the shoulder by the collar down to the bottom hem.
       </p>
 
-      <p class="actions"><a class="btn" href="/#cities">Pick your city</a></p>
+      <p class="actions"><a class="btn" href="/teams/">Pick your city</a></p>
     </div>
   </div>
 </Layout>

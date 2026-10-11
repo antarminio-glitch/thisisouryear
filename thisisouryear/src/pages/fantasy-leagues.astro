@@ -1,0 +1,369 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ShopData from '../components/ShopData.astro';
+import Shirt from '../components/Shirt.astro';
+import catalog from '../data/catalog.json';
+import store from '../data/store.json';
+
+const tiers = catalog.bulk?.tiers ?? [];
+---
+
+<Layout
+  title="Fantasy League Punishment Shirts"
+  description="Last place. Wrong colors. The loser of your fantasy league wears the winner's colors. Build one order in mixed sizes or ask for a bulk quote."
+>
+  <ShopData />
+  <div class="wrap page builder" data-league>
+    <h1>Last place. Wrong colors.</h1>
+    <p class="lede">
+      Simple rule: whoever finishes last wears the winner's colors. Commissioners, build one order in everybody's size, or
+      ask for a quote on a bigger batch.
+    </p>
+
+    <div class="builder-grid">
+      <div class="builder-stage">
+        <div class="stage is-neutral" data-stage>
+          <div data-garment><Shirt decorative /></div>
+        </div>
+        <p class="concept">Concept preview. It's a drawing, not a photo of the finished item, and screen colors are approximate.</p>
+      </div>
+
+      <form novalidate data-form>
+        <div class="field">
+          <label for="lg-city">Whose colors does the loser wear?</label>
+          <select id="lg-city" data-city></select>
+          <p class="hint legend" data-legend hidden></p>
+        </div>
+        <div class="field">
+          <label for="lg-name">League name (optional)</label>
+          <input id="lg-name" type="text" maxlength={store.leagueNameMaxLength} autocomplete="off" data-league-name />
+        </div>
+
+        <fieldset class="field">
+          <legend>Sizes</legend>
+          <div class="rows" data-rows></div>
+          <button class="linkish" type="button" data-add-row>Add another size</button>
+        </fieldset>
+
+        <dl class="total" data-total hidden>
+          <div><dt>Shirts</dt><dd data-count></dd></div>
+          <div><dt>Subtotal</dt><dd data-subtotal></dd></div>
+          <div><dt>Shipping</dt><dd data-shipping></dd></div>
+        </dl>
+        <p class="hint">
+          {
+            tiers.length
+              ? "Bulk pricing isn't automatic. Totals here use the regular price. Ask for a quote and we'll confirm yours before you pay."
+              : "There's no bulk discount set up, so totals use the regular price. A quote request is how you ask for one."
+          }
+        </p>
+        <p class="avail" data-availability role="status" hidden></p>
+
+        <div class="actions">
+          <button class="btn" type="button" data-add>Add all to cart</button>
+          <button class="btn btn-quiet" type="button" data-open-quote>Ask for a bulk quote</button>
+        </div>
+        <p class="form-msg" data-msg role="alert" hidden></p>
+        <p class="added" data-added role="status" hidden><span data-added-text></span> <a href="/cart/">Go to cart</a></p>
+
+        <div class="quote" data-quote hidden>
+          <h2>Ask for a bulk quote</h2>
+          <p class="hint">
+            This saves your list and sends it to the owner, who replies by email. Nothing is charged and nothing is ordered
+            yet.
+          </p>
+          <div class="field">
+            <label for="lg-email">Your email</label>
+            <input id="lg-email" type="email" autocomplete="email" data-email />
+          </div>
+          <div class="field">
+            <label for="lg-contact">Your name (optional)</label>
+            <input id="lg-contact" type="text" maxlength="80" autocomplete="name" data-contact />
+          </div>
+          <div class="field">
+            <label for="lg-notes">Anything we should know (optional)</label>
+            <textarea id="lg-notes" maxlength="600" data-notes></textarea>
+          </div>
+          <div class="hp" aria-hidden="true">
+            <label for="lg-website">Leave this empty</label>
+            <input id="lg-website" type="text" tabindex="-1" autocomplete="off" data-website />
+          </div>
+          <div class="actions">
+            <button class="btn" type="button" data-send-quote>
+              <span class="idle">Send the quote request</span><span class="busy">Sending</span>
+            </button>
+          </div>
+          <p class="form-msg" data-quote-msg role="alert" hidden></p>
+          <p class="added" data-quote-done role="status" hidden></p>
+        </div>
+      </form>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { shop, data, cityBySlug, paint, FUNCTIONS } from '../scripts/shop-data.js';
+  import { addItems, newId } from '../scripts/cart.js';
+  import { track } from '../scripts/analytics.js';
+  import { drawGarment, legendText, fillCitySelect, show, dollars, postJson, hide } from '../scripts/ui.js';
+
+  type Row = { id: number; productId: string; size: string; quantity: number };
+  const root = document.querySelector<HTMLElement>('[data-league]')!;
+  const $ = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel);
+  const citySelect = $<HTMLSelectElement>('[data-city]')!;
+  const rowsBox = $('[data-rows]')!;
+  const q = new URLSearchParams(location.search);
+  const designId = 'this-is-our-year';
+  const products = data.catalog.products;
+  let nextRow = 1;
+  const state = { slug: cityBySlug(q.get('city')) ? q.get('city')! : '', rows: [] as Row[] };
+  const newRow = (): Row => ({ id: nextRow++, productId: 'adult-tee', size: '', quantity: 1 });
+  state.rows.push(newRow());
+  fillCitySelect(citySelect, { placeholder: 'Choose the winning colors', selected: state.slug });
+
+  const check = (r: Row) => shop.availability({ productId: r.productId, designId, slug: state.slug, size: r.size });
+
+  // Each row is built with DOM calls so nothing typed ends up as markup.
+  function drawRows() {
+    rowsBox.textContent = '';
+    state.rows.forEach((r, i) => {
+      const product = shop.product(r.productId)!;
+      const sellable = shop.isSellable(product);
+      const row = document.createElement('div');
+      row.className = 'row';
+
+      const item = document.createElement('select');
+      item.id = `lg-item-${r.id}`;
+      item.setAttribute('aria-label', `Row ${i + 1} item`);
+      for (const p of products) {
+        const o = document.createElement('option');
+        o.value = p.id;
+        o.textContent = shop.isSellable(p) ? p.name : `${p.name} (quote only)`;
+        o.selected = p.id === r.productId;
+        item.append(o);
+      }
+      item.addEventListener('change', () => { r.productId = item.value; r.size = ''; drawRows(); render(); });
+
+      let size: HTMLSelectElement | HTMLInputElement;
+      if (sellable) {
+        size = document.createElement('select');
+        const blank = document.createElement('option');
+        blank.value = '';
+        blank.textContent = 'Size';
+        size.append(blank);
+        for (const v of product.variants) {
+          const o = document.createElement('option');
+          o.value = v.size;
+          o.textContent = v.inStock ? v.size : `${v.size} (out of stock)`;
+          o.disabled = !v.inStock;
+          o.selected = v.size === r.size;
+          size.append(o);
+        }
+      } else {
+        // No size list exists yet for this item, so the size is typed for the quote.
+        size = document.createElement('input');
+        size.type = 'text';
+        size.maxLength = 12;
+        size.placeholder = 'Size';
+        size.value = r.size;
+      }
+      size.id = `lg-size-${r.id}`;
+      size.setAttribute('aria-label', `Row ${i + 1} size`);
+      size.addEventListener('change', () => { r.size = size.value.trim(); render(); });
+
+      const qty = document.createElement('input');
+      qty.type = 'number';
+      qty.min = '1';
+      qty.max = '500';
+      qty.inputMode = 'numeric';
+      qty.value = String(r.quantity);
+      qty.id = `lg-qty-${r.id}`;
+      qty.setAttribute('aria-label', `Row ${i + 1} quantity`);
+      qty.addEventListener('change', () => { r.quantity = Math.max(1, Math.min(500, Math.floor(Number(qty.value) || 1))); qty.value = String(r.quantity); render(); });
+
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'linkish';
+      remove.textContent = 'Remove';
+      remove.setAttribute('aria-label', `Remove row ${i + 1}`);
+      remove.disabled = state.rows.length === 1;
+      remove.addEventListener('click', () => { state.rows = state.rows.filter((x) => x.id !== r.id); drawRows(); render(); });
+
+      const note = document.createElement('p');
+      note.className = 'row-note';
+      note.dataset.note = String(r.id);
+      row.append(item, size, qty, remove, note);
+      rowsBox.append(row);
+    });
+  }
+
+  function render() {
+    const city = cityBySlug(state.slug);
+    const stage = $('[data-stage]');
+    if (city) paint(stage, city);
+    stage?.classList.toggle('is-neutral', !city);
+    drawGarment($('[data-garment]'), { style: 'tee', audience: 'adult', designId }, city ? `Tee in ${city.name} colors` : '');
+    show($('[data-legend]'), legendText(city));
+
+    let subtotal = 0;
+    let count = 0;
+    let allOk = true;
+    let reason = '';
+    for (const r of state.rows) {
+      const found = check(r);
+      const product = shop.product(r.productId)!;
+      const note = rowsBox.querySelector<HTMLElement>(`[data-note="${r.id}"]`);
+      count += r.quantity;
+      let text = '';
+      if (!shop.isSellable(product)) text = `${product.name}s aren't for sale yet. Keep this row for a quote request only.`;
+      else if (r.quantity > shop.store.maxQuantity) text = `More than ${shop.store.maxQuantity} of one size needs a quote request.`;
+      else if (found.ok) text = `${dollars(found.priceCents)} each`;
+      else if (found.code !== 'size_required' && city) text = found.message;
+      if (note) note.textContent = text;
+      const rowOk = found.ok && r.quantity <= shop.store.maxQuantity;
+      if (rowOk) subtotal += found.priceCents * r.quantity;
+      else {
+        allOk = false;
+        reason ||= !shop.isSellable(product) || r.quantity > shop.store.maxQuantity ? 'Some rows can only go on a quote request, so this list can\'t be added to the cart as is.' : '';
+      }
+    }
+    const total = $('[data-total]')!;
+    total.hidden = !(allOk && city);
+    if (allOk && city) {
+      $('[data-count]')!.textContent = String(count);
+      $('[data-subtotal]')!.textContent = dollars(subtotal);
+      $('[data-shipping]')!.textContent = `${dollars(shop.store.shippingCents)} flat`;
+    }
+    show($('[data-availability]'), reason);
+    $<HTMLButtonElement>('[data-add]')!.disabled = !!reason;
+    show($('[data-msg]'), '');
+    hide($('[data-added]'));
+  }
+
+  citySelect.addEventListener('change', () => {
+    state.slug = citySelect.value;
+    render();
+    if (state.slug) track('team_selected', { team_id: state.slug, purchase_mode: 'fantasy_punishment' });
+  });
+  $('[data-add-row]')!.addEventListener('click', () => {
+    if (state.rows.length >= shop.store.maxCartLines) return show($('[data-msg]'), `That's the most rows one order can have (${shop.store.maxCartLines}).`);
+    state.rows.push(newRow());
+    drawRows();
+    render();
+    document.getElementById(`lg-size-${state.rows.at(-1)!.id}`)?.focus();
+  });
+
+  const leagueName = () => ($<HTMLInputElement>('[data-league-name]')!.value ?? '').trim();
+
+  $('[data-add]')!.addEventListener('click', () => {
+    const say = (t: string) => show($('[data-msg]'), t);
+    if (!state.slug) return say('Pick whose colors the loser wears first.');
+    for (const [i, r] of state.rows.entries()) {
+      const found = check(r);
+      if (!found.ok) return say(`Row ${i + 1}: ${found.code === 'size_required' ? 'pick a size.' : found.message}`);
+      if (r.quantity > shop.store.maxQuantity) return say(`Row ${i + 1}: more than ${shop.store.maxQuantity} of one size needs a quote request.`);
+    }
+    const leagueOrderId = newId('LG');
+    addItems(state.rows.map((r) => ({ productId: r.productId, designId, slug: state.slug, size: r.size, quantity: r.quantity, mode: 'fantasy_punishment', leagueOrderId, leagueName: leagueName(), seenPriceCents: check(r).priceCents })));
+    const count = state.rows.reduce((n, r) => n + r.quantity, 0);
+    track('add_to_cart', { team_id: state.slug, quantity: count, purchase_mode: 'fantasy_punishment', item_count: count });
+    const added = $('[data-added]')!;
+    added.hidden = false;
+    added.querySelector('[data-added-text]')!.textContent = `Added ${count} ${count === 1 ? 'shirt' : 'shirts'} in ${cityBySlug(state.slug)!.name} colors.`;
+  });
+
+  $('[data-open-quote]')!.addEventListener('click', () => {
+    const box = $('[data-quote]')!;
+    box.hidden = false;
+    $<HTMLInputElement>('[data-email]')!.focus();
+  });
+
+  $('[data-send-quote]')!.addEventListener('click', async () => {
+    const btn = $<HTMLButtonElement>('[data-send-quote]')!;
+    const say = (t: string) => show($('[data-quote-msg]'), t);
+    const email = $<HTMLInputElement>('[data-email]')!.value.trim();
+    if (!state.slug) return say('Pick whose colors the loser wears first.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return say('Add an email address so we can send the quote.');
+    const missing = state.rows.findIndex((r) => !r.size);
+    if (missing !== -1) return say(`Row ${missing + 1}: add a size.`);
+    say('');
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    let res;
+    try {
+      res = await postJson(`${FUNCTIONS}/quote-request`, {
+        email,
+        name: $<HTMLInputElement>('[data-contact]')!.value,
+        notes: $<HTMLTextAreaElement>('[data-notes]')!.value,
+        website: $<HTMLInputElement>('[data-website]')!.value,
+        leagueName: leagueName(),
+        slug: state.slug,
+        designId,
+        rows: state.rows.map((r) => ({ productId: r.productId, size: r.size, quantity: r.quantity })),
+      });
+    } catch {
+      res = { ok: false, body: {} as Record<string, string> };
+    }
+    btn.disabled = false;
+    btn.setAttribute('aria-busy', 'false');
+    if (!res.ok || !res.body.saved) {
+      return say(res.body.error || `We couldn't save your request just now. Nothing was sent. Email ${shop.store.contactEmail} instead.`);
+    }
+    track('league_quote_submitted', { team_id: state.slug, item_count: res.body.totalQuantity });
+    const done = $('[data-quote-done]')!;
+    done.hidden = false;
+    done.textContent = `Saved. Your reference is ${res.body.reference}. The owner reads these by hand and replies to ${email}. Nothing has been charged or ordered.`;
+    btn.hidden = true;
+  });
+
+  drawRows();
+  render();
+</script>
+
+<style>
+  .rows {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .rows :global(.row) {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 72px;
+    gap: 8px;
+    align-items: center;
+  }
+  .rows :global(.row .linkish) {
+    grid-column: 1 / -1;
+    justify-self: start;
+    font-weight: 400;
+    font-size: 0.9375rem;
+  }
+  .rows :global(.row .linkish[disabled]) {
+    display: none;
+  }
+  .rows :global(.row-note) {
+    grid-column: 1 / -1;
+    font-size: 0.9375rem;
+    color: var(--soft);
+    min-height: 1.4em;
+  }
+  .quote {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--rule);
+  }
+  .quote h2 {
+    font-size: 1.25rem;
+    margin-bottom: 6px;
+  }
+  .quote > .hint {
+    margin: 0 0 18px;
+  }
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+</style>

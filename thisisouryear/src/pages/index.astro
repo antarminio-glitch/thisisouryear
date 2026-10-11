@@ -9,6 +9,7 @@ import { shop } from '../lib/shop.js';
 import { dollars, fromPriceCents } from '../lib/money.js';
 
 const price = dollars(fromPriceCents());
+const sizes = shop.product('adult-tee').variants.map((v) => v.size);
 const status = (id) => (shop.isSellable(shop.product(id)) ? `From ${dollars(shop.priceRange(id).lowCents)}` : 'Preview only for now');
 
 // The ways in. Each one says plainly whether it can be bought yet.
@@ -93,7 +94,7 @@ const ways = [
         </li>
         <li>
           <h3>Pick your size</h3>
-          <p>S through 3XL. Checkout takes about a minute.</p>
+          <p>{sizes[0]} through {sizes.at(-1)}. Checkout takes about a minute.</p>
         </li>
         <li>
           <h3>We print and ship</h3>
@@ -110,8 +111,18 @@ const ways = [
   // A campaign message only shows when a campaign has been switched on.
   loadPublicState().then((state) => {
     const el = document.querySelector<HTMLElement>('[data-campaign]');
-    if (el && state?.campaign?.heroLine) {
+    if (!el) return;
+    if (state?.campaign?.heroLine) {
       el.textContent = `${state.campaign.heroTitle} ${state.campaign.heroLine}`;
+      el.hidden = false;
+    } else if (state?.bandwagon?.verified && state.bandwagon.slugs?.length) {
+      // Playoff time, and the picture is confirmed: point at the survivors.
+      const n = state.bandwagon.slugs.length;
+      const link = document.createElement('a');
+      link.href = '/bandwagon/';
+      link.textContent = 'Pick a survivor';
+      el.textContent = `Still alive: ${n} ${n === 1 ? 'city' : 'cities'}. Room on the bandwagon. `;
+      el.append(link);
       el.hidden = false;
     }
   });

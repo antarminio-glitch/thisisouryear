@@ -1,0 +1,229 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ShopData from '../../components/ShopData.astro';
+import catalog from '../../data/catalog.json';
+import { shop } from '../../lib/shop.js';
+import { dollars } from '../../lib/shop-core.js';
+import { teams } from '../../lib/cities.js';
+
+const cities = [...teams].sort((a, b) => a.name.localeCompare(b.name));
+// What's really for sale, straight from the catalog.
+const rows = catalog.products.map((p) => {
+  const range = shop.priceRange(p.id);
+  return {
+    id: p.id,
+    name: p.name,
+    sellable: shop.isSellable(p),
+    price: range ? (range.lowCents === range.highCents ? dollars(range.lowCents) : `${dollars(range.lowCents)} to ${dollars(range.highCents)}`) : '',
+    sizes: p.variants.filter((v) => v.inStock).map((v) => v.size).join(', '),
+  };
+});
+---
+
+<Layout title="Shop" description="Filter This Is Our Year tees and hoodies by design, garment, fit and city. Availability comes straight from the catalog.">
+  <ShopData />
+  <div class="wrap page" data-shop>
+    <h1>Shop</h1>
+
+    <form class="filters" data-filters aria-label="Filters">
+      <div class="field">
+        <label for="f-design">Design</label>
+        <select id="f-design" data-f="design">
+          {catalog.designs.map((d) => <option value={d.id}>{d.name}{d.status !== 'live' ? ' (preview)' : ''}</option>)}
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-style">Garment</label>
+        <select id="f-style" data-f="style">
+          <option value="">All garments</option>
+          <option value="tee">Tees</option>
+          <option value="hoodie">Hoodies</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-fit">Fit</label>
+        <select id="f-fit" data-f="fit">
+          <option value="">Adult and kids</option>
+          <option value="adult">Adult</option>
+          <option value="kids">Kids</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-city">City</label>
+        <select id="f-city" data-f="city">
+          <option value="">All {cities.length} cities</option>
+          {cities.map((c) => <option value={c.slug}>{c.name}, {c.colors}</option>)}
+        </select>
+      </div>
+    </form>
+
+    <p class="count" data-count role="status" aria-live="polite"></p>
+    <ul class="results" data-results></ul>
+    <p class="concept" data-concept hidden>Concept previews. They're drawings, not photos of finished items, and screen colors are approximate.</p>
+
+    <section class="stock" aria-labelledby="stock-h">
+      <h2 id="stock-h">What's for sale right now</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th scope="col">Item</th><th scope="col">Status</th><th scope="col">Price</th><th scope="col">Sizes</th></tr>
+          </thead>
+          <tbody>
+            {
+              rows.map((r) => (
+                <tr>
+                  <th scope="row">{r.name}</th>
+                  <td>{r.sellable ? 'For sale' : 'Preview only'}</td>
+                  <td>{r.sellable ? r.price : 'Not set yet'}</td>
+                  <td>{r.sellable ? r.sizes : 'Not set yet'}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+      <noscript><p>Turn on JavaScript to filter and preview. Or <a href="/teams/">browse all the cities</a>.</p></noscript>
+    </section>
+  </div>
+</Layout>
+
+<script>
+  import { shop, data, cities, cityBySlug, paint } from '../../scripts/shop-data.js';
+  import { drawGarment, priceLabel, designById } from '../../scripts/ui.js';
+
+  const root = document.querySelector<HTMLElement>('[data-shop]')!;
+  const results = root.querySelector<HTMLElement>('[data-results]')!;
+  const count = root.querySelector<HTMLElement>('[data-count]')!;
+  const fields = Object.fromEntries([...root.querySelectorAll<HTMLSelectElement>('[data-f]')].map((s) => [s.dataset.f!, s]));
+  const MAX = 64;
+
+  function fromUrl() {
+    const q = new URLSearchParams(location.search);
+    if (shop.design(q.get('design'))) fields.design.value = q.get('design')!;
+    fields.style.value = ['tee', 'hoodie'].includes(q.get('style') ?? '') ? q.get('style')! : '';
+    fields.fit.value = ['adult', 'kids'].includes(q.get('fit') ?? '') ? q.get('fit')! : '';
+    fields.city.value = cityBySlug(q.get('city')) ? q.get('city')! : '';
+  }
+  function toUrl() {
+    const q = new URLSearchParams();
+    if (fields.design.value !== data.catalog.designs[0].id) q.set('design', fields.design.value);
+    for (const k of ['style', 'fit', 'city']) if (fields[k].value) q.set(k, fields[k].value);
+    history.replaceState(null, '', `${location.pathname}${q.toString() ? `?${q}` : ''}`);
+  }
+
+  function render() {
+    const designId = fields.design.value;
+    const design = designById(designId);
+    const products = data.catalog.products.filter((p: any) => (!fields.style.value || p.style === fields.style.value) && (!fields.fit.value || p.audience === fields.fit.value));
+    const where = fields.city.value ? cities.filter((c: any) => c.slug === fields.city.value) : cities;
+
+    // With no city chosen and several items showing, lead with the tee so the
+    // page doesn't turn into 128 pictures.
+    let list = products.flatMap((p: any) => where.map((c: any) => ({ p, c })));
+    const trimmed = list.length > MAX;
+    if (trimmed) list = list.slice(0, MAX);
+
+    results.textContent = '';
+    for (const { p, c } of list) {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      const q = new URLSearchParams();
+      if (p.style !== 'tee') q.set('style', p.style);
+      if (p.audience !== 'adult') q.set('fit', p.audience);
+      if (designId !== data.catalog.designs[0].id) q.set('design', designId);
+      a.href = `/${c.slug}/${q.toString() ? `?${q}` : ''}`;
+      const tile = document.createElement('span');
+      tile.className = 'tile stage';
+      paint(tile, c);
+      const g = document.createElement('span');
+      drawGarment(g, { style: p.style, audience: p.audience, designId });
+      tile.append(g);
+      const name = document.createElement('span');
+      name.className = 'city';
+      name.textContent = `${c.name} ${p.name.toLowerCase()}`;
+      const sub = document.createElement('span');
+      sub.className = 'colors';
+      const found = shop.availability({ productId: p.id, designId, slug: c.slug, size: p.variants[0]?.size ?? '' });
+      const buyable = found.ok || found.code === 'out_of_stock';
+      sub.textContent = `${c.colors}. ${buyable ? priceLabel(p, '') : 'Preview only'}`;
+      a.append(tile, name, sub);
+      li.append(a);
+      results.append(li);
+    }
+    const total = products.length * where.length;
+    count.textContent =
+      total === 0
+        ? 'Nothing matches those filters.'
+        : `${design.name}: showing ${list.length} of ${total}.${trimmed ? ' Pick a garment, fit or city to narrow it down.' : ''}`;
+    root.querySelector<HTMLElement>('[data-concept]')!.hidden = total === 0;
+  }
+
+  for (const s of Object.values(fields)) s.addEventListener('change', () => { toUrl(); render(); });
+  fromUrl();
+  // First visit with no filters: start on tees, the thing that's for sale.
+  if (!location.search) fields.style.value = 'tee', fields.fit.value = 'adult';
+  render();
+</script>
+
+<style>
+  .filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 12px;
+  }
+  .count {
+    margin-bottom: 18px;
+    color: var(--soft);
+  }
+  .results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px 14px;
+  }
+  .results :global(a) {
+    display: block;
+    text-decoration: none;
+  }
+  .results :global(.tile) {
+    display: block;
+    padding: 10px;
+    border-radius: 6px;
+  }
+  .results :global(.city) {
+    display: block;
+    margin-top: 9px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .results :global(a:hover .city) {
+    text-decoration: underline;
+  }
+  .results :global(.colors) {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.9375rem;
+    color: var(--soft);
+  }
+  .stock {
+    margin-top: 56px;
+  }
+  .stock h2 {
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+  }
+  .stock table {
+    max-width: 640px;
+  }
+  @media (min-width: 720px) {
+    .filters {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .results {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 30px 18px;
+    }
+  }
+</style>

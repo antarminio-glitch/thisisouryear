@@ -26,7 +26,17 @@ import product from '../data/store.json';
         <Confirm /> and include the email address you used at checkout.
       </p>
 
-      <p class="actions"><a class="btn" href="/#cities">Get one for a friend</a></p>
+      <p>
+        Wearing it already? <a href="/fans/">Send us a photo</a> and post it with {product.hashtag}.
+      </p>
+
+      <p class="actions"><a class="btn" href="/gifts/rival-colors/">Get one for a rival</a></p>
     </div>
   </div>
 </Layout>
+
+<script>
+  // The order went through, so the cart has done its job.
+  import { clearCart } from '../scripts/cart.js';
+  clearCart();
+</script>

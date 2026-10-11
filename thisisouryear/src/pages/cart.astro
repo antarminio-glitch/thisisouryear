@@ -1,0 +1,343 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ShopData from '../components/ShopData.astro';
+---
+
+<Layout title="Cart" description="Your cart." noindex>
+  <ShopData />
+  <div class="wrap page" data-cart>
+    <h1>Cart</h1>
+    <p class="avail" data-canceled hidden>No charge was made. Your cart is still here.</p>
+
+    <div data-empty hidden>
+      <p class="lede">Nothing in here yet. The season isn't going to jinx itself.</p>
+      <p class="actions-row"><a class="btn" href="/teams/">Find my colors</a></p>
+    </div>
+
+    <div class="cart-grid" data-full hidden>
+      <ul class="lines" data-lines aria-label="Items in your cart"></ul>
+
+      <aside class="summary" aria-labelledby="sum-h">
+        <h2 id="sum-h">Order summary</h2>
+        <p class="hint" data-checking role="status">Checking prices and sizes.</p>
+        <dl class="total">
+          <div><dt>Subtotal</dt><dd data-subtotal></dd></div>
+          <div><dt>Shipping</dt><dd data-shipping></dd></div>
+          <div class="grand"><dt>Total</dt><dd data-total></dd></div>
+        </dl>
+        <p class="hint" data-tax-note>Sales tax, if any, is added at checkout.</p>
+
+        <div class="field">
+          <label for="cart-fav">Your own city (optional)</label>
+          <select id="cart-fav" data-favorite></select>
+          <p class="hint">Only so we never mistake you for a fan of colors you bought as a joke.</p>
+        </div>
+
+        <p class="form-msg" data-problem role="alert" hidden></p>
+        <div class="actions">
+          <button class="btn" type="button" data-checkout>
+            <span class="idle">Check out</span><span class="busy">Opening checkout</span>
+          </button>
+        </div>
+        <p class="hint">You pay on Stripe's secure checkout page. US shipping only for now.</p>
+        <button class="linkish" type="button" data-clear>Empty the cart</button>
+      </aside>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { shop, cityBySlug, paint, FUNCTIONS } from '../scripts/shop-data.js';
+  import { readCart, setQuantity, removeWhere, updateWhere, clearCart, toOrderItems, getFavorite, setFavorite, cartCount } from '../scripts/cart.js';
+  import { track } from '../scripts/analytics.js';
+  import { drawGarment, fillCitySelect, show, dollars, postJson, designById } from '../scripts/ui.js';
+
+  type Line = { ok: boolean; code: string; message: string; notices: { code: string; message: string }[]; unitCents: number | null; lineCents: number | null };
+  const root = document.querySelector<HTMLElement>('[data-cart]')!;
+  const $ = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel);
+  const list = $('[data-lines]')!;
+  let lastQuote: { ok: boolean; lines: Line[]; subtotalCents: number; shippingCents: number; totalCents: number; problems: string[] } | null = null;
+  let confirmed = false; // true once the server has priced this exact cart
+
+  if (new URLSearchParams(location.search).get('canceled')) $('[data-canceled]')!.hidden = false;
+
+  const fav = $<HTMLSelectElement>('[data-favorite]')!;
+  fillCitySelect(fav, { placeholder: 'Rather not say', selected: getFavorite() });
+  fav.addEventListener('change', () => setFavorite(fav.value));
+
+  const el = (tag: string, cls = '', text = '') => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text) n.textContent = text;
+    return n;
+  };
+
+  function describeMode(item: any) {
+    if (item.mode === 'rival_gift') return `Gift for a ${cityBySlug(item.recipientSlug)?.name ?? 'rival'} fan`;
+    if (item.mode === 'matching_set') return 'Matching set';
+    if (item.mode === 'fantasy_punishment') return item.leagueName ? `League order: ${item.leagueName}` : 'League order';
+    return '';
+  }
+
+  function draw() {
+    const items = readCart();
+    $('[data-empty]')!.hidden = items.length > 0;
+    $('[data-full]')!.hidden = items.length === 0;
+    list.textContent = '';
+
+    items.forEach((item: any, i: number) => {
+      const city = cityBySlug(item.slug);
+      const product = shop.product(item.productId);
+      const design = designById(item.designId);
+      const line = lastQuote?.lines[i];
+      const li = el('li', 'line');
+      if (line && !line.ok) li.classList.add('has-problem');
+
+      const thumb = el('div', 'thumb stage');
+      paint(thumb, city);
+      const g = el('div');
+      drawGarment(g, { style: product?.style ?? 'tee', audience: product?.audience ?? 'adult', designId: item.designId });
+      thumb.append(g);
+
+      const info = el('div', 'info');
+      const name = el('p', 'name', `${design.name} ${product?.name ?? 'item'}`);
+      const where = el('p', 'where', city ? `${city.name}, ${city.colors}. Size ${item.size}.` : `Size ${item.size}.`);
+      info.append(name, where);
+      const mode = describeMode(item);
+      if (mode) info.append(el('span', 'tag', mode));
+      if (item.giftNote) info.append(el('p', 'where', `Note: ${item.giftNote}`));
+
+      const price = el('p', 'money');
+      if (line?.ok) price.textContent = item.quantity > 1 ? `${dollars(line.lineCents!)} (${dollars(line.unitCents!)} each)` : dollars(line.lineCents!);
+      info.append(price);
+      for (const n of line?.notices ?? []) info.append(el('p', 'notice', n.message));
+      if (line && !line.ok) info.append(el('p', 'problem', line.message));
+
+      const controls = el('div', 'controls');
+      // A set stays one of each. Everything else can change quantity.
+      if (item.mode !== 'matching_set') {
+        const label = el('label', 'sr-only', `Quantity for ${name.textContent}, ${where.textContent}`);
+        const qty = document.createElement('input');
+        qty.type = 'number';
+        qty.min = '1';
+        qty.max = String(shop.store.maxQuantity);
+        qty.inputMode = 'numeric';
+        qty.value = String(item.quantity);
+        qty.id = `qty-${item.id}`;
+        label.setAttribute('for', qty.id);
+        qty.addEventListener('change', () => {
+          const n = Math.max(1, Math.min(shop.store.maxQuantity, Math.floor(Number(qty.value) || 1)));
+          setQuantity(item.id, n);
+          refresh();
+        });
+        controls.append(label, qty);
+      }
+      const remove = el('button', 'linkish', item.mode === 'matching_set' ? 'Remove the set' : 'Remove') as HTMLButtonElement;
+      remove.type = 'button';
+      remove.setAttribute('aria-label', `${remove.textContent}: ${name.textContent}, ${where.textContent}`);
+      remove.addEventListener('click', () => {
+        // Removing half a set removes the whole set, so nobody ends up with half by accident.
+        if (item.mode === 'matching_set' && item.bundleId) removeWhere((x: any) => x.bundleId === item.bundleId);
+        else removeWhere((x: any) => x.id === item.id);
+        refresh();
+      });
+      controls.append(remove);
+      if (item.mode === 'matching_set' && line && line.code === 'set_incomplete') {
+        const keep = el('button', 'linkish', 'Keep this one as a single item') as HTMLButtonElement;
+        keep.type = 'button';
+        keep.addEventListener('click', () => {
+          // The half that can be bought becomes an ordinary item. The half that can't is dropped.
+          const bundleId = item.bundleId;
+          const quote = lastQuote;
+          const all = readCart();
+          const dead = new Set(all.filter((x: any, j: number) => x.bundleId === bundleId && quote?.lines[j]?.code !== 'set_incomplete').map((x: any) => x.id));
+          removeWhere((x: any) => dead.has(x.id));
+          updateWhere((x: any) => x.bundleId === bundleId, (x: any) => { x.mode = 'standard'; delete x.bundleId; });
+          refresh();
+        });
+        controls.append(keep);
+      }
+
+      li.append(thumb, info, controls);
+      list.append(li);
+    });
+
+    const q = lastQuote;
+    const ready = !!q?.ok;
+    $('[data-subtotal]')!.textContent = ready ? dollars(q!.subtotalCents) : 'Not yet';
+    $('[data-shipping]')!.textContent = ready ? dollars(q!.shippingCents) : dollars(shop.store.shippingCents);
+    $('[data-total]')!.textContent = ready ? dollars(q!.totalCents) : 'Not yet';
+    const problem = q && !q.ok ? 'Fix or remove the flagged items to check out.' : '';
+    show($('[data-problem]'), problem);
+    $<HTMLButtonElement>('[data-checkout]')!.disabled = !ready;
+  }
+
+  async function refresh() {
+    const items = readCart();
+    if (!items.length) {
+      lastQuote = null;
+      draw();
+      return;
+    }
+    const order = toOrderItems(items);
+    // Show something straight away, worked out in the browser, then let the
+    // server have the final word on every price and size.
+    lastQuote = shop.quote(order) as any;
+    confirmed = false;
+    draw();
+    const checking = $('[data-checking]')!;
+    checking.hidden = false;
+    checking.textContent = 'Checking prices and sizes.';
+    try {
+      const res = await postJson(`${FUNCTIONS}/cart-quote`, { items: order });
+      if (JSON.stringify(toOrderItems(readCart())) !== JSON.stringify(order)) return; // the cart changed while we waited
+      if (res.ok && Array.isArray(res.body.lines)) {
+        lastQuote = res.body;
+        confirmed = true;
+        checking.hidden = true;
+      } else {
+        checking.textContent = "Couldn't confirm prices with the server just now. They'll be confirmed when you check out.";
+      }
+    } catch {
+      checking.textContent = "Couldn't confirm prices with the server just now. They'll be confirmed when you check out.";
+    }
+    draw();
+  }
+
+  $('[data-clear]')!.addEventListener('click', () => {
+    clearCart();
+    refresh();
+  });
+
+  $('[data-checkout]')!.addEventListener('click', async () => {
+    const btn = $<HTMLButtonElement>('[data-checkout]')!;
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    show($('[data-problem]'), '');
+    const items = readCart();
+    track('checkout_started', { item_count: cartCount(items), value_cents: lastQuote?.totalCents ?? 0 });
+    try {
+      const res = await postJson(`${FUNCTIONS}/create-checkout`, { items: toOrderItems(items), favoriteSlug: getFavorite() || undefined });
+      if (res.ok && res.body.url) return window.location.assign(res.body.url);
+      if (res.body.quote) {
+        lastQuote = res.body.quote;
+        draw();
+        show($('[data-problem]'), res.body.error || 'Fix or remove the flagged items to check out.');
+      } else {
+        show($('[data-problem]'), res.body.error ? `${res.body.error} Nothing was charged.` : "Checkout didn't open, so nothing was charged. Give it a minute and try again.");
+      }
+    } catch {
+      show($('[data-problem]'), "Checkout didn't open, so nothing was charged. Give it a minute and try again.");
+    }
+    btn.setAttribute('aria-busy', 'false');
+    btn.disabled = !lastQuote?.ok;
+  });
+
+  window.addEventListener('pageshow', (e) => {
+    $<HTMLButtonElement>('[data-checkout]')!.setAttribute('aria-busy', 'false');
+    if (e.persisted) refresh();
+  });
+  refresh();
+</script>
+
+<style>
+  .lede {
+    margin-bottom: 22px;
+  }
+  .cart-grid {
+    display: grid;
+    gap: 32px;
+  }
+  .lines {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--rule);
+  }
+  .lines :global(.line) {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 6px 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .lines :global(.line.has-problem) {
+    box-shadow: inset 4px 0 0 var(--on-bg);
+    padding-left: 12px;
+  }
+  .lines :global(.thumb) {
+    grid-row: span 2;
+    align-self: start;
+    padding: 6px;
+    border-radius: 6px;
+  }
+  .lines :global(.name) {
+    font-weight: 600;
+    font-size: 1.125rem;
+    line-height: 1.25;
+  }
+  .lines :global(.where) {
+    color: var(--soft);
+    overflow-wrap: anywhere;
+  }
+  .lines :global(.tag) {
+    margin-top: 6px;
+  }
+  .lines :global(.money) {
+    margin-top: 6px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .lines :global(.notice),
+  .lines :global(.problem) {
+    margin-top: 6px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    background: var(--panel);
+    font-size: 1rem;
+  }
+  .lines :global(.problem) {
+    background: var(--on-bg);
+    color: var(--bg);
+    font-weight: 600;
+  }
+  .lines :global(.controls) {
+    grid-column: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    align-items: center;
+  }
+  .lines :global(.controls input) {
+    width: 72px;
+    min-height: 44px;
+    padding: 6px 10px;
+    border: 2px solid var(--edge);
+    border-radius: 4px;
+    background: var(--panel);
+    color: var(--on-bg);
+    font: 600 1.0625rem/1 var(--body);
+  }
+  .summary h2 {
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+  }
+  .summary .field {
+    margin-top: 18px;
+  }
+  .summary .linkish {
+    margin-top: 14px;
+    font-weight: 400;
+  }
+  @media (min-width: 860px) {
+    .cart-grid {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      gap: 56px;
+      align-items: start;
+    }
+    .summary {
+      position: sticky;
+      top: 20px;
+    }
+  }
+</style>

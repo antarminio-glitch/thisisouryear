@@ -1,0 +1,168 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ShopData from '../../components/ShopData.astro';
+import Shirt from '../../components/Shirt.astro';
+import store from '../../data/store.json';
+---
+
+<Layout
+  title="Rival Color Gifts"
+  description="A thoughtful gift for a terrible friend. Pick whose fan they are, then pick the colors they'd hate to wear."
+>
+  <ShopData />
+  <div class="wrap page builder">
+    <h1>A thoughtful gift. For a terrible friend.</h1>
+    <p class="lede">
+      Tell us who they root for. Then choose the colors they have to wear instead. You pick both. We don't decide who
+      anybody's rival is.
+    </p>
+
+    <div class="builder-grid" data-gift>
+      <div class="builder-stage">
+        <div class="stage is-neutral" data-stage>
+          <div data-garment><Shirt decorative /></div>
+        </div>
+        <p class="concept">Concept preview. It's a drawing, not a photo of the finished item, and screen colors are approximate.</p>
+      </div>
+
+      <form novalidate>
+        <div class="field">
+          <label for="gift-them">Their city</label>
+          <select id="gift-them" data-them></select>
+          <p class="hint">Who they actually root for. We keep this apart from your own city, and we never contact them.</p>
+        </div>
+
+        <div class="field">
+          <label for="gift-wear">The colors they have to wear</label>
+          <select id="gift-wear" data-wear></select>
+        </div>
+
+        <p class="picked" data-summary aria-live="polite">Pick both cities to see the damage.</p>
+        <p class="hint legend" data-legend hidden></p>
+
+        <fieldset class="field">
+          <legend>Garment</legend>
+          <div class="pills two">
+            <label><input type="radio" name="gift-style" value="tee" checked /><span>Tee</span></label>
+            <label><input type="radio" name="gift-style" value="hoodie" /><span>Hoodie</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="field">
+          <legend>Fit</legend>
+          <div class="pills two">
+            <label><input type="radio" name="gift-fit" value="adult" checked /><span>Adult</span></label>
+            <label><input type="radio" name="gift-fit" value="kids" /><span>Kids</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="field" data-size-field>
+          <legend>
+            Their size
+            <a href="/size-chart/" data-size-chart>Size chart</a>
+          </legend>
+          <div class="pills" data-sizes></div>
+          <p class="hint" data-size-note hidden></p>
+        </fieldset>
+
+        {
+          store.giftNotes && (
+            <div class="field">
+              <label for="gift-note">Gift note (optional)</label>
+              <textarea id="gift-note" maxlength={store.noteMaxLength} data-note />
+              <p class="hint">Up to {store.noteMaxLength} characters.</p>
+            </div>
+          )
+        }
+
+        <p class="price"><span data-price></span></p>
+        <p class="avail" data-availability role="status" hidden></p>
+        <div class="actions">
+          <button class="btn" type="button" data-add>Add the gift to cart</button>
+        </div>
+        <p class="form-msg" data-msg role="alert" hidden></p>
+        <p class="added" data-added role="status" hidden><span data-added-text></span> <a href="/cart/">Go to cart</a></p>
+        <p class="hint">It ships to whatever address you enter at checkout, yours or theirs.</p>
+      </form>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { shop, cityBySlug, paint } from '../../scripts/shop-data.js';
+  import { addItems } from '../../scripts/cart.js';
+  import { track } from '../../scripts/analytics.js';
+  import { drawGarment, renderSizes, priceLabel, sizeNote, unavailableText, legendText, productFor, fillCitySelect, show, hide } from '../../scripts/ui.js';
+
+  const root = document.querySelector<HTMLElement>('[data-gift]')!;
+  const $ = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel);
+  const them = $<HTMLSelectElement>('[data-them]')!;
+  const wear = $<HTMLSelectElement>('[data-wear]')!;
+  const q = new URLSearchParams(location.search);
+  const state = { them: '', wear: cityBySlug(q.get('wear')) ? q.get('wear')! : '', style: 'tee', audience: 'adult', designId: 'this-is-our-year', size: '' };
+
+  fillCitySelect(them, { placeholder: 'Choose their city' });
+  fillCitySelect(wear, { placeholder: 'Choose the colors', selected: state.wear });
+
+  function render(sizesChanged = false) {
+    const city = cityBySlug(state.wear);
+    const friend = cityBySlug(state.them);
+    const product = productFor(state.style, state.audience);
+    const stage = $('[data-stage]');
+    if (city) paint(stage, city);
+    stage?.classList.toggle('is-neutral', !city);
+    drawGarment($('[data-garment]'), state, city ? `${product.name} in ${city.name} colors, ${city.colors}` : '');
+    if (sizesChanged) state.size = renderSizes($('[data-sizes]'), product, 'gift-size', state.size);
+    $('[data-size-field]')!.hidden = !shop.isSellable(product);
+    show($('[data-size-note]'), sizeNote(product));
+    $('[data-price]')!.textContent = priceLabel(product, state.size);
+
+    let summary = 'Pick both cities to see the damage.';
+    if (friend && city && friend.slug === city.slug) summary = "That's their own city. Pick different colors. That's the whole joke.";
+    else if (friend && city) summary = `A ${friend.name} fan, in ${city.name} colors (${city.colors}). Perfect.`;
+    else if (city) summary = `${city.name} colors, ${city.colors}. Now tell us whose fan they are.`;
+    else if (friend) summary = `A ${friend.name} fan. Now choose the colors they'd hate.`;
+    show($('[data-summary]'), summary);
+    show($('[data-legend]'), legendText(city));
+
+    const found = shop.availability({ productId: product.id, designId: state.designId, slug: state.wear, size: state.size });
+    show($('[data-availability]'), city ? unavailableText(product, found) : '');
+    $<HTMLButtonElement>('[data-add]')!.disabled = !!city && !found.ok && found.code !== 'size_required';
+    show($('[data-msg]'), '');
+    hide($('[data-added]'));
+  }
+
+  them.addEventListener('change', () => {
+    state.them = them.value;
+    render();
+  });
+  wear.addEventListener('change', () => {
+    state.wear = wear.value;
+    render();
+    if (state.wear) track('team_selected', { team_id: state.wear, purchase_mode: 'rival_gift' });
+  });
+  root.addEventListener('change', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t.type !== 'radio') return;
+    if (t.name === 'gift-style') { state.style = t.value; render(true); }
+    else if (t.name === 'gift-fit') { state.audience = t.value; render(true); }
+    else if (t.name === 'gift-size') { state.size = t.value; render(); track('size_selected', { size: state.size, purchase_mode: 'rival_gift' }); }
+  });
+
+  $('[data-add]')!.addEventListener('click', () => {
+    const product = productFor(state.style, state.audience);
+    const say = (t: string) => show($('[data-msg]'), t);
+    if (!state.them) return say("Pick their city first, so we know whose colors these aren't.");
+    if (!state.wear) return say('Pick the colors they have to wear.');
+    if (state.them === state.wear) return say("That's their own city. Pick different colors. That's the whole joke.");
+    const found = shop.availability({ productId: product.id, designId: state.designId, slug: state.wear, size: state.size });
+    if (!found.ok) return say(found.code === 'size_required' ? 'Pick their size first.' : unavailableText(product, found));
+    const note = ($<HTMLTextAreaElement>('[data-note]')?.value ?? '').trim();
+    addItems([{ productId: product.id, designId: state.designId, slug: state.wear, size: state.size, quantity: 1, mode: 'rival_gift', recipientSlug: state.them, giftNote: note, seenPriceCents: found.priceCents }]);
+    track('gift_mode_selected', { team_id: state.wear, product_id: product.id, size: state.size });
+    track('add_to_cart', { team_id: state.wear, product_id: product.id, size: state.size, quantity: 1, purchase_mode: 'rival_gift', value_cents: found.priceCents });
+    const added = $('[data-added]')!;
+    added.hidden = false;
+    added.querySelector('[data-added-text]')!.textContent = `Added: ${cityBySlug(state.wear)!.name} ${product.name.toLowerCase()}, size ${state.size}, for a ${cityBySlug(state.them)!.name} fan.`;
+  });
+
+  render(true);
+</script>

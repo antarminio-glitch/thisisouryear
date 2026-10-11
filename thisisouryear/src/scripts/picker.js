@@ -9,7 +9,7 @@
 import { shop, cities, cityBySlug, paint, FUNCTIONS } from './shop-data.js';
 import { addItems } from './cart.js';
 import { track } from './analytics.js';
-import { drawGarment, renderSizes, priceLabel, sizeNote, unavailableText, legendText, designById, productFor, show, postJson } from './ui.js';
+import { drawGarment, renderSizes, priceLabel, sizeNote, unavailableText, legendText, designById, productFor, show, postJson, hide } from './ui.js';
 
 const DEFAULTS = { style: 'tee', audience: 'adult', designId: 'this-is-our-year', size: '' };
 
@@ -96,7 +96,7 @@ export function initPicker(root) {
     }
     const hidden = $('input[name="slug"]');
     if (hidden) hidden.value = state.slug;
-    show($('[data-added]'), '');
+    hide($('[data-added]'));
     show($('[data-msg]'), '');
 
     // Reflect the state in the form controls (needed after back/forward).
