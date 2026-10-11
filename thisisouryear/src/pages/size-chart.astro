@@ -1,0 +1,60 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Confirm from '../components/Confirm.astro';
+import product from '../data/product.json';
+
+// Measurements in inches, laid flat. These are typical numbers for a standard
+// unisex tee. Replace them with the real ones from the print vendor.
+const chart = {
+  S: { width: 18, length: 28 },
+  M: { width: 20, length: 29 },
+  L: { width: 22, length: 30 },
+  XL: { width: 24, length: 31 },
+  '2XL': { width: 26, length: 32 },
+  '3XL': { width: 28, length: 33 },
+};
+---
+
+<Layout title="Size chart" description="Measurements for the This Is Our Year tee, S through 3XL.">
+  <div class="wrap page">
+    <div class="prose">
+      <h1>Size chart</h1>
+      <p class="lede">Unisex fit, true to size. Between sizes? Go up if you like room, down if you like it snug.</p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Size</th>
+              <th scope="col">Chest width</th>
+              <th scope="col">Length</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              product.sizes.map((size) => (
+                <tr>
+                  <th scope="row">{size}</th>
+                  <td>{chart[size] ? `${chart[size].width} in` : 'Ask us'}</td>
+                  <td>{chart[size] ? `${chart[size].length} in` : 'Ask us'}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <Confirm /> These are typical numbers for a standard unisex tee. Swap in the real measurements from the print
+        vendor before launch.
+      </p>
+
+      <h2>How to measure</h2>
+      <p>
+        Grab a tee that fits you well and lay it flat. Chest width is straight across, one inch below the armpits.
+        Length is from the top of the shoulder by the collar down to the bottom hem.
+      </p>
+
+      <p class="actions"><a class="btn" href="/#cities">Pick your city</a></p>
+    </div>
+  </div>
+</Layout>

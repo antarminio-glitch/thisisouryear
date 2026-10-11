@@ -1,0 +1,70 @@
+---
+// The chest print: "THIS IS" stacked over "OUR YEAR" in block lettering with
+// the classic athletic double outline. Used on the shirt and as the home page
+// headline.
+//
+// Each line is drawn three times, back to front:
+//   1. a wide stroke in the outline color
+//   2. a narrower stroke in the shirt color, which makes the gap
+//   3. the letter itself
+// Colors come from the CSS variables --shirt, --line1, --line2 and --outline.
+const {
+  x = 0, // horizontal center
+  y = 0, // baseline of the first line
+  size = 46, // letter size
+  top = 'THIS IS',
+  bottom = 'OUR YEAR',
+  // The rest are multiples of the letter size.
+  leading = 1.16, // distance between the two baselines
+  track = 0.1, // extra space between letters, so the outlines have room
+  weight = 0.025, // how much the letters are thickened
+  gap = 0.045, // width of the shirt-colored gap
+  rim = 0.05, // width of the outer outline
+} = Astro.props;
+
+// Width of each character in the Graduate font, in thousandths of the letter
+// size. Placing every letter by hand keeps the print the exact same shape on
+// every device, even in the moment before the font file has loaded.
+const ADVANCE = {
+  A: 657, B: 684, C: 600, D: 690, E: 636, F: 596, G: 620, H: 792, I: 392, J: 540, K: 669, L: 556, M: 946,
+  N: 812, O: 650, P: 624, Q: 650, R: 699, S: 600, T: 580, U: 740, V: 687, W: 1026, X: 649, Y: 607, Z: 596,
+  ' ': 350,
+};
+const DIGIT = 650;
+
+function place(text) {
+  const chars = [...text.toUpperCase()];
+  const widths = chars.map((c) => ((ADVANCE[c] ?? DIGIT) / 1000) * size);
+  const total = widths.reduce((sum, w) => sum + w, 0) + track * size * (chars.length - 1);
+  let cursor = x - total / 2;
+  const centers = widths.map((w) => {
+    const center = cursor + w / 2;
+    cursor += w + track * size;
+    return center.toFixed(2);
+  });
+  return { text: chars.join(''), xs: centers.join(' ') };
+}
+
+const lines = [
+  { ...place(top), fill: 'lt-1', y: y },
+  { ...place(bottom), fill: 'lt-2', y: y + size * leading },
+];
+const fillStroke = (size * weight * 2).toFixed(2);
+const gapStroke = (size * (weight + gap) * 2).toFixed(2);
+const rimStroke = (size * (weight + gap + rim) * 2).toFixed(2);
+---
+
+<g class="lt" font-size={size}>
+  {
+    lines.map((line) => {
+      const at = { x: line.xs, y: line.y.toFixed(2) };
+      return (
+        <>
+          <text {...at} class="lt-rim" stroke-width={rimStroke}>{line.text}</text>
+          <text {...at} class="lt-gap" stroke-width={gapStroke}>{line.text}</text>
+          <text {...at} class={line.fill} stroke-width={fillStroke}>{line.text}</text>
+        </>
+      );
+    })
+  }
+</g>

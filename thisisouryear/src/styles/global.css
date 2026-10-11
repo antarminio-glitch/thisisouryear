@@ -1,0 +1,395 @@
+/* ---------- Fonts (self-hosted, files live in /public/fonts) ---------- */
+@font-face {
+  font-family: 'Graduate';
+  src: url('/fonts/graduate.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Barlow Semi Condensed';
+  src: url('/fonts/barlow-semi-condensed-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow Semi Condensed';
+  src: url('/fonts/barlow-semi-condensed-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------- Colors ----------
+   The home page and info pages use the neutral set below.
+   City pages override --bg, --on-bg, --accent and --on-accent with that
+   city's colors (see src/lib/colors.js). */
+:root {
+  --bg: #2b2d31;
+  --on-bg: #ffffff;
+  --accent: #ffffff;
+  --on-accent: #0b0c0e;
+  --tile: #dcdee1;
+
+  --display: 'Graduate', 'Rockwell', 'Courier New', serif;
+  --body: 'Barlow Semi Condensed', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
+
+  --gutter: 20px;
+  --wide: 1120px;
+  --read: 62ch;
+}
+
+body {
+  /* Neutral colors for the home page headline lettering */
+  --shirt: var(--bg);
+  --line1: #ffffff;
+  --line2: #ffffff;
+  --outline: #ffffff;
+
+  /* Quieter text, borders and panels, mixed from whatever the page colors are */
+  --soft: color-mix(in srgb, var(--on-bg) 72%, var(--bg));
+  --edge: color-mix(in srgb, var(--on-bg) 45%, var(--bg));
+  --rule: color-mix(in srgb, var(--on-bg) 22%, var(--bg));
+  --panel: color-mix(in srgb, var(--on-bg) 9%, var(--bg));
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--on-bg);
+  font-family: var(--body);
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+main {
+  flex: 1;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  font-weight: 400;
+  line-height: 1.12;
+  margin: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 0.08em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--on-bg);
+  outline-offset: 3px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: var(--wide);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: 600 1.25rem/1 var(--body);
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn:hover {
+  background: color-mix(in srgb, var(--accent) 86%, var(--on-accent));
+}
+.btn[disabled] {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+/* ---------- Header and footer ---------- */
+.site-head {
+  border-bottom: 1px solid var(--rule);
+}
+.site-head .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 60px;
+}
+.brand {
+  font-family: var(--display);
+  font-size: 1.0625rem;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.site-head nav a {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.site-foot {
+  border-top: 1px solid var(--rule);
+  padding-block: 32px 40px;
+  color: var(--soft);
+  font-size: 1rem;
+}
+.site-foot ul {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+}
+.site-foot a {
+  color: var(--on-bg);
+}
+.site-foot .legal {
+  max-width: var(--read);
+}
+
+/* ---------- The shirt ---------- */
+.shirt-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+.shirt {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.shirt-photo {
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+.tee-fill {
+  fill: var(--shirt);
+}
+.tee-edge {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: 0.22;
+  stroke-width: 1.5;
+}
+.tee-fold,
+.tee-lift,
+.tee-seam,
+.tee-seam-hi,
+.tee-stitch,
+.tee-stitch-hi,
+.tee-collar,
+.tee-collar-hi {
+  fill: none;
+  stroke-linecap: round;
+}
+.tee-fold {
+  stroke: #000;
+  stroke-opacity: 0.05;
+  stroke-width: 18;
+}
+.tee-lift {
+  stroke: #fff;
+  stroke-opacity: 0.03;
+  stroke-width: 16;
+}
+.tee-seam {
+  stroke: #000;
+  stroke-opacity: 0.3;
+  stroke-width: 1.6;
+}
+.tee-seam-hi {
+  stroke: #fff;
+  stroke-opacity: 0.13;
+  stroke-width: 1.2;
+}
+.tee-stitch {
+  stroke: #000;
+  stroke-opacity: 0.26;
+  stroke-width: 1.4;
+}
+.tee-stitch-hi {
+  stroke: #fff;
+  stroke-opacity: 0.12;
+  stroke-width: 1;
+}
+.tee-neck-shade {
+  fill: #000;
+  fill-opacity: 0.42;
+}
+.tee-collar {
+  stroke: var(--shirt);
+  stroke-width: 15;
+  stroke-linecap: butt;
+}
+.tee-collar-hi {
+  stroke: #fff;
+  stroke-opacity: 0.08;
+  stroke-width: 15;
+  stroke-linecap: butt;
+}
+
+/* The lettering */
+.lt text {
+  font-family: var(--display);
+  text-anchor: middle;
+  /* Round joins. Sharp (miter) joins leave hairline spikes in this font. */
+  stroke-linejoin: round;
+}
+.lt-rim {
+  fill: var(--outline);
+  stroke: var(--outline);
+}
+.lt-gap {
+  fill: var(--shirt);
+  stroke: var(--shirt);
+}
+.lt-1 {
+  fill: var(--line1);
+  stroke: var(--line1);
+}
+.lt-2 {
+  fill: var(--line2);
+  stroke: var(--line2);
+}
+
+/* ---------- Info pages (size chart, shipping, privacy, terms, contact) ---------- */
+.page {
+  padding-block: 40px 72px;
+}
+.page h1 {
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
+  margin-bottom: 20px;
+}
+.prose {
+  max-width: var(--read);
+}
+.prose h2 {
+  font-size: 1.25rem;
+  margin: 36px 0 10px;
+}
+.prose p,
+.prose ul,
+.prose ol {
+  margin: 0 0 14px;
+}
+.prose ul,
+.prose ol {
+  padding-left: 1.2em;
+}
+.prose li {
+  margin-bottom: 6px;
+}
+.prose .lede {
+  font-size: 1.25rem;
+  color: var(--soft);
+  margin-bottom: 24px;
+}
+.prose .actions {
+  margin-top: 28px;
+}
+
+/* A [CONFIRM] flag marks text the owner still needs to check. */
+.confirm {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 3px;
+  background: #ffd84d;
+  color: #14161a;
+  font-size: 0.8em;
+  font-weight: 600;
+  line-height: 1.5;
+  vertical-align: 0.08em;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  margin-bottom: 14px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 460px;
+  font-variant-numeric: tabular-nums;
+}
+th,
+td {
+  text-align: left;
+  padding: 10px 14px 10px 0;
+  border-bottom: 1px solid var(--rule);
+}
+thead th {
+  font-weight: 600;
+  color: var(--soft);
+}
+tbody th {
+  font-weight: 600;
+}
+
+@media (min-width: 720px) {
+  :root {
+    --gutter: 32px;
+  }
+  .brand {
+    font-size: 1.1875rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

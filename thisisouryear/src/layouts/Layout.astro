@@ -1,0 +1,76 @@
+---
+import '../styles/global.css';
+import ShirtDefs from '../components/ShirtDefs.astro';
+
+const {
+  title,
+  description,
+  theme = '', // CSS variables for a city page. Empty means the neutral look.
+  themeColor = '#2b2d31',
+  navHref = '/#cities',
+  navLabel = 'Pick your city',
+  noindex = false,
+} = Astro.props;
+
+const SITE_NAME = 'This Is Our Year';
+const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const shareImage = new URL('/share.png', Astro.site);
+
+const footerLinks = [
+  ['/size-chart/', 'Size chart'],
+  ['/shipping-returns/', 'Shipping and returns'],
+  ['/contact/', 'Contact'],
+  ['/privacy/', 'Privacy'],
+  ['/terms/', 'Terms'],
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="theme-color" content={themeColor} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/graduate.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/barlow-semi-condensed-400.woff2" as="font" type="font/woff2" crossorigin />
+
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title ?? SITE_NAME} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={shareImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body style={theme}>
+    <ShirtDefs />
+    <header class="site-head">
+      <div class="wrap">
+        <a class="brand" href="/">This Is Our Year</a>
+        <nav aria-label="Main"><a href={navHref}>{navLabel}</a></nav>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-foot">
+      <div class="wrap">
+        <ul>
+          {footerLinks.map(([href, label]) => <li><a href={href}>{label}</a></li>)}
+        </ul>
+        <p class="legal">
+          This Is Our Year is an independent brand. It is not affiliated with, licensed by, or endorsed by any
+          professional football league or team.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

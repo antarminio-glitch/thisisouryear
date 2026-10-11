@@ -1,0 +1,32 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Confirm from '../components/Confirm.astro';
+import product from '../data/product.json';
+---
+
+<Layout title="Order confirmed" description="Your order is in. Here's what happens next." noindex>
+  <div class="wrap page">
+    <div class="prose">
+      <h1>Order's in. This is your year.</h1>
+      <p class="lede">Thanks. You're officially on the record for this season.</p>
+
+      <h2>What happens next</h2>
+      <ol>
+        <li>Stripe is emailing your receipt right now. Check spam if you don't see it.</li>
+        <li>We print your shirt. Every one is made to order, so nothing's sitting on a shelf.</li>
+        <li>
+          It ships to the address you gave at checkout and should arrive in about {product.shipMinDays} to {
+            product.shipMaxDays
+          } business days. <Confirm />
+        </li>
+      </ol>
+
+      <p>
+        Something wrong with your order? Email <a href={`mailto:${product.contactEmail}`}>{product.contactEmail}</a>
+        <Confirm /> and include the email address you used at checkout.
+      </p>
+
+      <p class="actions"><a class="btn" href="/#cities">Get one for a friend</a></p>
+    </div>
+  </div>
+</Layout>

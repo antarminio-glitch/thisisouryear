@@ -1,0 +1,74 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Confirm from '../components/Confirm.astro';
+import product from '../data/product.json';
+
+const email = product.contactEmail;
+---
+
+<Layout title="Privacy" description="What information this shop collects when you order a shirt, and what happens to it.">
+  <div class="wrap page">
+    <div class="prose">
+      <h1>Privacy</h1>
+      <p class="lede">The short version: we collect what we need to get a shirt to your door, and nothing else.</p>
+      <p>
+        <Confirm /> This is starter text. Read it against how the shop actually runs and have someone qualified look it
+        over before launch.
+      </p>
+      <p>Last updated October 10, 2026. <Confirm /></p>
+
+      <h2>What we collect</h2>
+      <ul>
+        <li>
+          <strong>Order details.</strong> Your name, email, shipping address, and what you bought. You enter these on
+          Stripe's checkout page.
+        </li>
+        <li>
+          <strong>Payment details.</strong> Stripe handles your card. We never see or store your full card number.
+        </li>
+        <li><strong>Emails you send us.</strong> If you write in, we keep the conversation so we can help.</li>
+        <li>
+          <strong>Basic site logs.</strong> Our web host records standard technical info like IP address and browser
+          type to keep the site running and secure.
+        </li>
+      </ul>
+      <p>This site doesn't use advertising trackers or analytics cookies. <Confirm /></p>
+
+      <h2>How we use it</h2>
+      <ul>
+        <li>To take payment, print your shirt, and ship it to you.</li>
+        <li>To email you about your order.</li>
+        <li>To answer your questions and fix problems.</li>
+        <li>To keep records we're required to keep, like sales and tax records.</li>
+      </ul>
+      <p>We don't sell your information, and we don't email you marketing unless you ask for it.</p>
+
+      <h2>Who else sees it</h2>
+      <ul>
+        <li><strong>Stripe</strong> processes payments and stores order details.</li>
+        <li>
+          <strong>Our print partner</strong> gets your name, shipping address, and order so they can print and ship
+          your shirt.
+        </li>
+        <li><strong>Netlify</strong> hosts this website.</li>
+        <li><strong>The shipping carrier</strong> gets your name and address to deliver the package.</li>
+      </ul>
+
+      <h2>How long we keep it</h2>
+      <p>We keep order records for as long as we need them for taxes, accounting, and handling returns. <Confirm /></p>
+
+      <h2>Your choices</h2>
+      <p>
+        Want to see, correct, or delete the information we have about you? Email
+        <a href={`mailto:${email}`}>{email}</a>
+        <Confirm /> and we'll take care of it, except for records the law requires us to keep.
+      </p>
+
+      <h2>Kids</h2>
+      <p>This site is meant for adults. We don't knowingly collect information from anyone under 13.</p>
+
+      <h2>Changes</h2>
+      <p>If this policy changes, the new version goes on this page with a new date at the top.</p>
+    </div>
+  </div>
+</Layout>

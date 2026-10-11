@@ -1,0 +1,31 @@
+---
+import Layout from '../layouts/Layout.astro';
+import teams from '../data/teams.json';
+
+const cityNames = Object.fromEntries(teams.map((t) => [t.slug, t.name]));
+---
+
+<Layout title="Checkout canceled" description="No charge was made. Your shirt is still here when you're ready." noindex>
+  <div class="wrap page">
+    <div class="prose">
+      <h1>No charge. No hard feelings.</h1>
+      <p class="lede">You left checkout before paying, so your card wasn't charged and no order was placed.</p>
+      <p>There's always next year. Or five minutes from now.</p>
+      <p class="actions">
+        <a class="btn" id="back" href="/#cities" data-cities={JSON.stringify(cityNames)}>Back to the shirts</a>
+      </p>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Checkout sends people back here with ?city=dallas, so the button can take
+  // them straight back to the shirt they were looking at.
+  const back = document.getElementById('back') as HTMLAnchorElement | null;
+  const slug = new URLSearchParams(window.location.search).get('city') ?? '';
+  const cities: Record<string, string> = JSON.parse(back?.dataset.cities ?? '{}');
+  if (back && Object.hasOwn(cities, slug)) {
+    back.href = `/${slug}/`;
+    back.textContent = `Back to the ${cities[slug]} tee`;
+  }
+</script>

@@ -1,0 +1,335 @@
+---
+// The city page. This one file becomes all 32 pages, one per entry in
+// src/data/teams.json.
+import Layout from '../layouts/Layout.astro';
+import Shirt from '../components/Shirt.astro';
+import Confirm from '../components/Confirm.astro';
+import teams from '../data/teams.json';
+import product from '../data/product.json';
+import { dollars, priceFor } from '../lib/money.js';
+import { themeFor, styleString } from '../lib/colors.js';
+
+export function getStaticPaths() {
+  return teams.map((team) => ({ params: { slug: team.slug }, props: { team } }));
+}
+
+const { team } = Astro.props;
+const theme = themeFor(team);
+
+// "Los Angeles (Royal)" reads better in a headline as just "Los Angeles".
+const place = team.name.replace(/\s*\(.*\)$/, '');
+const basePrice = dollars(product.priceCents);
+const bigSizes = product.upchargeSizes;
+const upcharge = product.upchargeCents;
+const bigSizeNote =
+  upcharge > 0 && bigSizes.length > 0
+    ? `${bigSizes.join(' and ')} ${bigSizes.length > 1 ? 'are' : 'is'} ${dollars(upcharge).replace('.00', '')} more.`
+    : '';
+const shirtLabel = `This Is Our Year tee in ${team.name} colors, ${team.colors}`;
+---
+
+<Layout
+  title={`This Is Our Year Tee, ${team.name}, ${team.colors}`}
+  description={`Every fan says it every season. Say it in ${place} colors: the This Is Our Year tee in ${team.colors}. ${basePrice}, printed to order.`}
+  theme={styleString(theme)}
+  themeColor={team.shirt}
+  navLabel="All cities"
+>
+  <div class="wrap product">
+    <div class="stage">
+      <Shirt team={team} label={shirtLabel} />
+    </div>
+
+    <div class="buy">
+      <h1>This is our year, {place}.</h1>
+      <p class="colorway">{team.colors}</p>
+      <p class="price"><span id="price">{basePrice}</span></p>
+
+      <form id="buy-form" method="post" action="/.netlify/functions/create-checkout">
+        <input type="hidden" name="slug" value={team.slug} />
+        <fieldset>
+          <legend>
+            Size
+            <a href="/size-chart/">Size chart</a>
+          </legend>
+          <div class="sizes">
+            {
+              product.sizes.map((size) => (
+                <label>
+                  <input type="radio" name="size" value={size} data-price={dollars(priceFor(size))} required />
+                  <span>{size}</span>
+                </label>
+              ))
+            }
+          </div>
+          {bigSizeNote && <p class="size-note">{bigSizeNote}</p>}
+        </fieldset>
+
+        <button class="btn" type="submit" id="buy-btn">
+          <span class="idle">Buy for <span id="btn-price">{basePrice}</span></span>
+          <span class="busy">Opening checkout</span>
+        </button>
+        <p class="form-msg" id="form-msg" role="alert" hidden></p>
+        <p class="pay-note">
+          You'll pay on Stripe's secure checkout page. {dollars(product.shippingCents)} flat shipping in the US.
+          <Confirm />
+        </p>
+      </form>
+
+      <dl class="details">
+        <div>
+          <dt>Fabric</dt>
+          <dd>100% cotton, midweight <Confirm /></dd>
+        </div>
+        <div>
+          <dt>Fit</dt>
+          <dd>Unisex, true to size <Confirm /></dd>
+        </div>
+        <div>
+          <dt>Print</dt>
+          <dd>Printed to order in {team.colors} <Confirm /></dd>
+        </div>
+        <div>
+          <dt>Shipping</dt>
+          <dd>
+            Arrives in about {product.shipMinDays} to {product.shipMaxDays} business days <Confirm />
+          </dd>
+        </div>
+      </dl>
+
+      <p class="other"><a href="/#cities">Not your city? Pick another</a></p>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const form = document.getElementById('buy-form') as HTMLFormElement | null;
+  const btn = document.getElementById('buy-btn') as HTMLButtonElement | null;
+  const msg = document.getElementById('form-msg');
+  const price = document.getElementById('price');
+  const btnPrice = document.getElementById('btn-price');
+
+  // Show the price for the size that's picked (2XL and up can cost more).
+  function showPrice() {
+    const picked = form?.querySelector<HTMLInputElement>('input[name="size"]:checked');
+    if (!picked?.dataset.price) return;
+    if (price) price.textContent = picked.dataset.price;
+    if (btnPrice) btnPrice.textContent = picked.dataset.price;
+  }
+
+  function say(text: string) {
+    if (!msg) return;
+    msg.textContent = text;
+    msg.hidden = !text;
+  }
+
+  function busy(on: boolean) {
+    if (!btn) return;
+    btn.disabled = on;
+    btn.setAttribute('aria-busy', String(on));
+  }
+
+  form?.addEventListener('change', () => {
+    showPrice();
+    say('');
+  });
+  showPrice();
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!form) return;
+
+    const data = new FormData(form);
+    const size = data.get('size');
+    if (!size) {
+      say('Pick a size first.');
+      return;
+    }
+
+    busy(true);
+    say('');
+
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ slug: data.get('slug'), size }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body.url) throw new Error(body.error || 'Checkout did not open');
+      window.location.assign(body.url);
+    } catch {
+      say("Checkout didn't open, so nothing was charged. Give it a minute and try again.");
+      busy(false);
+    }
+  });
+
+  // If someone comes back from Stripe with the back button, wake the button up.
+  window.addEventListener('pageshow', () => {
+    busy(false);
+    showPrice();
+  });
+</script>
+
+<style>
+  .product {
+    display: grid;
+    gap: 26px;
+    padding-block: 20px 72px;
+  }
+  .stage {
+    padding: 4% 6%;
+    border-radius: 8px;
+    background: color-mix(in srgb, #fff 86%, var(--bg));
+  }
+
+  h1 {
+    font-size: clamp(1.75rem, 7.4vw, 2.75rem);
+  }
+  .colorway {
+    margin-top: 8px;
+    font-size: 1.25rem;
+    color: var(--soft);
+  }
+  .price {
+    margin-top: 14px;
+    font: 400 2rem/1 var(--display);
+    font-variant-numeric: tabular-nums;
+  }
+
+  form {
+    margin-top: 24px;
+  }
+  fieldset {
+    margin: 0 0 22px;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  legend {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    width: 100%;
+    padding: 0;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  legend a {
+    font-weight: 400;
+  }
+  .sizes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .sizes label {
+    position: relative;
+    display: block;
+  }
+  .sizes input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .sizes span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    border: 2px solid var(--edge);
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 1.125rem;
+  }
+  .sizes input:hover + span {
+    border-color: var(--on-bg);
+  }
+  .sizes input:checked + span {
+    background: var(--on-bg);
+    border-color: var(--on-bg);
+    color: var(--bg);
+  }
+  .sizes input:focus-visible + span {
+    outline: 3px solid var(--on-bg);
+    outline-offset: 3px;
+  }
+  .size-note {
+    margin-top: 10px;
+    font-size: 1rem;
+    color: var(--soft);
+  }
+
+  .btn {
+    width: 100%;
+    min-height: 60px;
+    font-size: 1.375rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .btn .busy,
+  .btn[aria-busy='true'] .idle {
+    display: none;
+  }
+  .btn[aria-busy='true'] .busy {
+    display: inline;
+  }
+  .form-msg {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 4px;
+    background: var(--on-bg);
+    color: var(--bg);
+    font-weight: 600;
+  }
+  .form-msg[hidden] {
+    display: none;
+  }
+  .pay-note {
+    margin-top: 12px;
+    font-size: 1rem;
+    color: var(--soft);
+  }
+
+  .details {
+    margin: 32px 0 0;
+    border-top: 1px solid var(--rule);
+  }
+  .details div {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .details dt {
+    font-weight: 600;
+  }
+  .details dd {
+    margin: 0;
+  }
+
+  .other {
+    margin-top: 28px;
+    font-weight: 600;
+  }
+
+  @media (min-width: 860px) {
+    .product {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: 56px;
+      align-items: start;
+      padding-block: 40px 96px;
+    }
+    .stage {
+      position: sticky;
+      top: 24px;
+    }
+    .sizes {
+      grid-template-columns: repeat(6, 1fr);
+    }
+  }
+</style>

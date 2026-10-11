@@ -1,0 +1,59 @@
+---
+// One shirt, any colors. It recolors itself from four CSS variables:
+//   --shirt, --line1, --line2, --outline
+// Set them on this element or on anything that wraps it.
+//
+// If a city in teams.json has an "image" field, that photo is shown instead
+// of the drawn mockup.
+import Lettering from './Lettering.astro';
+
+const { team, label, decorative = false, class: className = '' } = Astro.props;
+
+const BODY =
+  'M238 46Q300 62 362 46L444 70Q462 75 474 88L572 190Q578 197 572 204L512 256Q505 261 499 254L458 208C462 330 465 460 462 560Q462 568 454 569Q300 580 146 569Q138 568 138 560C135 460 138 330 142 208L101 254Q95 261 88 256L28 204Q22 197 28 190L126 88Q138 75 156 70Z';
+const SLEEVE_L =
+  'M156 70Q138 75 126 88L28 190Q22 197 28 204L88 256Q95 261 101 254L142 208Q130 140 152 71Z';
+const SLEEVE_R =
+  'M444 70Q462 75 474 88L572 190Q578 197 572 204L512 256Q505 261 499 254L458 208Q470 140 448 71Z';
+const NECK_INSIDE = 'M238 46Q300 62 362 46C352 100 248 100 238 46Z';
+const COLLAR = 'M236 50C248 107 352 107 364 50';
+
+const a11y = decorative ? { 'aria-hidden': 'true' } : { role: 'img', 'aria-label': label };
+---
+
+{
+  team?.image ? (
+    <img class:list={['shirt', 'shirt-photo', className]} src={team.image} alt={decorative ? '' : label} />
+  ) : (
+    <svg class:list={['shirt', className]} viewBox="0 0 600 600" {...a11y}>
+      <path class="tee-fill" d={BODY} />
+      <g clip-path="url(#tee-clip)">
+        <path d={BODY} fill="url(#tee-form)" />
+        <path d={BODY} fill="url(#tee-drop)" />
+        <path d={SLEEVE_L} fill="url(#tee-sleeve-l)" />
+        <path d={SLEEVE_R} fill="url(#tee-sleeve-r)" />
+
+        <!-- soft folds near the hem -->
+        <path class="tee-fold" d="M200 572Q212 480 194 392" />
+        <path class="tee-fold" d="M404 572Q392 486 408 410" />
+        <path class="tee-lift" d="M222 572Q232 492 218 420" />
+
+        <!-- seams and stitching -->
+        <path class="tee-seam" d="M152 71Q130 140 142 208M448 71Q470 140 458 208" />
+        <path class="tee-seam-hi" d="M154.500 72Q132.500 140 144.500 208M445.500 72Q467.500 140 455.500 208" />
+        <path class="tee-stitch" d="M37 181L105 243M563 181L495 243M139 551Q300 562 461 551" />
+        <path class="tee-stitch-hi" d="M36 183L104 245M564 183L496 245M139 553Q300 564 461 553" />
+
+        <!-- neck: inside of the shirt back, then the collar band -->
+        <path class="tee-fill" d={NECK_INSIDE} />
+        <path class="tee-neck-shade" d={NECK_INSIDE} />
+        <path class="tee-collar" d={COLLAR} />
+        <path class="tee-collar-hi" d={COLLAR} />
+        <path class="tee-seam" d="M231 54C243 118 357 118 369 54" />
+        <path class="tee-seam-hi" d="M240 48C251 98 349 98 360 48" />
+      </g>
+      <path class="tee-edge" d={BODY} />
+      <Lettering x={300} y={262} size={48} />
+    </svg>
+  )
+}

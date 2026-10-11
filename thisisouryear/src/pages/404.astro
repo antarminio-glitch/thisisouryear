@@ -1,0 +1,14 @@
+---
+import Layout from '../layouts/Layout.astro';
+import teams from '../data/teams.json';
+---
+
+<Layout title="Page not found" description="That page doesn't exist. The shirts do." noindex>
+  <div class="wrap page">
+    <div class="prose">
+      <h1>Wrong page. Rebuilding year.</h1>
+      <p class="lede">That page doesn't exist. All {teams.length} shirts still do.</p>
+      <p class="actions"><a class="btn" href="/#cities">Pick your city</a></p>
+    </div>
+  </div>
+</Layout>

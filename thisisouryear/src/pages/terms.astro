@@ -1,0 +1,73 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Confirm from '../components/Confirm.astro';
+import product from '../data/product.json';
+import { dollars } from '../lib/money.js';
+
+const email = product.contactEmail;
+---
+
+<Layout title="Terms" description="The terms that apply when you use this site or order a shirt.">
+  <div class="wrap page">
+    <div class="prose">
+      <h1>Terms</h1>
+      <p class="lede">Plain-English rules for using this site and buying a shirt.</p>
+      <p>
+        <Confirm /> This is starter text. Have someone qualified look it over before launch, and fill in who operates
+        the shop.
+      </p>
+      <p>Last updated October 10, 2026. <Confirm /></p>
+
+      <h2>Who we are</h2>
+      <p>
+        This Is Our Year is an independent apparel brand based in New York, NY. <Confirm /> It is not affiliated with,
+        licensed by, or endorsed by any professional football league or team. Our shirts use city names and colors.
+        They don't use any league or team names, logos, or other marks.
+      </p>
+
+      <h2>Ordering</h2>
+      <ul>
+        <li>
+          Shirts start at {dollars(product.priceCents)}. Prices are in US dollars and are shown before you pay. Shipping
+          and any sales tax are added at checkout.
+        </li>
+        <li>Payment is handled by Stripe. Your order is placed when your payment goes through.</li>
+        <li>
+          We can cancel and refund an order if something's off, like a pricing mistake or a problem with the payment.
+        </li>
+        <li>You need to be 18 or older to order, or have a parent or guardian's permission.</li>
+      </ul>
+
+      <h2>Made to order</h2>
+      <p>
+        Every shirt is printed after you order it. Colors on your screen are a close guide, not an exact match, and the
+        shirt in the picture is an illustration. The real one can vary slightly in shade and print placement.
+      </p>
+
+      <h2>Shipping and returns</h2>
+      <p>
+        These are covered on the <a href="/shipping-returns/">shipping and returns</a> page, which is part of these
+        terms.
+      </p>
+
+      <h2>Using this site</h2>
+      <p>
+        The design, artwork, and text on this site belong to This Is Our Year. Please don't copy them or use them to
+        sell your own products. Don't misuse the site, try to break it, or use it for anything illegal.
+      </p>
+
+      <h2>The legal part</h2>
+      <p>
+        The site and our products are provided as is. To the extent the law allows, our liability for any order is
+        limited to what you paid for it. Nothing here limits rights you have that can't be waived under the law where
+        you live. These terms are governed by the laws of the State of New York. <Confirm />
+      </p>
+
+      <h2>Changes</h2>
+      <p>If these terms change, the new version goes on this page with a new date at the top.</p>
+
+      <h2>Questions</h2>
+      <p>Email <a href={`mailto:${email}`}>{email}</a>. <Confirm /></p>
+    </div>
+  </div>
+</Layout>

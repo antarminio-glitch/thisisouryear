@@ -1,0 +1,27 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Confirm from '../components/Confirm.astro';
+import product from '../data/product.json';
+
+const email = product.contactEmail;
+---
+
+<Layout title="Contact" description="Questions about an order or a shirt? Here's how to reach us.">
+  <div class="wrap page">
+    <div class="prose">
+      <h1>Contact</h1>
+      <p class="lede">One person runs this shop, and he reads every email.</p>
+      <p>
+        Email <a href={`mailto:${email}`}>{email}</a>
+        <Confirm />. You'll usually hear back within one business day. <Confirm />
+      </p>
+      <p>
+        Asking about an order? Include the email address you used at checkout so we can find it fast.
+      </p>
+      <p>
+        Sizing questions are answered on the <a href="/size-chart/">size chart</a>. Shipping and returns are
+        <a href="/shipping-returns/">over here</a>.
+      </p>
+    </div>
+  </div>
+</Layout>
