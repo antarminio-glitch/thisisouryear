@@ -1,0 +1,25 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import CityGrid from '../../components/CityGrid.astro';
+import teams from '../../data/teams.json';
+---
+
+<Layout
+  title={`All ${teams.length} Cities`}
+  description={`Browse the This Is Our Year shirt in all ${teams.length} pro football city colorways. Search by city, state or region.`}
+>
+  <div class="wrap page">
+    <h1>All {teams.length} cities</h1>
+    <p class="lede">Every colorway, by city name. Search by city, state or region, then pick yours.</p>
+    <CityGrid id="teams" />
+  </div>
+</Layout>
+
+<style>
+  .lede {
+    max-width: var(--read);
+    margin-bottom: 26px;
+    font-size: 1.25rem;
+    color: var(--soft);
+  }
+</style>

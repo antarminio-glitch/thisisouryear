@@ -1,0 +1,151 @@
+---
+// The wall of shirts: every city, searchable, each linking to its own page.
+import Shirt from './Shirt.astro';
+import { teams, shirtVars, searchText } from '../lib/cities.js';
+import { styleString } from '../lib/colors.js';
+
+const { id = 'cities', label = 'Find your city', only = null } = Astro.props;
+const cities = [...teams].sort((a, b) => a.name.localeCompare(b.name)).filter((t) => !only || only.includes(t.slug));
+---
+
+<div class="city-grid" data-city-grid>
+  <div class="field search">
+    <label for={`${id}-search`}>{label}</label>
+    <input id={`${id}-search`} type="search" placeholder="Start typing a city" autocomplete="off" autocapitalize="off" spellcheck="false" aria-controls={`${id}-grid`} data-grid-search />
+  </div>
+
+  <ul class="grid" id={`${id}-grid`}>
+    {
+      cities.map((t) => (
+        <li data-search={searchText(t)} data-slug={t.slug}>
+          <a href={`/${t.slug}/`} style={styleString(shirtVars(t))}>
+            <span class="tile">
+              <Shirt team={t} decorative />
+            </span>
+            <span class="city">{t.name}</span>
+            <span class="colors">{t.colors}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="no-match" role="status" data-grid-empty hidden>
+    No city by that name. Try a nearby city or your state.
+    <button type="button" data-grid-clear>Show all {cities.length}</button>
+  </p>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-city-grid]').forEach((root) => {
+    const input = root.querySelector<HTMLInputElement>('[data-grid-search]');
+    const items = Array.from(root.querySelectorAll<HTMLLIElement>('.grid > li'));
+    const empty = root.querySelector<HTMLElement>('[data-grid-empty]');
+
+    function filter() {
+      const q = (input?.value ?? '').trim().toLowerCase();
+      let shown = 0;
+      for (const li of items) {
+        const hit = !q || (li.dataset.search ?? '').includes(q);
+        li.hidden = !hit;
+        if (hit) shown++;
+      }
+      if (empty) empty.hidden = shown > 0;
+    }
+
+    input?.addEventListener('input', filter);
+    root.querySelector('[data-grid-clear]')?.addEventListener('click', () => {
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+      filter();
+    });
+    // Browsers sometimes restore the typed text when you come back to the page.
+    filter();
+  });
+</script>
+
+<style>
+  .search {
+    max-width: 420px;
+    margin-bottom: 22px;
+  }
+  .grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px 14px;
+  }
+  .grid li[hidden] {
+    display: none;
+  }
+  .grid a {
+    display: block;
+    text-decoration: none;
+  }
+  .tile {
+    display: block;
+    padding: 10px;
+    border-radius: 6px;
+    background: var(--tile);
+  }
+  .tile :global(.shirt) {
+    transition: transform 0.18s ease-out;
+  }
+  .grid a:hover .tile :global(.shirt),
+  .grid a:focus-visible .tile :global(.shirt) {
+    transform: scale(1.05);
+  }
+  .city {
+    display: block;
+    margin-top: 9px;
+    font-weight: 600;
+    font-size: 1.125rem;
+    line-height: 1.2;
+  }
+  .grid a:hover .city {
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+  .colors {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.9375rem;
+    color: var(--soft);
+  }
+  .no-match {
+    padding: 28px 0 8px;
+    font-size: 1.125rem;
+  }
+  .no-match[hidden] {
+    display: none;
+  }
+  .no-match button {
+    display: block;
+    margin-top: 10px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: 600 1.125rem/1.4 var(--body);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+    cursor: pointer;
+  }
+  @media (min-width: 720px) {
+    .grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 30px 18px;
+    }
+  }
+  @media (min-width: 1000px) {
+    .grid {
+      gap: 38px 24px;
+    }
+    .tile {
+      padding: 14px;
+    }
+  }
+</style>

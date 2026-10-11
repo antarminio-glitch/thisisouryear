@@ -1,10 +1,11 @@
-import product from '../data/product.json';
+// Small price helpers for pages. The real pricing rules live in shop-core.js.
+import { shop } from './shop.js';
+export { dollars } from './shop-core.js';
 
-export function dollars(cents) {
-  return `$${(cents / 100).toFixed(2)}`;
-}
+// Lowest price of the adult tee, the item the store is built around.
+export const TEE_ID = 'adult-tee';
+export const DESIGN_ID = 'this-is-our-year';
 
-export function priceFor(size) {
-  const extra = product.upchargeSizes.includes(size) ? product.upchargeCents : 0;
-  return product.priceCents + extra;
+export function fromPriceCents(productId = TEE_ID) {
+  return shop.priceRange(productId)?.lowCents ?? null;
 }

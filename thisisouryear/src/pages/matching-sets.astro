@@ -1,0 +1,214 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ShopData from '../components/ShopData.astro';
+import Shirt from '../components/Shirt.astro';
+import { shop } from '../lib/shop.js';
+
+const kidsReady = shop.isSellable(shop.product('kids-tee')) || shop.isSellable(shop.product('kids-hoodie'));
+---
+
+<Layout
+  title="Matching Sets"
+  description="One adult item and one kids item in the same city colors. Pick each size on its own."
+>
+  <ShopData />
+  <div class="wrap page builder" data-set>
+    <h1>Matching sets</h1>
+    <p class="lede">One for you, one for the kid, same colors. Each size is picked on its own, and each one is a real item on your order.</p>
+    {
+      !kidsReady && (
+        <p class="avail">
+          Kids items aren't for sale yet, so a full set can't be ordered today. You can still build one to see it, or add
+          the adult item by itself.
+        </p>
+      )
+    }
+
+    <div class="field city-field">
+      <label for="set-city">Your city</label>
+      <select id="set-city" data-city></select>
+      <p class="hint legend" data-legend hidden></p>
+    </div>
+
+    <div class="pair">
+      {
+        [
+          ['adult', 'For the grown-up'],
+          ['kids', 'For the kid'],
+        ].map(([audience, heading]) => (
+          <section class="half" data-half={audience} aria-labelledby={`set-${audience}-h`}>
+            <h2 id={`set-${audience}-h`}>{heading}</h2>
+            <div class="stage is-neutral" data-stage>
+              <div data-garment><Shirt decorative audience={audience} /></div>
+            </div>
+            <fieldset class="field">
+              <legend>Garment</legend>
+              <div class="pills two">
+                <label><input type="radio" name={`set-${audience}-style`} value="tee" checked /><span>Tee</span></label>
+                <label><input type="radio" name={`set-${audience}-style`} value="hoodie" /><span>Hoodie</span></label>
+              </div>
+            </fieldset>
+            <fieldset class="field" data-size-field>
+              <legend>Size <a href="/size-chart/" data-size-chart>Size chart</a></legend>
+              <div class="pills" data-sizes></div>
+              <p class="hint" data-size-note hidden></p>
+            </fieldset>
+            <p class="price"><span data-price></span></p>
+            <p class="avail" data-availability role="status" hidden></p>
+          </section>
+        ))
+      }
+    </div>
+
+    <p class="concept">Concept previews. They're drawings, not photos of the finished items, and screen colors are approximate.</p>
+
+    <div class="checkout-bar">
+      <dl class="total" data-total hidden>
+        <div><dt>Set total</dt><dd data-total-amount></dd></div>
+      </dl>
+      <p class="hint" data-discount>There's no set discount. Each item is its regular price.</p>
+      <div class="actions">
+        <button class="btn" type="button" data-add-set>Add the set to cart</button>
+        <button class="btn btn-quiet" type="button" data-add-adult hidden>Add just the adult item</button>
+      </div>
+      <p class="form-msg" data-msg role="alert" hidden></p>
+      <p class="added" data-added role="status" hidden><span data-added-text></span> <a href="/cart/">Go to cart</a></p>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { shop, cityBySlug, paint } from '../scripts/shop-data.js';
+  import { addItems, newId } from '../scripts/cart.js';
+  import { track } from '../scripts/analytics.js';
+  import { drawGarment, renderSizes, priceLabel, sizeNote, unavailableText, legendText, productFor, fillCitySelect, show, dollars, hide } from '../scripts/ui.js';
+
+  const root = document.querySelector<HTMLElement>('[data-set]')!;
+  const $ = <T extends HTMLElement>(sel: string, from: ParentNode = root) => from.querySelector<T>(sel);
+  const citySelect = $<HTMLSelectElement>('[data-city]')!;
+  const q = new URLSearchParams(location.search);
+  const designId = 'this-is-our-year';
+  const state = {
+    slug: cityBySlug(q.get('city')) ? q.get('city')! : '',
+    adult: { style: 'tee', size: '' },
+    kids: { style: 'tee', size: '' },
+  };
+  fillCitySelect(citySelect, { placeholder: 'Choose a city', selected: state.slug });
+
+  const half = (audience: 'adult' | 'kids') => {
+    const product = productFor(state[audience].style, audience);
+    const found = shop.availability({ productId: product.id, designId, slug: state.slug, size: state[audience].size });
+    return { product, found };
+  };
+
+  function render(resize: Array<'adult' | 'kids'> = []) {
+    const city = cityBySlug(state.slug);
+    show($('[data-legend]'), legendText(city));
+    for (const audience of ['adult', 'kids'] as const) {
+      const box = $(`[data-half="${audience}"]`)!;
+      const { product, found } = half(audience);
+      const stage = $('[data-stage]', box);
+      if (city) paint(stage, city);
+      stage?.classList.toggle('is-neutral', !city);
+      drawGarment($('[data-garment]', box), { style: state[audience].style, audience, designId }, city ? `${product.name} in ${city.name} colors` : '');
+      if (resize.includes(audience)) state[audience].size = renderSizes($('[data-sizes]', box), product, `set-${audience}-size`, state[audience].size);
+      $('[data-size-field]', box)!.hidden = !shop.isSellable(product);
+      show($('[data-size-note]', box), sizeNote(product));
+      $('[data-price]', box)!.textContent = priceLabel(product, state[audience].size);
+      show($('[data-availability]', box), city ? unavailableText(product, found) : '');
+    }
+
+    const a = half('adult');
+    const k = half('kids');
+    const total = $('[data-total]')!;
+    if (a.found.ok && k.found.ok) {
+      total.hidden = false;
+      $('[data-total-amount]')!.textContent = dollars(a.found.priceCents + k.found.priceCents);
+    } else {
+      total.hidden = true;
+    }
+    // If the kids half can't be bought, say so and offer the adult item on its
+    // own as a separate, deliberate choice. Never half a set by accident.
+    const kidsBlocked = !!city && !k.found.ok && k.found.code !== 'size_required';
+    $<HTMLButtonElement>('[data-add-set]')!.disabled = kidsBlocked || (!!city && !a.found.ok && a.found.code !== 'size_required');
+    $<HTMLButtonElement>('[data-add-adult]')!.hidden = !kidsBlocked;
+    show($('[data-msg]'), '');
+    hide($('[data-added]'));
+  }
+
+  citySelect.addEventListener('change', () => {
+    state.slug = citySelect.value;
+    render();
+    if (state.slug) track('team_selected', { team_id: state.slug, purchase_mode: 'matching_set' });
+  });
+  root.addEventListener('change', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t.type !== 'radio') return;
+    const m = /^set-(adult|kids)-(style|size)$/.exec(t.name);
+    if (!m) return;
+    const audience = m[1] as 'adult' | 'kids';
+    if (m[2] === 'style') { state[audience].style = t.value; render([audience]); }
+    else { state[audience].size = t.value; render(); }
+  });
+
+  const say = (t: string) => show($('[data-msg]'), t);
+  const item = (audience: 'adult' | 'kids', mode: string, bundleId?: string) => {
+    const { product, found } = half(audience);
+    return { productId: product.id, designId, slug: state.slug, size: state[audience].size, quantity: 1, mode, ...(bundleId ? { bundleId } : {}), seenPriceCents: found.priceCents };
+  };
+  const done = (text: string) => {
+    const added = $('[data-added]')!;
+    added.hidden = false;
+    added.querySelector('[data-added-text]')!.textContent = text;
+  };
+
+  $('[data-add-set]')!.addEventListener('click', () => {
+    if (!state.slug) return say('Pick a city first.');
+    const a = half('adult');
+    const k = half('kids');
+    if (!a.found.ok) return say(a.found.code === 'size_required' ? 'Pick the adult size first.' : `The adult item can't be added: ${unavailableText(a.product, a.found)}`);
+    if (!k.found.ok) return say(k.found.code === 'size_required' ? 'Pick the kids size first.' : `The set can't be added: ${unavailableText(k.product, k.found)}`);
+    const bundleId = newId('B');
+    addItems([item('adult', 'matching_set', bundleId), item('kids', 'matching_set', bundleId)]);
+    track('matching_set_added', { team_id: state.slug, value_cents: a.found.priceCents + k.found.priceCents });
+    done(`Added the set: ${a.product.name.toLowerCase()} in ${state.adult.size} and ${k.product.name.toLowerCase()} in ${state.kids.size}, ${cityBySlug(state.slug)!.name} colors.`);
+  });
+
+  $('[data-add-adult]')!.addEventListener('click', () => {
+    if (!state.slug) return say('Pick a city first.');
+    const a = half('adult');
+    if (!a.found.ok) return say(a.found.code === 'size_required' ? 'Pick the adult size first.' : unavailableText(a.product, a.found));
+    addItems([item('adult', 'standard')]);
+    track('add_to_cart', { team_id: state.slug, product_id: a.product.id, size: state.adult.size, quantity: 1, purchase_mode: 'standard', value_cents: a.found.priceCents });
+    done(`Added just the adult ${a.product.name.toLowerCase()}, size ${state.adult.size}. It's a single item, not a set.`);
+  });
+
+  render(['adult', 'kids']);
+</script>
+
+<style>
+  .city-field {
+    max-width: 420px;
+    margin-bottom: 0;
+  }
+  .pair {
+    display: grid;
+    gap: 28px;
+  }
+  .half h2 {
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+  }
+  .half .stage {
+    margin-bottom: 18px;
+  }
+  .checkout-bar {
+    max-width: 560px;
+  }
+  @media (min-width: 720px) {
+    .pair {
+      grid-template-columns: 1fr 1fr;
+      gap: 36px;
+    }
+  }
+</style>

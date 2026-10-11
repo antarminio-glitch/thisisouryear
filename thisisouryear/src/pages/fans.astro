@@ -1,0 +1,459 @@
+---
+// Fan photos and sharing.
+//
+// A photo only shows up here after the person who sent it ticked the
+// permission box and the owner approved it. A hashtag is never treated as
+// permission, and nothing is pulled in from social media.
+import Layout from '../layouts/Layout.astro';
+import teams from '../data/teams.json';
+import store from '../data/store.json';
+import history from '../data/history.json';
+import palettes from '../data/palettes.json';
+import { counterFor, todayIn } from '../lib/counter.js';
+import { cardPath, cardAlt } from '../lib/og.js';
+import { placeName } from '../lib/cities.js';
+import { PERMISSION_TEXT, REPOST_TEXT } from '../server/fans.js';
+
+const today = todayIn(store.timezone);
+const cities = [...teams].sort((a, b) => a.name.localeCompare(b.name));
+// One ready-made share card per city, the same ones the city pages use.
+const cards = Object.fromEntries(
+  cities.map((t) => {
+    const text = counterFor(t.slug, placeName(t), history, today).text;
+    return [t.slug, { path: cardPath(t, text, undefined, palettes.version), alt: cardAlt(t, text), text, place: placeName(t) }];
+  }),
+);
+const safeCards = JSON.stringify(cards).replace(/</g, '\\u003c');
+---
+
+<Layout
+  title="Fans"
+  description={`Fans wearing This Is Our Year in their city's colors. Send us your photo, or grab a share card and post it with ${store.hashtag}.`}
+>
+  <div class="wrap page fans-page">
+    <h1>Fans who said it out loud</h1>
+    <p class="lede">
+      Every photo here was sent in by the person who took it, with permission to show it. Post yours anywhere with
+      {store.hashtag}, then send it to us below if you'd like it on this page.
+    </p>
+
+    <section aria-labelledby="gallery-h">
+      <h2 id="gallery-h" class="sr-only">Fan photos</h2>
+      <ul class="fan-row" data-gallery></ul>
+      <p class="empty" data-gallery-empty>No photos yet. Somebody has to go first.</p>
+    </section>
+
+    <section class="block" aria-labelledby="card-h" data-cards>
+      <h2 id="card-h">Grab a share card</h2>
+      <p class="sub">Pick a city. Download the card, or send the link.</p>
+      <div class="field">
+        <label for="card-city">City</label>
+        <select id="card-city" data-card-city>
+          <option value="">Choose a city</option>
+          {cities.map((c) => <option value={c.slug}>{c.name}, {c.colors}</option>)}
+        </select>
+      </div>
+      <div data-card-box hidden>
+        <img class="card-img" data-card-img alt="" width="1200" height="630" />
+        <div class="share">
+          <a class="btn" data-card-download href="#" download>Download the card</a>
+          <button class="btn btn-quiet" type="button" data-card-native hidden>Share</button>
+          <button class="btn btn-quiet" type="button" data-card-copy>Copy the link</button>
+        </div>
+        <p class="hint" data-card-msg role="status" hidden></p>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="send-h">
+      <h2 id="send-h">Send us your photo</h2>
+      <p class="sub">We look at every photo before it goes up. A hashtag alone isn't permission, so we only show photos sent through this form.</p>
+
+      <form data-send novalidate>
+        <div class="field">
+          <label for="fan-city">Whose colors are you wearing?</label>
+          <select id="fan-city" name="slug" required>
+            <option value="">Choose a city</option>
+            {cities.map((c) => <option value={c.slug}>{c.name}, {c.colors}</option>)}
+          </select>
+        </div>
+        <div class="field">
+          <label for="fan-photo">Photo</label>
+          <input id="fan-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required aria-describedby="fan-photo-hint" />
+          <p class="hint" id="fan-photo-hint">JPG, PNG or WebP. We shrink it and strip the location data on your device before it's sent.</p>
+          <img class="preview" data-preview alt="The photo you picked" hidden />
+        </div>
+        <div class="field">
+          <label for="fan-name">Name to show <span class="opt">Optional</span></label>
+          <input id="fan-name" name="displayName" type="text" maxlength="40" autocomplete="nickname" aria-describedby="fan-name-hint" />
+          <p class="hint" id="fan-name-hint">A first name or nickname is plenty. Please don't put a child's name here.</p>
+        </div>
+        <div class="field">
+          <label for="fan-caption">Caption <span class="opt">Optional</span></label>
+          <input id="fan-caption" name="caption" type="text" maxlength="140" />
+        </div>
+        <p class="trap" aria-hidden="true">
+          <label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+        </p>
+
+        <label class="check">
+          <input type="checkbox" name="permission" required />
+          <span>{PERMISSION_TEXT}</span>
+        </label>
+        <label class="check">
+          <input type="checkbox" name="repost" />
+          <span>{REPOST_TEXT} <span class="opt">Optional</span></span>
+        </label>
+
+        <p class="form-msg" data-send-msg role="alert" hidden></p>
+        <button class="btn" type="submit" data-send-btn>Send my photo</button>
+      </form>
+
+      <div class="sent" data-sent hidden tabindex="-1">
+        <h3>Got it. Thanks.</h3>
+        <p>We'll take a look before it goes up. Save these two codes. They're the only way to take the photo down yourself, and we can't show them again.</p>
+        <dl>
+          <div><dt>Photo reference</dt><dd data-sent-ref></dd></div>
+          <div><dt>Removal code</dt><dd data-sent-code></dd></div>
+        </dl>
+        <button class="btn btn-quiet" type="button" data-sent-copy>Copy both codes</button>
+        <p class="hint" data-sent-msg role="status" hidden></p>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="down-h">
+      <h2 id="down-h">Take a photo down</h2>
+      <p class="sub">
+        Changed your mind? Enter the two codes you got when you sent it. It comes down right away. Lost them? Email
+        <a href={`mailto:${store.contactEmail}`}>{store.contactEmail}</a> and we'll remove it by hand.
+      </p>
+      <form data-down novalidate>
+        <div class="pair">
+          <div class="field">
+            <label for="down-ref">Photo reference</label>
+            <input id="down-ref" name="reference" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" required />
+          </div>
+          <div class="field">
+            <label for="down-code">Removal code</label>
+            <input id="down-code" name="removalCode" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" required />
+          </div>
+        </div>
+        <p class="form-msg" data-down-msg role="alert" hidden></p>
+        <button class="btn btn-quiet" type="submit" data-down-btn>Take it down</button>
+      </form>
+    </section>
+  </div>
+  <script type="application/json" id="card-data" set:html={safeCards} />
+</Layout>
+
+<script>
+  import { loadFanPhotos, renderFanList } from '../scripts/live.js';
+  import { getFavorite } from '../scripts/cart.js';
+  import { track } from '../scripts/analytics.js';
+
+  const FUNCTIONS = '/.netlify/functions';
+  const $ = <T extends HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!;
+  const say = (el: HTMLElement, text: string) => {
+    el.textContent = text;
+    el.hidden = !text;
+  };
+  async function postJson(url: string, body: unknown) {
+    try {
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) });
+      return { ok: res.ok, status: res.status, body: await res.json().catch(() => ({})) };
+    } catch {
+      return { ok: false, status: 0, body: {} as any };
+    }
+  }
+
+  // ---- gallery
+  const gallery = $('[data-gallery]');
+  loadFanPhotos(60).then((photos) => {
+    if (!photos.length) return;
+    renderFanList(gallery, photos);
+    $('[data-gallery-empty]').hidden = true;
+  });
+
+  // ---- share cards
+  const cards = JSON.parse(document.getElementById('card-data')?.textContent ?? '{}');
+  const cardCity = $<HTMLSelectElement>('[data-card-city]');
+  const cardBox = $('[data-card-box]');
+  const cardMsg = $('[data-card-msg]');
+  const native = $<HTMLButtonElement>('[data-card-native]');
+  const hashtag = '#ThisIsOurYear';
+
+  function showCard() {
+    const c = cards[cardCity.value];
+    cardBox.hidden = !c;
+    say(cardMsg, '');
+    if (!c) return;
+    const img = $<HTMLImageElement>('[data-card-img]');
+    img.src = c.path;
+    img.alt = c.alt;
+    const dl = $<HTMLAnchorElement>('[data-card-download]');
+    dl.href = c.path;
+    dl.download = `this-is-our-year-${cardCity.value}.png`;
+  }
+  const cardUrl = () => new URL(`/${cardCity.value}/`, location.origin).href;
+  cardCity.addEventListener('change', showCard);
+  $('[data-card-download]').addEventListener('click', () => track('share_card_downloaded', { team_id: cardCity.value, method: 'download' }));
+  if (typeof navigator.share === 'function') {
+    native.hidden = false;
+    native.addEventListener('click', async () => {
+      const c = cards[cardCity.value];
+      if (!c) return;
+      try {
+        await navigator.share({ title: `This is our year, ${c.place}.`, text: `${c.text} ${hashtag}`, url: cardUrl() });
+        track('share_card_downloaded', { team_id: cardCity.value, method: 'native_share' });
+      } catch {
+        /* the person closed the share sheet */
+      }
+    });
+  }
+  $('[data-card-copy]').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(cardUrl());
+      say(cardMsg, 'Link copied.');
+    } catch {
+      say(cardMsg, `Copy this link: ${cardUrl()}`);
+    }
+    track('share_card_downloaded', { team_id: cardCity.value, method: 'copy_link' });
+  });
+  const startCity = new URLSearchParams(location.search).get('city') || getFavorite() || '';
+  if (cards[startCity]) {
+    cardCity.value = startCity;
+    showCard();
+  }
+
+  // ---- sending a photo
+  const form = $<HTMLFormElement>('[data-send]');
+  const sendMsg = $('[data-send-msg]');
+  const sendBtn = $<HTMLButtonElement>('[data-send-btn]');
+  const fileInput = $<HTMLInputElement>('#fan-photo');
+  const preview = $<HTMLImageElement>('[data-preview]');
+  let ready: Blob | null = null;
+
+  // Redraws the photo smaller. Doing it this way also drops whatever the
+  // camera wrote into the file, like where it was taken.
+  async function shrink(file: File): Promise<Blob | null> {
+    try {
+      const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+      canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+      canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      bitmap.close?.();
+      return await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.85));
+    } catch {
+      return null;
+    }
+  }
+  const toBase64 = (blob: Blob) =>
+    new Promise<string>((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result).split(',')[1] ?? '');
+      r.onerror = () => reject(r.error);
+      r.readAsDataURL(blob);
+    });
+
+  fileInput.addEventListener('change', async () => {
+    ready = null;
+    if (preview.src) URL.revokeObjectURL(preview.src);
+    preview.hidden = true;
+    say(sendMsg, '');
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    ready = await shrink(file);
+    if (!ready) {
+      say(sendMsg, "We couldn't read that photo. Try a JPG or PNG.");
+      fileInput.value = '';
+      return;
+    }
+    preview.src = URL.createObjectURL(ready);
+    preview.hidden = false;
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = new FormData(form);
+    const fail = (text: string, field?: string) => {
+      say(sendMsg, text);
+      if (field) form.querySelector<HTMLElement>(`[name="${field}"]`)?.focus();
+    };
+    if (!f.get('slug')) return fail("Pick the city whose colors you're wearing.", 'slug');
+    if (!ready) return fail('Add a photo.', 'photo');
+    if (!f.get('permission')) return fail('Tick the permission box so we know we can show your photo.', 'permission');
+
+    sendBtn.disabled = true;
+    sendBtn.setAttribute('aria-busy', 'true');
+    say(sendMsg, '');
+    const res = await postJson(`${FUNCTIONS}/fan-submit`, {
+      slug: f.get('slug'),
+      caption: f.get('caption'),
+      displayName: f.get('displayName'),
+      website: f.get('website'),
+      permission: true,
+      repost: f.get('repost') === 'on',
+      imageType: 'image/jpeg',
+      imageBase64: await toBase64(ready),
+    });
+    sendBtn.disabled = false;
+    sendBtn.removeAttribute('aria-busy');
+
+    if (!res.ok || !res.body.saved) {
+      return fail(res.body.error || "We couldn't send your photo. Nothing was posted. Check your connection and try again.", res.body.field === 'photo' ? 'photo' : res.body.field);
+    }
+    track('fan_submission_created', { team_id: String(f.get('slug')) });
+    const sent = $('[data-sent]');
+    $('[data-sent-ref]').textContent = res.body.reference;
+    $('[data-sent-code]').textContent = res.body.removalCode;
+    form.hidden = true;
+    sent.hidden = false;
+    sent.focus();
+    $('[data-sent-copy]').addEventListener('click', async () => {
+      const text = `This Is Our Year photo reference: ${res.body.reference}\nRemoval code: ${res.body.removalCode}`;
+      try {
+        await navigator.clipboard.writeText(text);
+        say($('[data-sent-msg]'), 'Copied.');
+      } catch {
+        say($('[data-sent-msg]'), 'Copying is blocked here. Write the two codes down.');
+      }
+    });
+  });
+
+  // ---- taking one down
+  const down = $<HTMLFormElement>('[data-down]');
+  const downMsg = $('[data-down-msg]');
+  down.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = new FormData(down);
+    const reference = String(f.get('reference') ?? '').trim();
+    const removalCode = String(f.get('removalCode') ?? '').trim();
+    if (!reference || !removalCode) return say(downMsg, 'Enter your photo reference and removal code.');
+    const btn = $<HTMLButtonElement>('[data-down-btn]');
+    btn.disabled = true;
+    const res = await postJson(`${FUNCTIONS}/fan-submit`, { action: 'withdraw', reference, removalCode });
+    btn.disabled = false;
+    if (res.ok && res.body.withdrawn) {
+      down.reset();
+      say(downMsg, "Done. It's down, and the picture is deleted.");
+      loadFanPhotos(60).then((photos) => {
+        renderFanList(gallery, photos);
+        $('[data-gallery-empty]').hidden = photos.length > 0;
+      });
+    } else {
+      say(downMsg, res.body.error || "We couldn't reach the server, so nothing changed. Try again in a bit.");
+    }
+  });
+</script>
+
+<style>
+  .fans-page {
+    max-width: 980px;
+  }
+  .lede {
+    margin-bottom: 26px;
+  }
+  .empty {
+    padding: 28px 20px;
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--soft);
+  }
+  .block {
+    margin-top: 56px;
+    max-width: 620px;
+  }
+  .block h2 {
+    font-size: 1.5rem;
+  }
+  .sub {
+    margin: 8px 0 20px;
+    color: var(--soft);
+  }
+  .opt {
+    font-weight: 400;
+    font-size: 0.9375rem;
+    color: var(--soft);
+  }
+  .card-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    box-shadow: 0 0 0 1px var(--rule);
+  }
+  .share {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .share .btn[hidden] {
+    display: none;
+  }
+  .preview {
+    display: block;
+    margin-top: 12px;
+    max-width: 220px;
+    max-height: 220px;
+    border-radius: 6px;
+  }
+  .check {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 12px;
+    align-items: start;
+    margin: 0 0 16px;
+    cursor: pointer;
+  }
+  .check input {
+    width: 24px;
+    height: 24px;
+    margin: 2px 0 0;
+    accent-color: var(--on-bg);
+  }
+  .trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .sent {
+    padding: 22px;
+    border-radius: 8px;
+    background: var(--panel);
+  }
+  .sent h3 {
+    font-size: 1.25rem;
+    margin-bottom: 8px;
+  }
+  .sent dl {
+    margin: 16px 0;
+  }
+  .sent dl div {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .sent dt {
+    color: var(--soft);
+  }
+  .sent dd {
+    margin: 0;
+    font: 600 1.125rem/1.3 ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    overflow-wrap: anywhere;
+  }
+  @media (min-width: 620px) {
+    .share {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 14px;
+    }
+  }
+</style>

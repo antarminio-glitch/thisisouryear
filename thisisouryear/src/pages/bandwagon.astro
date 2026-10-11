@@ -1,0 +1,58 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CityGrid from '../components/CityGrid.astro';
+import teams from '../data/teams.json';
+---
+
+<Layout
+  title="The Bandwagon"
+  description="When the playoffs are on and the picture is confirmed, this page shows the cities still alive. The rest of the time, every city is fair game."
+>
+  <div class="wrap page" data-bandwagon>
+    <h1 data-heading>The bandwagon</h1>
+    <p class="lede" data-lede>
+      When the playoffs are on, this is where the cities still alive show up. Right now nobody's been confirmed in or out,
+      so every city still counts. Pick yours.
+    </p>
+    <p class="hint" data-asof hidden></p>
+    <CityGrid id="bandwagon" label="Find a city" />
+    <p class="all" data-all hidden><a href="/teams/">Every city's shirt is still for sale. See all {teams.length}.</a></p>
+  </div>
+</Layout>
+
+<script>
+  import { loadPublicState } from '../scripts/live.js';
+
+  const ROUND: Record<string, string> = { wild_card: 'the wild card round', divisional: 'the divisional round', conference: 'the conference title games', final: 'the big game' };
+
+  // Survivors are only shown when the server says the picture is confirmed
+  // and current. Otherwise this stays an ordinary list of every city.
+  loadPublicState().then((state) => {
+    const b = state?.bandwagon;
+    if (!b?.verified || !Array.isArray(b.slugs) || !b.slugs.length) return;
+    const root = document.querySelector<HTMLElement>('[data-bandwagon]')!;
+    const alive = new Set<string>(b.slugs);
+    root.querySelectorAll<HTMLElement>('.grid > li').forEach((li) => {
+      if (!alive.has(li.dataset.slug ?? '')) li.remove();
+    });
+    root.querySelector('[data-heading]')!.textContent = `Still alive: ${alive.size} ${alive.size === 1 ? 'city' : 'cities'}`;
+    root.querySelector('[data-lede]')!.textContent = `These cities are still playing, heading into ${ROUND[b.round] ?? 'the next round'}. There's room on the bandwagon.`;
+    const asof = root.querySelector<HTMLElement>('[data-asof]')!;
+    asof.textContent = `Confirmed ${new Date(b.asOf).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.`;
+    asof.hidden = false;
+    root.querySelector<HTMLElement>('[data-all]')!.hidden = false;
+  });
+</script>
+
+<style>
+  .lede {
+    margin-bottom: 22px;
+  }
+  .hint {
+    margin: -12px 0 22px;
+  }
+  .all {
+    margin-top: 32px;
+    font-weight: 600;
+  }
+</style>

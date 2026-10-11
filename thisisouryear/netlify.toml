@@ -1,4 +1,7 @@
 # Netlify reads this file to know how to build and serve the site.
+#
+# The app lives in the "thisisouryear" folder of the repository, so in
+# Netlify set Base directory to: thisisouryear
 
 [build]
   command = "npm run build"
@@ -16,6 +19,19 @@
 [dev]
   command = "npx astro dev --ignore-lock"
   targetPort = 4321
+
+# Old-style addresses for a city page land on the real one.
+[[redirects]]
+  from = "/teams/:slug"
+  to = "/:slug/"
+  status = 301
+
+# The owner's screen and the cart are never cached or framed.
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Robots-Tag = "noindex"
 
 [[headers]]
   for = "/*"

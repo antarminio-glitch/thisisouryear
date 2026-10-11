@@ -1,0 +1,22 @@
+{
+  "siteName": "This Is Our Year",
+  "hashtag": "#ThisIsOurYear",
+  "timezone": "America/New_York",
+  "contactEmail": "hello@thisisouryear.team",
+
+  "shippingCents": 499,
+  "shippingLabel": "Standard shipping",
+  "shipMinDays": 5,
+  "shipMaxDays": 10,
+
+  "maxQuantity": 50,
+  "maxOrderQuantity": 100,
+  "maxCartLines": 40,
+  "automaticTax": false,
+
+  "collectMarketingConsent": false,
+  "requireVendorApprovedColors": false,
+  "giftNotes": false,
+  "noteMaxLength": 200,
+  "leagueNameMaxLength": 60
+}

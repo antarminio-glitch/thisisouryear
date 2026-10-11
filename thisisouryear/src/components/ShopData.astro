@@ -1,0 +1,43 @@
+---
+// Puts the shop's data on the page once, so the scripts that run the picker
+// and the cart all read the same thing. No prices are trusted from here at
+// checkout. The server looks everything up again.
+import catalog from '../data/catalog.json';
+import store from '../data/store.json';
+import palettes from '../data/palettes.json';
+import { shop } from '../lib/shop.js';
+import { teams, colorNames } from '../lib/cities.js';
+
+const data = {
+  version: palettes.version,
+  cities: [...teams]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((t) => ({
+      slug: t.slug,
+      name: t.name,
+      colors: t.colors,
+      shirt: t.shirt,
+      line1: t.line1,
+      line2: t.line2,
+      outline: t.outline,
+      names: colorNames(t),
+      aka: t.aka ?? [],
+    })),
+  catalog,
+  store: {
+    maxQuantity: store.maxQuantity,
+    maxOrderQuantity: store.maxOrderQuantity,
+    maxCartLines: store.maxCartLines,
+    shippingCents: store.shippingCents,
+    giftNotes: store.giftNotes,
+    noteMaxLength: store.noteMaxLength,
+    leagueNameMaxLength: store.leagueNameMaxLength,
+    requireVendorApprovedColors: store.requireVendorApprovedColors,
+    contactEmail: store.contactEmail,
+  },
+  approvals: Object.fromEntries(teams.map((t) => [t.slug, shop.printApproval(t.slug)])),
+};
+const safe = JSON.stringify(data).replace(/</g, '\\u003c');
+---
+
+<script type="application/json" id="shop-data" set:html={safe} />
