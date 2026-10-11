@@ -42,12 +42,15 @@ export function varsityArtwork({ lines = ['THIS IS', 'OUR YEAR'], x = 300, top =
     const sx = width / (row.width + 16), sy = capHeight / 156;
     const transform = `translate(${x - width / 2 + sx * 8} ${top + i * (capHeight + rowGap) + sy * 8}) scale(${sx} ${sy})`;
     const fill = i === 0 ? 'var(--line1, #ffffff)' : 'var(--line2, #0c2340)';
-    // Top row: silver / navy / white. Bottom row: silver / white / navy.
-    // The bottom face is solid ink, never a transparent/hollow outline.
-    const keyline = i === 0 ? 'var(--shirt, #0c2340)' : 'var(--line1, #ffffff)';
+    // Top row: silver outline / dark border / white face. Bottom row: silver / white / navy.
+    // The dark border is --border, the palette's solid dark (the shirt color, darkened
+    // when it is not dark enough), never the fabric showing through. The bottom face is
+    // solid ink, never a transparent/hollow outline.
+    const keyline = i === 0 ? 'var(--border, var(--shirt, #0c2340))' : 'var(--line1, #ffffff)';
+    const keylineWidth = i === 0 ? 9 : 6;
     return `<g transform="${transform}">` +
       `<g fill="var(--outline, #a5acaf)" stroke="var(--outline, #a5acaf)" stroke-width="16">${row.paths}</g>` +
-      `<g fill="${keyline}" stroke="${keyline}" stroke-width="6">${row.paths}</g>` +
+      `<g fill="${keyline}" stroke="${keyline}" stroke-width="${keylineWidth}">${row.paths}</g>` +
       `<g fill="${fill}" stroke="none">${row.paths}</g></g>`;
   }).join('') + '</g>';
 }
