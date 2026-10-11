@@ -1,7 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Confirm from '../components/Confirm.astro';
-import product from '../data/product.json';
+import { shop } from '../lib/shop.js';
+
+const sizes = shop.product('adult-tee').variants.map((v) => v.size);
 
 // Measurements in inches, laid flat. These are typical numbers for a standard
 // unisex tee. Replace them with the real ones from the print vendor.
@@ -32,7 +34,7 @@ const chart = {
           </thead>
           <tbody>
             {
-              product.sizes.map((size) => (
+              sizes.map((size) => (
                 <tr>
                   <th scope="row">{size}</th>
                   <td>{chart[size] ? `${chart[size].width} in` : 'Ask us'}</td>

@@ -2,12 +2,21 @@
 // The city page. This one file becomes all 32 pages, one per entry in
 // src/data/teams.json.
 import Layout from '../layouts/Layout.astro';
-import Shirt from '../components/Shirt.astro';
+import Picker from '../components/Picker.astro';
+import ShopData from '../components/ShopData.astro';
 import Confirm from '../components/Confirm.astro';
 import teams from '../data/teams.json';
-import product from '../data/product.json';
-import { dollars, priceFor } from '../lib/money.js';
+import store from '../data/store.json';
+import history from '../data/history.json';
+import stories from '../data/stories.json';
+import palettes from '../data/palettes.json';
+import { shop } from '../lib/shop.js';
+import { dollars } from '../lib/shop-core.js';
 import { themeFor, styleString } from '../lib/colors.js';
+import { placeName } from '../lib/cities.js';
+import { counterFor, todayIn } from '../lib/counter.js';
+import { cardPath, cardAlt } from '../lib/og.js';
+import { productJsonLd, sellableStyles } from '../lib/seo.js';
 
 export function getStaticPaths() {
   return teams.map((team) => ({ params: { slug: team.slug }, props: { team } }));
@@ -15,67 +24,95 @@ export function getStaticPaths() {
 
 const { team } = Astro.props;
 const theme = themeFor(team);
+const place = placeName(team);
+const story = stories[team.slug];
 
-// "Los Angeles (Royal)" reads better in a headline as just "Los Angeles".
-const place = team.name.replace(/\s*\(.*\)$/, '');
-const basePrice = dollars(product.priceCents);
-const bigSizes = product.upchargeSizes;
-const upcharge = product.upchargeCents;
-const bigSizeNote =
-  upcharge > 0 && bigSizes.length > 0
-    ? `${bigSizes.join(' and ')} ${bigSizes.length > 1 ? 'are' : 'is'} ${dollars(upcharge).replace('.00', '')} more.`
-    : '';
-const shirtLabel = `This Is Our Year tee in ${team.name} colors, ${team.colors}`;
+// The counter is worked out when the site is built, then re-checked in the
+// browser with today's date, so it's right even if the build is a day old.
+const today = todayIn(store.timezone);
+const counter = counterFor(team.slug, place, history, today);
+const card = cardPath(team, counter.text, undefined, palettes.version);
+const cardDescription = cardAlt(team, counter.text);
+
+const range = shop.priceRange('adult-tee');
+const styles = sellableStyles(shop);
+const styleWords = styles.length ? styles.join(' and ') : 'Tee';
+const title = `This Is Our Year ${styleWords} in ${team.name} Colors, ${team.colors}`;
+const priceLine = range ? `${dollars(range.lowCents)}, printed to order.` : 'Printed to order.';
+const description = `${story.headline} The This Is Our Year ${styleWords.toLowerCase()} in ${place} colors, ${team.colors}. ${priceLine}`;
+
+const pageUrl = new URL(`/${team.slug}/`, Astro.site).href;
+const structuredData = productJsonLd(team, shop, {
+  siteUrl: Astro.site.href,
+  pageUrl,
+  imageUrl: new URL(card, Astro.site).href,
+  description,
+});
+
+// What the browser needs to re-check the counter. Nothing but this city.
+const counterData = {
+  slug: team.slug,
+  place,
+  timezone: store.timezone,
+  history: { latestCompletedSeason: history.latestCompletedSeason, refreshBy: history.refreshBy, cities: { [team.slug]: history.cities[team.slug] } },
+};
 ---
 
-<Layout
-  title={`This Is Our Year Tee, ${team.name}, ${team.colors}`}
-  description={`Every fan says it every season. Say it in ${place} colors: the This Is Our Year tee in ${team.colors}. ${basePrice}, printed to order.`}
-  theme={styleString(theme)}
-  themeColor={team.shirt}
-  navLabel="All cities"
->
-  <div class="wrap product">
-    <div class="stage">
-      <Shirt team={team} label={shirtLabel} />
-    </div>
+<Layout title={title} description={description} theme={styleString(theme)} themeColor={team.shirt} image={card} imageAlt={cardDescription} structuredData={structuredData}>
+  <ShopData />
+  <div class="wrap city">
+    <Picker city={team} lockCity buyNow id="city">
+      <div slot="intro" class="intro">
+        <h1>This is our year, {place}.</h1>
+        <p class="colorway">{team.colors}</p>
+      </div>
+    </Picker>
+  </div>
 
-    <div class="buy">
-      <h1>This is our year, {place}.</h1>
-      <p class="colorway">{team.colors}</p>
-      <p class="price"><span id="price">{basePrice}</span></p>
+  <div class="wrap city-more">
+    <section class="story" aria-labelledby="story-h">
+      <h2 id="story-h">{story.headline}</h2>
+      <p>{story.story}</p>
+      <p class="occasion">{story.occasion}</p>
+    </section>
 
-      <form id="buy-form" method="post" action="/.netlify/functions/create-checkout">
-        <input type="hidden" name="slug" value={team.slug} />
-        <fieldset>
-          <legend>
-            Size
-            <a href="/size-chart/">Size chart</a>
-          </legend>
-          <div class="sizes">
-            {
-              product.sizes.map((size) => (
-                <label>
-                  <input type="radio" name="size" value={size} data-price={dollars(priceFor(size))} required />
-                  <span>{size}</span>
-                </label>
-              ))
-            }
-          </div>
-          {bigSizeNote && <p class="size-note">{bigSizeNote}</p>}
-        </fieldset>
+    <section class="drought" aria-labelledby="drought-h" data-counter={JSON.stringify(counterData)}>
+      <h2 id="drought-h" class="sr-only">How long it's been</h2>
+      <p class="drought-line" data-counter-text>{counter.text}</p>
+      <p class="hint" data-counter-context hidden={!counter.context}>{counter.context}</p>
+      <figure class="card">
+        <img src={card} alt={cardDescription} width="1200" height="630" loading="lazy" decoding="async" />
+        <figcaption class="sr-only">Share card for {team.name}</figcaption>
+      </figure>
+      <div class="share" data-share data-url={pageUrl} data-title={`This is our year, ${place}.`} data-text={`${counter.text} ${store.hashtag}`} data-city={team.slug}>
+        <a class="btn" href={card} download={`this-is-our-year-${team.slug}.png`} data-share-download>Download the card</a>
+        <button class="btn btn-quiet" type="button" data-share-native hidden>Share</button>
+        <button class="btn btn-quiet" type="button" data-share-copy>Copy the link</button>
+      </div>
+      <p class="hint" data-share-msg role="status" hidden></p>
+      <p class="hint">Post it with {store.hashtag}. Then <a href="/fans/">send us your photo</a>.</p>
+    </section>
 
-        <button class="btn" type="submit" id="buy-btn">
-          <span class="idle">Buy for <span id="btn-price">{basePrice}</span></span>
-          <span class="busy">Opening checkout</span>
-        </button>
-        <p class="form-msg" id="form-msg" role="alert" hidden></p>
-        <p class="pay-note">
-          You'll pay on Stripe's secure checkout page. {dollars(product.shippingCents)} flat shipping in the US.
-          <Confirm />
-        </p>
-      </form>
+    <section class="also" aria-labelledby="also-h">
+      <h2 id="also-h">More ways to wear {place} colors</h2>
+      <ul>
+        <li>
+          <a href={`/gifts/rival-colors/?wear=${team.slug}`}>Make a rival wear them</a>
+          <span>A thoughtful gift. For a terrible friend.</span>
+        </li>
+        <li>
+          <a href={`/fantasy-leagues/?city=${team.slug}`}>Last place wears them</a>
+          <span>Punishment shirts for your fantasy league, in mixed sizes.</span>
+        </li>
+        <li>
+          <a href={`/matching-sets/?city=${team.slug}`}>Match with a kid</a>
+          <span>One adult item, one kids item, same colors.</span>
+        </li>
+      </ul>
+    </section>
 
+    <section class="details-block" aria-labelledby="details-h">
+      <h2 id="details-h">About the tee</h2>
       <dl class="details">
         <div>
           <dt>Fabric</dt>
@@ -92,210 +129,170 @@ const shirtLabel = `This Is Our Year tee in ${team.name} colors, ${team.colors}`
         <div>
           <dt>Shipping</dt>
           <dd>
-            Arrives in about {product.shipMinDays} to {product.shipMaxDays} business days <Confirm />
+            {dollars(store.shippingCents)} flat in the US. Arrives in about {store.shipMinDays} to {store.shipMaxDays} business days <Confirm />
           </dd>
         </div>
       </dl>
+      <p class="hint">You pay on Stripe's secure checkout page.</p>
+    </section>
 
-      <p class="other"><a href="/#cities">Not your city? Pick another</a></p>
-    </div>
+    <p class="other"><a href="/teams/">Not your city? Pick another</a></p>
   </div>
 </Layout>
 
 <script>
-  const form = document.getElementById('buy-form') as HTMLFormElement | null;
-  const btn = document.getElementById('buy-btn') as HTMLButtonElement | null;
-  const msg = document.getElementById('form-msg');
-  const price = document.getElementById('price');
-  const btnPrice = document.getElementById('btn-price');
+  import { counterFor, todayIn } from '../lib/counter.js';
+  import { track } from '../scripts/analytics.js';
 
-  // Show the price for the size that's picked (2XL and up can cost more).
-  function showPrice() {
-    const picked = form?.querySelector<HTMLInputElement>('input[name="size"]:checked');
-    if (!picked?.dataset.price) return;
-    if (price) price.textContent = picked.dataset.price;
-    if (btnPrice) btnPrice.textContent = picked.dataset.price;
-  }
-
-  function say(text: string) {
-    if (!msg) return;
-    msg.textContent = text;
-    msg.hidden = !text;
-  }
-
-  function busy(on: boolean) {
-    if (!btn) return;
-    btn.disabled = on;
-    btn.setAttribute('aria-busy', String(on));
-  }
-
-  form?.addEventListener('change', () => {
-    showPrice();
-    say('');
-  });
-  showPrice();
-
-  form?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if (!form) return;
-
-    const data = new FormData(form);
-    const size = data.get('size');
-    if (!size) {
-      say('Pick a size first.');
-      return;
-    }
-
-    busy(true);
-    say('');
-
+  // Re-check the counter against today's date in the store's timezone.
+  const box = document.querySelector<HTMLElement>('[data-counter]');
+  if (box) {
     try {
-      const res = await fetch(form.action, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ slug: data.get('slug'), size }),
-      });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok || !body.url) throw new Error(body.error || 'Checkout did not open');
-      window.location.assign(body.url);
+      const d = JSON.parse(box.dataset.counter ?? '{}');
+      const now = counterFor(d.slug, d.place, d.history, todayIn(d.timezone));
+      const text = box.querySelector('[data-counter-text]');
+      const context = box.querySelector<HTMLElement>('[data-counter-context]');
+      if (text && text.textContent !== now.text) text.textContent = now.text;
+      if (context) {
+        context.textContent = now.context;
+        context.hidden = !now.context;
+      }
     } catch {
-      say("Checkout didn't open, so nothing was charged. Give it a minute and try again.");
-      busy(false);
+      /* keep the text the page was built with */
     }
-  });
+  }
 
-  // If someone comes back from Stripe with the back button, wake the button up.
-  window.addEventListener('pageshow', () => {
-    busy(false);
-    showPrice();
-  });
+  // Share card: download, native share where the device has it, or copy the link.
+  const share = document.querySelector<HTMLElement>('[data-share]');
+  if (share) {
+    const msg = document.querySelector<HTMLElement>('[data-share-msg]');
+    const say = (t: string) => {
+      if (msg) {
+        msg.textContent = t;
+        msg.hidden = !t;
+      }
+    };
+    const { url = location.href, title = document.title, text = '', city = '' } = share.dataset;
+    const native = share.querySelector<HTMLButtonElement>('[data-share-native]');
+    if (native && typeof navigator.share === 'function') {
+      native.hidden = false;
+      native.addEventListener('click', async () => {
+        try {
+          await navigator.share({ title, text, url });
+          track('share_card_downloaded', { team_id: city, method: 'native_share' });
+        } catch {
+          /* the person closed the share sheet */
+        }
+      });
+    }
+    share.querySelector('[data-share-download]')?.addEventListener('click', () => {
+      track('share_card_downloaded', { team_id: city, method: 'download' });
+    });
+    share.querySelector('[data-share-copy]')?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        say('Link copied.');
+      } catch {
+        say(`Copy this link: ${url}`);
+      }
+      track('share_card_downloaded', { team_id: city, method: 'copy_link' });
+    });
+  }
 </script>
 
 <style>
-  .product {
+  .city {
+    padding-block: 20px 8px;
+  }
+  .city-more {
     display: grid;
-    gap: 26px;
-    padding-block: 20px 72px;
+    gap: 44px;
+    padding-block: 28px 72px;
+    max-width: 860px;
   }
-  .stage {
-    padding: 4% 6%;
-    border-radius: 8px;
-    background: color-mix(in srgb, #fff 86%, var(--bg));
-  }
-
   h1 {
     font-size: clamp(1.75rem, 7.4vw, 2.75rem);
+  }
+  .intro {
+    margin-bottom: 18px;
   }
   .colorway {
     margin-top: 8px;
     font-size: 1.25rem;
     color: var(--soft);
   }
-  .price {
-    margin-top: 14px;
-    font: 400 2rem/1 var(--display);
-    font-variant-numeric: tabular-nums;
+  .story h2 {
+    font-size: clamp(1.25rem, 5vw, 1.75rem);
   }
-
-  form {
-    margin-top: 24px;
-  }
-  fieldset {
-    margin: 0 0 22px;
-    padding: 0;
-    border: 0;
-    min-width: 0;
-  }
-  legend {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    width: 100%;
-    padding: 0;
-    margin-bottom: 10px;
-    font-weight: 600;
-  }
-  legend a {
-    font-weight: 400;
-  }
-  .sizes {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .sizes label {
-    position: relative;
-    display: block;
-  }
-  .sizes input {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    opacity: 0;
-    cursor: pointer;
-  }
-  .sizes span {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 52px;
-    border: 2px solid var(--edge);
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 1.125rem;
-  }
-  .sizes input:hover + span {
-    border-color: var(--on-bg);
-  }
-  .sizes input:checked + span {
-    background: var(--on-bg);
-    border-color: var(--on-bg);
-    color: var(--bg);
-  }
-  .sizes input:focus-visible + span {
-    outline: 3px solid var(--on-bg);
-    outline-offset: 3px;
-  }
-  .size-note {
+  .story p {
     margin-top: 10px;
-    font-size: 1rem;
+    max-width: var(--read);
+  }
+  .occasion {
     color: var(--soft);
   }
 
-  .btn {
+  .drought {
+    display: grid;
+    gap: 14px;
+    padding: 22px;
+    border-radius: 8px;
+    background: var(--panel);
+  }
+  .drought-line {
+    font: 400 clamp(1.375rem, 5.6vw, 2rem) / 1.2 var(--display);
+    text-wrap: balance;
+  }
+  .card {
+    margin: 4px 0 0;
+  }
+  .card img {
+    display: block;
     width: 100%;
-    min-height: 60px;
-    font-size: 1.375rem;
-    font-variant-numeric: tabular-nums;
+    height: auto;
+    border-radius: 6px;
+    box-shadow: 0 0 0 1px var(--rule);
   }
-  .btn .busy,
-  .btn[aria-busy='true'] .idle {
+  .share {
+    display: grid;
+    gap: 10px;
+  }
+  .share .btn {
+    width: 100%;
+  }
+  .share .btn[hidden] {
     display: none;
   }
-  .btn[aria-busy='true'] .busy {
-    display: inline;
+
+  .also h2,
+  .details-block h2 {
+    font-size: 1.25rem;
+    margin-bottom: 14px;
   }
-  .form-msg {
-    margin-top: 12px;
-    padding: 12px 14px;
-    border-radius: 4px;
-    background: var(--on-bg);
-    color: var(--bg);
+  .also ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--rule);
+  }
+  .also li {
+    display: grid;
+    gap: 2px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .also a {
     font-weight: 600;
+    font-size: 1.1875rem;
   }
-  .form-msg[hidden] {
-    display: none;
-  }
-  .pay-note {
-    margin-top: 12px;
-    font-size: 1rem;
+  .also span {
     color: var(--soft);
   }
 
   .details {
-    margin: 32px 0 0;
+    margin: 0;
     border-top: 1px solid var(--rule);
   }
   .details div {
@@ -311,25 +308,18 @@ const shirtLabel = `This Is Our Year tee in ${team.name} colors, ${team.colors}`
   .details dd {
     margin: 0;
   }
-
   .other {
-    margin-top: 28px;
     font-weight: 600;
   }
 
+  @media (min-width: 620px) {
+    .share {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
   @media (min-width: 860px) {
-    .product {
-      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-      gap: 56px;
-      align-items: start;
-      padding-block: 40px 96px;
-    }
-    .stage {
-      position: sticky;
-      top: 24px;
-    }
-    .sizes {
-      grid-template-columns: repeat(6, 1fr);
+    .city {
+      padding-block: 40px 16px;
     }
   }
 </style>

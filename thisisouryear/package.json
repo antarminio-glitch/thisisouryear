@@ -6,14 +6,19 @@
   "scripts": {
     "dev": "astro dev",
     "dev:checkout": "npx netlify-cli dev",
-    "build": "astro build",
+    "check": "node scripts/check-data.mjs",
+    "build": "node scripts/check-data.mjs && astro build",
+    "test": "node --test \"tests/*.test.mjs\"",
     "preview": "astro preview"
   },
   "engines": {
     "node": ">=22"
   },
   "dependencies": {
+    "@netlify/blobs": "^10.7.13",
     "astro": "^7.3.8",
+    "fontkit": "^2.0.4",
+    "sharp": "^0.35.5",
     "stripe": "^23.0.0"
   }
 }

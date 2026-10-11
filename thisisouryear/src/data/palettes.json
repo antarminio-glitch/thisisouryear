@@ -1,0 +1,298 @@
+{
+ "version": "2026-10-10",
+ "colorSpace": "sRGB",
+ "productionApproved": false,
+ "colorways": {
+  "arizona": {
+   "defaults": ["arizona-red","arizona-black","arizona-yellow","arizona-white"],
+   "colors": [
+    {"key":"arizona-red","label":"Red","role":"Core","default":true,"order":1,"hex":"#97233F","rgb":[151,35,63],"pantone":"194 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"arizona-black","label":"Black","role":"Neutral","default":true,"order":2,"hex":"#000000","rgb":[0,0,0],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"arizona-yellow","label":"Yellow","role":"Accent","default":true,"order":3,"hex":"#FFB612","rgb":[255,182,18],"pantone":"1235 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"arizona-white","label":"White","role":"Neutral","default":true,"order":4,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "atlanta": {
+   "defaults": ["atlanta-red","atlanta-black","atlanta-silver","atlanta-white"],
+   "colors": [
+    {"key":"atlanta-red","label":"Red","role":"Core","default":true,"order":1,"hex":"#A71930","rgb":[167,25,48],"pantone":"187 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"atlanta-black","label":"Black","role":"Neutral","default":true,"order":2,"hex":"#000000","rgb":[0,0,0],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"atlanta-silver","label":"Silver","role":"Core","default":true,"order":3,"hex":"#A5ACAF","rgb":[165,172,175],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"atlanta-silver-metallic","label":"Silver metallic","role":"Metallic option","default":false,"order":4,"hex":"#A5ACAF","rgb":[165,172,175],"pantone":"877 C","otherPantone":null,"inkType":"Metallic reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"atlanta-white","label":"White","role":"Neutral","default":true,"order":5,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "baltimore": {
+   "defaults": ["baltimore-purple","baltimore-black","baltimore-gold","baltimore-red","baltimore-white"],
+   "colors": [
+    {"key":"baltimore-purple","label":"Purple","role":"Core","default":true,"order":1,"hex":"#241773","rgb":[36,23,115],"pantone":"273 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"baltimore-black","label":"Black","role":"Neutral","default":true,"order":2,"hex":"#000000","rgb":[0,0,0],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"baltimore-gold","label":"Gold","role":"Core","default":true,"order":3,"hex":"#9E7C0C","rgb":[158,124,12],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"baltimore-red","label":"Red","role":"Accent","default":true,"order":4,"hex":"#C60C30","rgb":[198,12,48],"pantone":"186 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"baltimore-gold-metallic","label":"Gold metallic","role":"Metallic option","default":false,"order":5,"hex":"#9E7C0C","rgb":[158,124,12],"pantone":"8660 C","otherPantone":null,"inkType":"Metallic reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"baltimore-white","label":"White","role":"Neutral","default":true,"order":6,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "buffalo": {
+   "defaults": ["buffalo-royal-blue","buffalo-red","buffalo-white"],
+   "colors": [
+    {"key":"buffalo-royal-blue","label":"Royal blue","role":"Core","default":true,"order":1,"hex":"#00338D","rgb":[0,51,141],"pantone":"287 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"buffalo-red","label":"Red","role":"Core","default":true,"order":2,"hex":"#C60C30","rgb":[198,12,48],"pantone":"186 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"buffalo-white","label":"White","role":"Neutral","default":true,"order":3,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "carolina": {
+   "defaults": ["carolina-blue","carolina-black","carolina-silver","carolina-white"],
+   "colors": [
+    {"key":"carolina-blue","label":"Blue","role":"Core","default":true,"order":1,"hex":"#0085CA","rgb":[0,133,202],"pantone":"Process Blue C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"carolina-black","label":"Black","role":"Core","default":true,"order":2,"hex":"#101820","rgb":[16,24,32],"pantone":"Black 6 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"carolina-silver","label":"Silver","role":"Core","default":true,"order":3,"hex":"#BFC0BF","rgb":[191,192,191],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"carolina-silver-metallic","label":"Silver metallic","role":"Metallic option","default":false,"order":4,"hex":"#BFC0BF","rgb":[191,192,191],"pantone":"877 C","otherPantone":null,"inkType":"Metallic reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"carolina-white","label":"White","role":"Neutral","default":true,"order":5,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "chicago": {
+   "defaults": ["chicago-navy","chicago-orange","chicago-white"],
+   "colors": [
+    {"key":"chicago-navy","label":"Navy","role":"Core","default":true,"order":1,"hex":"#0B162A","rgb":[11,22,42],"pantone":"5395","otherPantone":null,"inkType":"Spot reference","status":"Official guide","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"chicago-orange","label":"Orange","role":"Core","default":true,"order":2,"hex":"#E64100","rgb":[230,65,0],"pantone":"1665","otherPantone":null,"inkType":"Spot reference","status":"Official guide","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"chicago-white","label":"White","role":"Neutral","default":true,"order":3,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "cincinnati": {
+   "defaults": ["cincinnati-orange","cincinnati-black","cincinnati-white"],
+   "colors": [
+    {"key":"cincinnati-orange","label":"Orange","role":"Core","default":true,"order":1,"hex":"#DC4405","rgb":[220,68,5],"pantone":"1665 C","otherPantone":"1655 C","inkType":"Spot reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"cincinnati-black","label":"Black","role":"Neutral","default":true,"order":2,"hex":"#000000","rgb":[0,0,0],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"cincinnati-white","label":"White","role":"Neutral","default":true,"order":3,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "cleveland": {
+   "defaults": ["cleveland-brown","cleveland-orange","cleveland-white"],
+   "colors": [
+    {"key":"cleveland-brown","label":"Brown","role":"Core","default":true,"order":1,"hex":"#311D00","rgb":[49,29,0],"pantone":null,"otherPantone":"Black 4 C","inkType":"Not specified","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"cleveland-orange","label":"Orange","role":"Core","default":true,"order":2,"hex":"#FF3C00","rgb":[255,60,0],"pantone":"2028 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"cleveland-white","label":"White","role":"Neutral","default":true,"order":3,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "dallas": {
+   "defaults": ["dallas-navy","dallas-silver","dallas-white"],
+   "colors": [
+    {"key":"dallas-navy","label":"Navy","role":"Core","default":true,"order":1,"hex":"#0C2340","rgb":[12,35,64],"pantone":"289 C","otherPantone":"282 C","inkType":"Spot reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"dallas-silver","label":"Silver","role":"Core","default":true,"order":2,"hex":"#87909A","rgb":[135,144,154],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"dallas-royal-blue","label":"Royal blue","role":"Variant","default":false,"order":3,"hex":"#003087","rgb":[0,48,135],"pantone":"287 C","otherPantone":"661 C","inkType":"Spot reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"dallas-silver-metallic","label":"Silver metallic","role":"Metallic option","default":false,"order":4,"hex":"#87909A","rgb":[135,144,154],"pantone":"8180 C","otherPantone":"8240 C","inkType":"Metallic reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"dallas-silver-green-metallic","label":"Silver-green metallic","role":"Variant","default":false,"order":5,"hex":"#7F9695","rgb":[127,150,149],"pantone":"8280 C","otherPantone":null,"inkType":"Metallic reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"dallas-white","label":"White","role":"Neutral","default":true,"order":6,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "denver": {
+   "defaults": ["denver-orange","denver-navy","denver-white"],
+   "colors": [
+    {"key":"denver-orange","label":"Orange","role":"Core","default":true,"order":1,"hex":"#FB4F14","rgb":[251,79,20],"pantone":"1655 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"denver-navy","label":"Navy","role":"Core","default":true,"order":2,"hex":"#002244","rgb":[0,34,68],"pantone":"289 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"denver-white","label":"White","role":"Neutral","default":true,"order":3,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "detroit": {
+   "defaults": ["detroit-honolulu-blue","detroit-silver","detroit-white"],
+   "colors": [
+    {"key":"detroit-honolulu-blue","label":"Honolulu blue","role":"Core","default":true,"order":1,"hex":"#0069B1","rgb":[0,105,177],"pantone":"2196 C","otherPantone":"7462 C","inkType":"Spot reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"detroit-silver","label":"Silver","role":"Core","default":true,"order":2,"hex":"#A2AAAD","rgb":[162,170,173],"pantone":"429 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"detroit-silver-metallic","label":"Silver metallic","role":"Metallic option","default":false,"order":3,"hex":"#87909A","rgb":[135,144,154],"pantone":"8180 C","otherPantone":null,"inkType":"Metallic reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"detroit-white","label":"White","role":"Neutral","default":true,"order":4,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "green-bay": {
+   "defaults": ["green-bay-dark-green","green-bay-gold","green-bay-white"],
+   "colors": [
+    {"key":"green-bay-dark-green","label":"Dark green","role":"Core","default":true,"order":1,"hex":"#203731","rgb":[32,55,49],"pantone":"5535 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"green-bay-gold","label":"Gold","role":"Core","default":true,"order":2,"hex":"#FFB612","rgb":[255,182,18],"pantone":"1235 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"green-bay-white","label":"White","role":"Neutral","default":true,"order":3,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "houston": {
+   "defaults": ["houston-deep-steel-blue","houston-battle-red","houston-white"],
+   "colors": [
+    {"key":"houston-deep-steel-blue","label":"Deep Steel Blue","role":"Core","default":true,"order":1,"hex":"#1D1F2A","rgb":[29,31,42],"pantone":"532 C","otherPantone":"5395 C (earlier)","inkType":"Spot reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"houston-battle-red","label":"Battle Red","role":"Core","default":true,"order":2,"hex":"#E4002B","rgb":[228,0,43],"pantone":"185 C","otherPantone":"187 C (earlier)","inkType":"Spot reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"houston-h-town-blue-light","label":"H-Town Blue Light","role":"Alternate accent","default":false,"order":3,"hex":"#0072CE","rgb":[0,114,206],"pantone":"285 C","otherPantone":null,"inkType":"Spot reference","status":"Current spec unverified","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"houston-white","label":"White","role":"Neutral","default":true,"order":4,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "indianapolis": {
+   "defaults": ["indianapolis-speed-blue","indianapolis-gray","indianapolis-white"],
+   "colors": [
+    {"key":"indianapolis-speed-blue","label":"Speed blue","role":"Core","default":true,"order":1,"hex":"#002C5F","rgb":[0,44,95],"pantone":"654 C","otherPantone":"Reflex Blue C","inkType":"Spot reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"indianapolis-gray","label":"Gray","role":"Supporting","default":true,"order":2,"hex":"#A5ACAF","rgb":[165,172,175],"pantone":"429 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"indianapolis-white","label":"White","role":"Neutral","default":true,"order":3,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "jacksonville": {
+   "defaults": ["jacksonville-teal","jacksonville-black","jacksonville-light-gold","jacksonville-dark-gold","jacksonville-white"],
+   "colors": [
+    {"key":"jacksonville-teal","label":"Teal","role":"Core","default":true,"order":1,"hex":"#006778","rgb":[0,103,120],"pantone":"3155 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"jacksonville-black","label":"Black","role":"Neutral","default":true,"order":2,"hex":"#000000","rgb":[0,0,0],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"jacksonville-light-gold","label":"Light gold","role":"Accent","default":true,"order":3,"hex":"#D7A22A","rgb":[215,162,42],"pantone":"7555 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"jacksonville-dark-gold","label":"Dark gold","role":"Accent","default":true,"order":4,"hex":"#9F792C","rgb":[159,121,44],"pantone":"126 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"jacksonville-white","label":"White","role":"Neutral","default":true,"order":5,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "kansas-city": {
+   "defaults": ["kansas-city-red","kansas-city-gold","kansas-city-black","kansas-city-white"],
+   "colors": [
+    {"key":"kansas-city-red","label":"Red","role":"Core","default":true,"order":1,"hex":"#E31837","rgb":[227,24,55],"pantone":"186 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"kansas-city-gold","label":"Gold","role":"Core","default":true,"order":2,"hex":"#FFB81C","rgb":[255,184,28],"pantone":"1235 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"kansas-city-black","label":"Black","role":"Accent","default":true,"order":3,"hex":"#000000","rgb":[0,0,0],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"kansas-city-white","label":"White","role":"Neutral","default":true,"order":4,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "las-vegas": {
+   "defaults": ["las-vegas-silver","las-vegas-black","las-vegas-white"],
+   "colors": [
+    {"key":"las-vegas-silver","label":"Silver","role":"Core","default":true,"order":1,"hex":"#A7A8A9","rgb":[167,168,169],"pantone":"Cool Gray 6 C","otherPantone":null,"inkType":"Spot reference","status":"Current spec unverified","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"las-vegas-black","label":"Black","role":"Neutral","default":true,"order":2,"hex":"#000000","rgb":[0,0,0],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"las-vegas-silver-metallic","label":"Silver metallic","role":"Metallic option","default":false,"order":3,"hex":"#87909A","rgb":[135,144,154],"pantone":"8180 C","otherPantone":null,"inkType":"Metallic reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"las-vegas-white","label":"White","role":"Neutral","default":true,"order":4,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "los-angeles-powder": {
+   "defaults": ["los-angeles-powder-powder-blue","los-angeles-powder-sunshine-gold","los-angeles-powder-white"],
+   "colors": [
+    {"key":"los-angeles-powder-powder-blue","label":"Powder blue","role":"Core","default":true,"order":1,"hex":"#0080C6","rgb":[0,128,198],"pantone":"285 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"los-angeles-powder-sunshine-gold","label":"Sunshine Gold","role":"Core","default":true,"order":2,"hex":"#FFC20E","rgb":[255,194,14],"pantone":"1235 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"los-angeles-powder-white","label":"White","role":"Neutral","default":true,"order":3,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "los-angeles-royal": {
+   "defaults": ["los-angeles-royal-royal","los-angeles-royal-sol","los-angeles-royal-white"],
+   "colors": [
+    {"key":"los-angeles-royal-royal","label":"Royal","role":"Core","default":true,"order":1,"hex":"#003594","rgb":[0,53,148],"pantone":"2736 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"los-angeles-royal-sol","label":"Sol","role":"Core","default":true,"order":2,"hex":"#FFD100","rgb":[255,209,0],"pantone":"109 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"los-angeles-royal-white","label":"White","role":"Neutral","default":true,"order":3,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "miami": {
+   "defaults": ["miami-aqua","miami-orange","miami-marine-blue","miami-white"],
+   "colors": [
+    {"key":"miami-aqua","label":"Aqua","role":"Core","default":true,"order":1,"hex":"#008E97","rgb":[0,142,151],"pantone":"321 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"miami-orange","label":"Orange","role":"Core","default":true,"order":2,"hex":"#FC4C02","rgb":[252,76,2],"pantone":"1655 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"miami-marine-blue","label":"Marine blue","role":"Supporting","default":true,"order":3,"hex":"#005778","rgb":[0,87,120],"pantone":"7701 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"miami-white","label":"White","role":"Neutral","default":true,"order":4,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "minnesota": {
+   "defaults": ["minnesota-purple","minnesota-gold","minnesota-white"],
+   "colors": [
+    {"key":"minnesota-purple","label":"Purple","role":"Core","default":true,"order":1,"hex":"#4F2683","rgb":[79,38,131],"pantone":"268 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"minnesota-gold","label":"Gold","role":"Core","default":true,"order":2,"hex":"#FFC62F","rgb":[255,198,47],"pantone":"123 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"minnesota-white","label":"White","role":"Neutral","default":true,"order":3,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "new-england": {
+   "defaults": ["new-england-nautical-blue","new-england-red","new-england-silver","new-england-white"],
+   "colors": [
+    {"key":"new-england-nautical-blue","label":"Nautical blue","role":"Core","default":true,"order":1,"hex":"#002244","rgb":[0,34,68],"pantone":"289 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"new-england-red","label":"Red","role":"Core","default":true,"order":2,"hex":"#C60C30","rgb":[198,12,48],"pantone":"186 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"new-england-silver","label":"Silver","role":"Core","default":true,"order":3,"hex":"#A2AAAD","rgb":[162,170,173],"pantone":"429 C","otherPantone":null,"inkType":"Spot reference","status":"Current spec unverified","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"new-england-silver-metallic","label":"Silver metallic","role":"Metallic option","default":false,"order":4,"hex":"#8D9093","rgb":[141,144,147],"pantone":"877 C","otherPantone":"8180 C","inkType":"Metallic reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"new-england-white","label":"White","role":"Neutral","default":true,"order":5,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "new-orleans": {
+   "defaults": ["new-orleans-old-gold","new-orleans-black","new-orleans-white"],
+   "colors": [
+    {"key":"new-orleans-old-gold","label":"Old gold","role":"Core","default":true,"order":1,"hex":"#D3BC8D","rgb":[211,188,141],"pantone":"467 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"new-orleans-black","label":"Black","role":"Neutral","default":true,"order":2,"hex":"#000000","rgb":[0,0,0],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"new-orleans-white","label":"White","role":"Neutral","default":true,"order":3,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "new-york-blue": {
+   "defaults": ["new-york-blue-dark-blue","new-york-blue-red","new-york-blue-gray","new-york-blue-white"],
+   "colors": [
+    {"key":"new-york-blue-dark-blue","label":"Dark blue","role":"Core","default":true,"order":1,"hex":"#0B2265","rgb":[11,34,101],"pantone":"2758 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"new-york-blue-red","label":"Red","role":"Core","default":true,"order":2,"hex":"#A71930","rgb":[167,25,48],"pantone":"187 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"new-york-blue-gray","label":"Gray","role":"Supporting","default":true,"order":3,"hex":"#A5ACAF","rgb":[165,172,175],"pantone":"429 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"new-york-blue-white","label":"White","role":"Neutral","default":true,"order":4,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "new-york-green": {
+   "defaults": ["new-york-green-green","new-york-green-black","new-york-green-white"],
+   "colors": [
+    {"key":"new-york-green-green","label":"Green","role":"Core","default":true,"order":1,"hex":"#115740","rgb":[17,87,64],"pantone":"343 C","otherPantone":"3435 C / 7484 C","inkType":"Spot reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"new-york-green-black","label":"Black","role":"Supporting","default":true,"order":2,"hex":"#000000","rgb":[0,0,0],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"new-york-green-white","label":"White","role":"Neutral","default":true,"order":3,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "philadelphia": {
+   "defaults": ["philadelphia-midnight-green","philadelphia-black","philadelphia-charcoal","philadelphia-silver-gray","philadelphia-white"],
+   "colors": [
+    {"key":"philadelphia-midnight-green","label":"Midnight green","role":"Core","default":true,"order":1,"hex":"#004C54","rgb":[0,76,84],"pantone":"316 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"philadelphia-black","label":"Black","role":"Neutral","default":true,"order":2,"hex":"#000000","rgb":[0,0,0],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"philadelphia-charcoal","label":"Charcoal","role":"Accent","default":true,"order":3,"hex":"#565A5C","rgb":[86,90,92],"pantone":"425 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"philadelphia-silver-gray","label":"Silver gray","role":"Accent","default":true,"order":4,"hex":"#A5ACAF","rgb":[165,172,175],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"philadelphia-silver-metallic","label":"Silver metallic","role":"Metallic option","default":false,"order":5,"hex":"#A5ACAF","rgb":[165,172,175],"pantone":"877 C","otherPantone":null,"inkType":"Metallic reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"philadelphia-pale-silver-metallic","label":"Pale silver metallic","role":"Variant","default":false,"order":6,"hex":"#ACC0C6","rgb":[172,192,198],"pantone":"8240 C","otherPantone":null,"inkType":"Metallic reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"philadelphia-white","label":"White","role":"Neutral","default":true,"order":7,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "pittsburgh": {
+   "defaults": ["pittsburgh-gold","pittsburgh-black","pittsburgh-blue","pittsburgh-red","pittsburgh-gray","pittsburgh-white"],
+   "colors": [
+    {"key":"pittsburgh-gold","label":"Gold","role":"Core","default":true,"order":1,"hex":"#FFB612","rgb":[255,182,18],"pantone":"1235 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"pittsburgh-black","label":"Black","role":"Neutral","default":true,"order":2,"hex":"#000000","rgb":[0,0,0],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"pittsburgh-blue","label":"Blue","role":"Accent","default":true,"order":3,"hex":"#003087","rgb":[0,48,135],"pantone":"287 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"pittsburgh-red","label":"Red","role":"Accent","default":true,"order":4,"hex":"#C60C30","rgb":[198,12,48],"pantone":"186 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"pittsburgh-gray","label":"Gray","role":"Accent","default":true,"order":5,"hex":"#A5ACAF","rgb":[165,172,175],"pantone":"429 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"pittsburgh-white","label":"White","role":"Neutral","default":true,"order":6,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "san-francisco": {
+   "defaults": ["san-francisco-red","san-francisco-gold","san-francisco-white"],
+   "colors": [
+    {"key":"san-francisco-red","label":"Red","role":"Core","default":true,"order":1,"hex":"#AA0000","rgb":[170,0,0],"pantone":"187 C","otherPantone":null,"inkType":"Spot reference","status":"Official dated guide","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"san-francisco-gold","label":"Gold","role":"Core","default":true,"order":2,"hex":"#B3995D","rgb":[179,153,93],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"san-francisco-gold-metallic-2025-guide","label":"Gold metallic (2025 guide)","role":"Metallic option","default":false,"order":3,"hex":"#B3995D","rgb":[179,153,93],"pantone":"872 C","otherPantone":"874 C (newer independent record)","inkType":"Metallic reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"san-francisco-gold-candidate","label":"Gold candidate","role":"Unconfirmed candidate","default":false,"order":4,"hex":"#AF8C5C","rgb":[175,140,92],"pantone":"6009 C","otherPantone":"872 C metallic (2025 guide)","inkType":"Spot reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"san-francisco-gold-metallic-candidate","label":"Gold metallic candidate","role":"Unconfirmed candidate","default":false,"order":5,"hex":"#896C4C","rgb":[137,108,76],"pantone":"874 C","otherPantone":"872 C metallic (2025 guide)","inkType":"Metallic reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"san-francisco-white","label":"White","role":"Neutral","default":true,"order":6,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "seattle": {
+   "defaults": ["seattle-college-navy","seattle-action-green","seattle-wolf-gray","seattle-white"],
+   "colors": [
+    {"key":"seattle-college-navy","label":"College Navy","role":"Core","default":true,"order":1,"hex":"#002244","rgb":[0,34,68],"pantone":"289 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"seattle-action-green","label":"Action Green","role":"Core","default":true,"order":2,"hex":"#69BE28","rgb":[105,190,40],"pantone":"368 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"seattle-wolf-gray","label":"Wolf Gray","role":"Core","default":true,"order":3,"hex":"#A5ACAF","rgb":[165,172,175],"pantone":"429 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"seattle-white","label":"White","role":"Neutral","default":true,"order":4,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "tampa-bay": {
+   "defaults": ["tampa-bay-red","tampa-bay-pewter","tampa-bay-orange","tampa-bay-black","tampa-bay-white"],
+   "colors": [
+    {"key":"tampa-bay-red","label":"Red","role":"Core","default":true,"order":1,"hex":"#A6192E","rgb":[166,25,46],"pantone":"187 C","otherPantone":"186 C","inkType":"Spot reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"tampa-bay-pewter","label":"Pewter","role":"Core","default":true,"order":2,"hex":"#34302B","rgb":[52,48,43],"pantone":"Black 7 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"tampa-bay-orange","label":"Orange","role":"Core","default":true,"order":3,"hex":"#DC4405","rgb":[220,68,5],"pantone":"1665 C","otherPantone":"151 C","inkType":"Spot reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"tampa-bay-black","label":"Black","role":"Neutral","default":true,"order":4,"hex":"#000000","rgb":[0,0,0],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"tampa-bay-white","label":"White","role":"Neutral","default":true,"order":5,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "tennessee": {
+   "defaults": ["tennessee-blue","tennessee-red","tennessee-navy","tennessee-white"],
+   "colors": [
+    {"key":"tennessee-blue","label":"Blue","role":"Core","default":true,"order":1,"hex":"#4B92DB","rgb":[75,146,219],"pantone":"279","otherPantone":null,"inkType":"Spot reference","status":"Official dated guide","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"tennessee-red","label":"Red","role":"Core","default":true,"order":2,"hex":"#C8102E","rgb":[200,16,46],"pantone":"186","otherPantone":null,"inkType":"Spot reference","status":"Official dated guide","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"tennessee-navy","label":"Navy","role":"Supporting","default":true,"order":3,"hex":"#0C2340","rgb":[12,35,64],"pantone":"289","otherPantone":null,"inkType":"Spot reference","status":"Official dated guide","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"tennessee-white","label":"White","role":"Neutral","default":true,"order":4,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  },
+  "washington": {
+   "defaults": ["washington-burgundy","washington-gold","washington-white"],
+   "colors": [
+    {"key":"washington-burgundy","label":"Burgundy","role":"Core","default":true,"order":1,"hex":"#651C32","rgb":[101,28,50],"pantone":"7421 C","otherPantone":"483 C","inkType":"Spot reference","status":"Resolve discrepancy","unresolved":true,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"washington-gold","label":"Gold","role":"Core","default":true,"order":2,"hex":"#FFB612","rgb":[255,182,18],"pantone":"1235 C","otherPantone":null,"inkType":"Spot reference","status":"Secondary source","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"},
+    {"key":"washington-white","label":"White","role":"Neutral","default":true,"order":3,"hex":"#FFFFFF","rgb":[255,255,255],"pantone":null,"otherPantone":null,"inkType":"Not specified","status":"Ink not specified","unresolved":false,"vendorPrintSelection":null,"proofReference":null,"productionStatus":"Not approved"}
+   ]
+  }
+ }
+}

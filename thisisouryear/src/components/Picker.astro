@@ -1,0 +1,145 @@
+---
+// The picker: choose a city, garment and size, see it, add it to the cart.
+// On a city page the city is already chosen (lockCity). Everywhere else the
+// shopper searches for it.
+//
+// The page works before any script loads: it shows the adult tee and, on a
+// city page, the plain form still posts to checkout.
+import Shirt from './Shirt.astro';
+import catalog from '../data/catalog.json';
+import { shop } from '../lib/shop.js';
+import { dollars } from '../lib/shop-core.js';
+import { teams, shirtVars, searchText, colorNames } from '../lib/cities.js';
+import { styleString } from '../lib/colors.js';
+
+const { city = null, lockCity = false, id = 'picker', buyNow = false, syncUrl = true, heading = null } = Astro.props;
+const cities = [...teams].sort((a, b) => a.name.localeCompare(b.name));
+const tee = shop.product('adult-tee');
+const range = shop.priceRange('adult-tee');
+const startPrice = range ? (range.lowCents === range.highCents ? dollars(range.lowCents) : `From ${dollars(range.lowCents)}`) : 'Not for sale yet';
+const names = city ? colorNames(city) : null;
+const legend = names
+  ? `Garment: ${names.shirt}. Lettering: ${names.line1 === names.line2 ? names.line1 : `${names.line1} and ${names.line2}`}. Outline: ${names.outline}.`
+  : '';
+const designs = catalog.designs;
+const extra = tee.variants.filter((v) => v.extraCents > 0);
+---
+
+<section
+  class="picker"
+  id={id}
+  data-picker
+  data-group={id}
+  data-city={city?.slug ?? ''}
+  data-lock={String(lockCity)}
+  data-sync-url={String(syncUrl)}
+  aria-label={heading ?? 'Build your shirt'}
+>
+  <div class="picker-stage">
+    <div class:list={['stage', { 'is-neutral': !city }]} data-stage style={city ? styleString(shirtVars(city)) : ''}>
+      <div data-garment>
+        <Shirt team={city} label={city ? `This Is Our Year tee in ${city.name} colors, ${city.colors}` : 'This Is Our Year tee'} decorative={!city} />
+      </div>
+    </div>
+    <p class="concept">Concept preview. It's a drawing, not a photo of the finished item, and screen colors are approximate.</p>
+  </div>
+
+  <form class="picker-form" data-form method="post" action="/.netlify/functions/create-checkout">
+    <slot name="intro" />
+    {heading && <h2 class="picker-h">{heading}</h2>}
+    <input type="hidden" name="slug" value={city?.slug ?? ''} />
+
+    {
+      !lockCity && (
+        <div class="field city-chooser">
+          <label for={`${id}-search`}>Find your city</label>
+          <input id={`${id}-search`} type="search" placeholder="Start typing a city" autocomplete="off" autocapitalize="off" spellcheck="false" data-city-search />
+          <div class="city-options" role="radiogroup" aria-label="City">
+            {cities.map((c) => (
+              <label class="city-opt" data-city-opt data-search={searchText(c)}>
+                <input type="radio" name={`${id}-city`} value={c.slug} checked={city?.slug === c.slug} />
+                <span class="city-card">
+                  <span class="sw" style={styleString(shirtVars(c))} aria-hidden="true"><i /><i /><i /></span>
+                  <span class="nm">{c.name}</span>
+                  <span class="cl">{c.colors}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+          <p class="hint" data-city-empty hidden>No city by that name. Try a nearby city or your state.</p>
+        </div>
+      )
+    }
+
+    <p class="picked" data-summary aria-live="polite">
+      {city ? `${city.name}, ${city.colors}. This Is Our Year tee.` : 'Pick a city to see it in your colors.'}
+    </p>
+    <p class="hint legend" data-legend hidden={!legend}>{legend}</p>
+
+    <fieldset class="field">
+      <legend>Garment</legend>
+      <div class="pills two">
+        <label><input type="radio" name={`${id}-style`} value="tee" checked /><span>Tee</span></label>
+        <label><input type="radio" name={`${id}-style`} value="hoodie" /><span>Hoodie</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset class="field">
+      <legend>Fit</legend>
+      <div class="pills two">
+        <label><input type="radio" name={`${id}-fit`} value="adult" checked /><span>Adult</span></label>
+        <label><input type="radio" name={`${id}-fit`} value="kids" /><span>Kids</span></label>
+      </div>
+    </fieldset>
+
+    {
+      designs.length > 1 && (
+        <fieldset class="field">
+          <legend>Design</legend>
+          <div class="pills two">
+            {designs.map((d, i) => (
+              <label><input type="radio" name={`${id}-design`} value={d.id} checked={i === 0} /><span>{d.name}</span></label>
+            ))}
+          </div>
+        </fieldset>
+      )
+    }
+
+    <fieldset class="field" data-size-field>
+      <legend>
+        Size
+        <a href={tee.sizeChart} data-size-chart>Size chart</a>
+      </legend>
+      <div class="pills" data-sizes>
+        {tee.variants.map((v) => (
+          <label><input type="radio" name="size" value={v.size} disabled={!v.inStock} required /><span>{v.size}</span></label>
+        ))}
+      </div>
+      <p class="hint" data-size-note hidden={extra.length === 0}>
+        {extra.length > 0 && `${extra.map((v) => v.size).join(' and ')} ${extra.length > 1 ? 'are' : 'is'} ${dollars(extra[0].extraCents).replace('.00', '')} more.`}
+      </p>
+    </fieldset>
+
+    <p class="price"><span data-price>{startPrice}</span></p>
+    <p class="avail" data-availability role="status" hidden></p>
+
+    <div class="actions">
+      <button class="btn" type="button" data-add disabled={!city}>Add to cart</button>
+      {
+        buyNow && (
+          <button class="btn btn-quiet" type="submit" data-buy>
+            <span class="idle">Buy now</span>
+            <span class="busy">Opening checkout</span>
+          </button>
+        )
+      }
+    </div>
+    <p class="form-msg" data-msg role="alert" hidden></p>
+    <p class="added" data-added role="status" hidden><span data-added-text></span> <a href="/cart/">Go to cart</a></p>
+  </form>
+</section>
+
+<script>
+  import { initAllPickers } from '../scripts/picker.js';
+  initAllPickers();
+</script>

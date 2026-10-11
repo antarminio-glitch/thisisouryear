@@ -1,29 +1,33 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Shirt from '../components/Shirt.astro';
 import Lettering from '../components/Lettering.astro';
+import Picker from '../components/Picker.astro';
+import CityGrid from '../components/CityGrid.astro';
+import ShopData from '../components/ShopData.astro';
 import teams from '../data/teams.json';
-import product from '../data/product.json';
-import { dollars } from '../lib/money.js';
-import { styleString } from '../lib/colors.js';
+import { shop } from '../lib/shop.js';
+import { dollars, fromPriceCents } from '../lib/money.js';
 
-const cities = [...teams].sort((a, b) => a.name.localeCompare(b.name));
-const price = dollars(product.priceCents);
+const price = dollars(fromPriceCents());
+const status = (id) => (shop.isSellable(shop.product(id)) ? `From ${dollars(shop.priceRange(id).lowCents)}` : 'Preview only for now');
 
-const shirtColors = (t) =>
-  styleString({ '--shirt': t.shirt, '--line1': t.line1, '--line2': t.line2, '--outline': t.outline });
-
-// What the search box matches against: the city name plus any nearby places
-// listed under "aka" in teams.json.
-const searchText = (t) => [t.name, ...(t.aka ?? [])].join(' ').toLowerCase();
+// The ways in. Each one says plainly whether it can be bought yet.
+const ways = [
+  { href: '/shop/?style=tee', title: 'Tees', note: status('adult-tee'), line: 'The original. Printed when you order.' },
+  { href: '/shop/?style=hoodie', title: 'Hoodies', note: status('adult-hoodie'), line: 'For the cold-weather faithful.' },
+  { href: '/shop/?fit=kids', title: 'Kids', note: status('kids-tee'), line: 'Start them early. They have decades of hope ahead.' },
+  { href: '/matching-sets/', title: 'Matching sets', note: 'One adult, one kid', line: 'Same colors, different sizes.' },
+  { href: '/fantasy-leagues/', title: 'Fantasy leagues', note: 'Mixed sizes', line: 'Last place. Wrong colors.' },
+  { href: '/gifts/rival-colors/', title: 'Rival gifts', note: 'You choose what they wear', line: 'A thoughtful gift. For a terrible friend.' },
+];
 ---
 
-<Layout
-  description={`Every fan says it every season. Now wear it in your city's colors. One tee, ${cities.length} colorways, ${price}.`}
-  navHref="#cities"
->
+<Layout description={`Every fan says it every season. Now wear it in your city's colors. One design, ${teams.length} colorways, tees from ${price}.`}>
+  <ShopData />
+
   <section class="hero">
     <div class="wrap">
+      <p class="campaign" data-campaign role="status" hidden></p>
       <h1>
         <span class="sr-only">This Is Our Year</span>
         <svg class="hero-letters" viewBox="0 0 620 232" aria-hidden="true">
@@ -31,50 +35,51 @@ const searchText = (t) => [t.name, ...(t.aka ?? [])].join(' ').toLowerCase();
         </svg>
       </h1>
       <p class="hero-line">
-        <span>You said it last season. And the one before.</span>
-        <span>Say it again, in your city's colors.</span>
+        <span>Every year. Our year.</span>
+        <span>Your colors. Your annual declaration of unreasonable optimism.</span>
       </p>
-      <a class="btn" href="#cities">Pick your city</a>
+      <div class="hero-actions">
+        <a class="btn" href="#find">Find my colors</a>
+        <a class="btn btn-quiet" href="/gifts/rival-colors/">Make it someone else's problem</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="find" id="find">
+    <div class="wrap">
+      <Picker id="home" heading="Find my colors" />
+    </div>
+  </section>
+
+  <section class="ways" aria-labelledby="ways-h">
+    <div class="wrap">
+      <h2 id="ways-h">Ways to shop</h2>
+      <ul>
+        {
+          ways.map((w) => (
+            <li>
+              <a href={w.href}>{w.title}</a>
+              <span class="note">{w.note}</span>
+              <p>{w.line}</p>
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </section>
 
   <section class="cities" id="cities" aria-labelledby="cities-h">
     <div class="wrap">
-      <div class="cities-head">
-        <h2 id="cities-h">{cities.length} cities. One tee. {price}.</h2>
-        <div class="search">
-          <label for="city-search">Find your city</label>
-          <input
-            id="city-search"
-            type="search"
-            placeholder="Start typing a city"
-            autocomplete="off"
-            autocapitalize="off"
-            spellcheck="false"
-            aria-controls="city-grid"
-          />
-        </div>
-      </div>
+      <h2 id="cities-h">{teams.length} cities. One design. Tees from {price}.</h2>
+      <CityGrid id="cities" />
+    </div>
+  </section>
 
-      <ul class="grid" id="city-grid">
-        {
-          cities.map((t) => (
-            <li data-search={searchText(t)}>
-              <a href={`/${t.slug}/`} style={shirtColors(t)}>
-                <span class="tile">
-                  <Shirt team={t} decorative />
-                </span>
-                <span class="city">{t.name}</span>
-                <span class="colors">{t.colors}</span>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-      <p class="no-match" id="no-match" role="status" hidden>
-        No city by that name. Try a nearby city or your state.
-        <button type="button" id="clear-search">Show all {cities.length}</button>
-      </p>
+  <section class="fans" aria-labelledby="fans-h" data-fan-strip hidden>
+    <div class="wrap">
+      <h2 id="fans-h">Fans who said it out loud</h2>
+      <ul class="fan-row" data-fan-list></ul>
+      <p><a href="/fans/">See more, or send yours</a></p>
     </div>
   </section>
 
@@ -100,38 +105,44 @@ const searchText = (t) => [t.name, ...(t.aka ?? [])].join(' ').toLowerCase();
 </Layout>
 
 <script>
-  const input = document.getElementById('city-search') as HTMLInputElement | null;
-  const items = Array.from(document.querySelectorAll<HTMLLIElement>('#city-grid > li'));
-  const empty = document.getElementById('no-match');
-  const clear = document.getElementById('clear-search');
+  import { loadPublicState, loadFanPhotos, renderFanList } from '../scripts/live.js';
 
-  function filter() {
-    const q = (input?.value ?? '').trim().toLowerCase();
-    let shown = 0;
-    for (const li of items) {
-      const hit = !q || (li.dataset.search ?? '').includes(q);
-      li.hidden = !hit;
-      if (hit) shown++;
+  // A campaign message only shows when a campaign has been switched on.
+  loadPublicState().then((state) => {
+    const el = document.querySelector<HTMLElement>('[data-campaign]');
+    if (el && state?.campaign?.heroLine) {
+      el.textContent = `${state.campaign.heroTitle} ${state.campaign.heroLine}`;
+      el.hidden = false;
     }
-    if (empty) empty.hidden = shown > 0;
-  }
-
-  input?.addEventListener('input', filter);
-  clear?.addEventListener('click', () => {
-    if (input) {
-      input.value = '';
-      input.focus();
-    }
-    filter();
   });
-  // Browsers sometimes restore the typed text when you come back to the page.
-  filter();
+
+  // Approved fan photos, if there are any yet.
+  loadFanPhotos(6).then((photos) => {
+    const strip = document.querySelector<HTMLElement>('[data-fan-strip]');
+    const list = document.querySelector<HTMLElement>('[data-fan-list]');
+    if (strip && list && photos.length) {
+      renderFanList(list, photos);
+      strip.hidden = false;
+    }
+  });
 </script>
 
 <style>
   .hero {
-    padding-block: 36px 44px;
+    padding-block: 32px 40px;
     text-align: center;
+  }
+  .campaign {
+    display: inline-block;
+    margin: 0 auto 22px;
+    padding: 8px 14px;
+    border-radius: 4px;
+    background: var(--on-bg);
+    color: var(--bg);
+    font-weight: 600;
+  }
+  .campaign[hidden] {
+    display: none;
   }
   .hero h1 {
     margin: 0 auto;
@@ -153,117 +164,81 @@ const searchText = (t) => [t.name, ...(t.aka ?? [])].join(' ').toLowerCase();
     display: block;
     text-wrap: balance;
   }
-
-  .cities {
-    padding-block: 28px 0;
-    scroll-margin-top: 8px;
+  .hero-line span:first-child {
+    color: var(--on-bg);
+    font-weight: 600;
   }
-  .cities-head {
+  .hero-actions {
     display: grid;
-    gap: 18px;
+    gap: 10px;
+    max-width: 420px;
+    margin-inline: auto;
+  }
+
+  .find {
+    padding-block: 36px 8px;
+    scroll-margin-top: 8px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .ways {
+    margin-top: 48px;
+    padding-block: 40px;
+    background: color-mix(in srgb, #000 22%, var(--bg));
+  }
+  .ways h2,
+  .cities h2,
+  .fans h2,
+  .how h2 {
+    font-size: clamp(1.375rem, 5.4vw, 2rem);
     margin-bottom: 22px;
   }
-  .cities-head h2 {
-    font-size: clamp(1.375rem, 5.4vw, 2rem);
-  }
-  .search label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-  .search input {
-    width: 100%;
-    min-height: 52px;
-    padding: 0 16px;
-    border: 2px solid var(--edge);
-    border-radius: 4px;
-    background: var(--panel);
-    color: var(--on-bg);
-    font: 400 1.125rem/1 var(--body);
-  }
-  .search input::placeholder {
-    color: var(--soft);
-    opacity: 1;
-  }
-  .search input:focus-visible {
-    outline: none;
-    border-color: var(--on-bg);
-  }
-
-  .grid {
+  .ways ul {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 22px 14px;
+    gap: 0;
+    border-top: 1px solid var(--rule);
   }
-  .grid li[hidden] {
-    display: none;
+  .ways li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2px 14px;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
   }
-  .grid a {
-    display: block;
-    text-decoration: none;
-  }
-  .tile {
-    display: block;
-    padding: 10px;
-    border-radius: 6px;
-    background: var(--tile);
-  }
-  .tile :global(.shirt) {
-    transition: transform 0.18s ease-out;
-  }
-  .grid a:hover .tile :global(.shirt),
-  .grid a:focus-visible .tile :global(.shirt) {
-    transform: scale(1.05);
-  }
-  .city {
-    display: block;
-    margin-top: 9px;
+  .ways a {
     font-weight: 600;
-    font-size: 1.125rem;
-    line-height: 1.2;
+    font-size: 1.25rem;
   }
-  .grid a:hover .city {
-    text-decoration: underline;
-    text-underline-offset: 0.18em;
-  }
-  .colors {
-    display: block;
-    margin-top: 2px;
+  .ways .note {
     font-size: 0.9375rem;
+    color: var(--soft);
+    text-align: right;
+  }
+  .ways p {
+    grid-column: 1 / -1;
     color: var(--soft);
   }
 
-  .no-match {
-    padding: 28px 0 8px;
-    font-size: 1.125rem;
+  .cities {
+    padding-block: 48px 0;
+    scroll-margin-top: 8px;
   }
-  .no-match[hidden] {
+
+  .fans {
+    padding-block: 48px 0;
+  }
+  .fans[hidden] {
     display: none;
-  }
-  .no-match button {
-    display: block;
-    margin-top: 10px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: 600 1.125rem/1.4 var(--body);
-    text-decoration: underline;
-    text-underline-offset: 0.18em;
-    cursor: pointer;
   }
 
   .how {
     margin-top: 64px;
     padding-block: 44px;
     background: color-mix(in srgb, #000 22%, var(--bg));
-  }
-  .how h2 {
-    font-size: clamp(1.375rem, 5.4vw, 2rem);
-    margin-bottom: 24px;
   }
   .how ol {
     list-style: none;
@@ -294,30 +269,28 @@ const searchText = (t) => [t.name, ...(t.aka ?? [])].join(' ').toLowerCase();
 
   @media (min-width: 720px) {
     .hero {
-      padding-block: 56px 60px;
+      padding-block: 52px 56px;
     }
     .hero-line {
       font-size: 1.375rem;
     }
-    .grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 30px 18px;
+    .hero-actions {
+      grid-template-columns: 1fr 1fr;
+      max-width: 620px;
     }
-    .cities-head {
-      grid-template-columns: 1fr minmax(260px, 340px);
-      align-items: end;
+    .ways ul {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: 32px;
+      border-top: 0;
+    }
+    .ways li {
+      border-top: 1px solid var(--rule);
+      border-bottom: 0;
+      align-content: start;
     }
     .how ol {
       grid-template-columns: repeat(3, 1fr);
       gap: 32px;
-    }
-  }
-  @media (min-width: 1000px) {
-    .grid {
-      gap: 38px 24px;
-    }
-    .tile {
-      padding: 14px;
     }
   }
 </style>

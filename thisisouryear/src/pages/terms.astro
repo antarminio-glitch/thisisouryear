@@ -1,8 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Confirm from '../components/Confirm.astro';
-import product from '../data/product.json';
-import { dollars } from '../lib/money.js';
+import product from '../data/store.json';
+import { dollars, fromPriceCents } from '../lib/money.js';
 
 const email = product.contactEmail;
 ---
@@ -28,7 +28,7 @@ const email = product.contactEmail;
       <h2>Ordering</h2>
       <ul>
         <li>
-          Shirts start at {dollars(product.priceCents)}. Prices are in US dollars and are shown before you pay. Shipping
+          Shirts start at {dollars(fromPriceCents())}. Prices are in US dollars and are shown before you pay. Shipping
           and any sales tax are added at checkout.
         </li>
         <li>Payment is handled by Stripe. Your order is placed when your payment goes through.</li>
