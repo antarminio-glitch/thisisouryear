@@ -9,6 +9,7 @@ import { saveSeasonUpdate, applyMetaUpdate, loadSeason, survivors, metaKey, STAT
 import { CAMPAIGNS, loadConfigs, applyConfigUpdate, emailBlockers, planElimination, loadEliminationInputs, dispatchElimination, cancelPending, reopenCanceled, activeHero, emailHash } from './campaigns.js';
 import { emailSender, unsubscribeToken, readUnsubscribeToken } from './email.js';
 import { moderate } from './fans.js';
+import { orderEmailSettings, orderEmailContent, sendOrderEmail, sampleOrder, orderRef } from './order-email.js';
 import { todayIn } from '../lib/counter.js';
 
 const QUOTE_STATUSES = ['new', 'answered', 'ordered', 'closed'];
@@ -25,13 +26,21 @@ export function setupReport({ shop, palettes, history, env, storageKind, now }) 
   const custom = teams.flatMap((t) => Object.entries(t.apply ?? {}).filter(([, k]) => k === null).map(([surface]) => `${t.slug}.${surface}`));
   const today = todayIn(store.timezone, now);
   const blockers = emailBlockers(env);
+  const orderEmail = orderEmailSettings(env);
 
   const missing = [];
-  const need = (name, why) => missing.push({ name, why });
+  // One entry per setting, with every reason it matters.
+  const need = (name, why) => {
+    const hit = missing.find((m) => m.name === name);
+    if (hit) hit.why += ` ${why}`;
+    else missing.push({ name, why });
+  };
   if (stripeMode === 'missing') need('STRIPE_SECRET_KEY', 'Checkout cannot open without it.');
-  if (!present('STRIPE_WEBHOOK_SECRET')) need('STRIPE_WEBHOOK_SECRET', 'Paid orders are not recorded here without it, so campaigns have nobody to email and reports are empty.');
+  if (!present('STRIPE_WEBHOOK_SECRET')) need('STRIPE_WEBHOOK_SECRET', 'Paid orders are not recorded here without it, so the vendor never gets an order email and campaigns have nobody to email.');
   if (!present('SITE_URL')) need('SITE_URL', 'Optional until the domain is connected. Needed for links in emails.');
   if (!present('BUILD_HOOK_URL')) need('BUILD_HOOK_URL', 'The daily rebuild that keeps counters and share cards current does not run without it.');
+  if (!orderEmail.ready) for (const m of orderEmail.missing) need(m.split(' ')[0], 'Order emails to the vendor do not go out without it. Paid orders are still in Stripe.');
+  else if (!orderEmail.vendorSet) need('ORDER_EMAIL_TO', 'Order emails come to you only. Add the vendor\'s address to send them straight to the vendor.');
   for (const p of products) if (!p.sellable) need(`catalog.json > ${p.id}`, `Not for sale. Fill in: ${p.missing.join(', ')}.`);
   for (const d of catalog.designs) if (d.status !== 'live') need(`catalog.json > designs > ${d.id}`, 'Concept only. Set status to "live", give it an artworkVersion and add it to a product\'s designs once the artwork is approved.');
   if (store.collectMarketingConsent !== true) need('store.json > collectMarketingConsent', 'Off, so checkout never asks about marketing email and no customer can be eligible for a campaign.');
@@ -70,6 +79,8 @@ export function setupReport({ shop, palettes, history, env, storageKind, now }) 
       verifiedCities: Object.values(history.cities).filter((c) => c.verified === true).length,
     },
     email: { ready: blockers.length === 0, blockers },
+    orderEmail: { ready: orderEmail.ready, to: orderEmail.to, cc: orderEmail.cc, vendorSet: orderEmail.vendorSet, missing: orderEmail.missing },
+    bulkTiers: shop.bulkTiers,
     missing,
   };
 }
@@ -189,6 +200,57 @@ export function makeAdminHandler({ shop, palettes, history, env, getStorage, fet
         });
         await audit('campaigns.send', { slug: v.slug, seasonId: String(v.seasonId), ...result });
         return json({ ...preview, dryRun: false, result }, result.blocked ? 409 : 200);
+      }
+
+      // ---- orders
+      case 'orders.list': {
+        const orders = await readAll(storage.store('orders'), 'order/');
+        return json({
+          orderEmail: orderEmailSettings(env),
+          orders: orders
+            .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+            .slice(0, 200)
+            .map((o) => ({
+              id: o.id,
+              ref: orderRef(o.id),
+              createdAt: o.createdAt,
+              status: o.status,
+              totalCents: o.totalCents,
+              units: (o.lines ?? []).reduce((n, l) => n + (l.quantity ?? 1), 0),
+              shipTo: o.shipTo ? { name: o.shipTo.name, city: o.shipTo.city, state: o.shipTo.state } : null,
+              bulkPercentOff: o.bulkPercentOff ?? 0,
+              vendorEmail: o.vendorEmail ?? null,
+            })),
+        });
+      }
+      case 'orders.preview': {
+        const order = await storage.store('orders').get(`order/${v.id}`);
+        if (!order) return json({ error: 'No such order.' }, 404);
+        return json(orderEmailContent({ order, shop, palettes, timezone: shop.store.timezone }));
+      }
+      case 'orders.email': {
+        if (v.confirm !== 'SEND') return json({ error: 'To send the order email again, type SEND.' }, 400);
+        const result = await sendOrderEmail({ orderId: v.id, storage, shop, palettes, env, fetchImpl, now, again: true });
+        await audit('orders.email', { id: v.id, status: result.status });
+        if (result.status === 'missing') return json({ error: 'No such order.' }, 404);
+        if (result.status === 'not_configured') return json({ error: `Order email isn't set up. Missing: ${result.missing.join(', ')}.` }, 409);
+        if (result.status === 'failed') return json({ error: `The email service refused it: ${result.error}` }, 502);
+        return json(result);
+      }
+      case 'orders.test_email': {
+        const settings = orderEmailSettings(env);
+        const order = sampleOrder(shop, now());
+        const content = orderEmailContent({ order, shop, palettes, timezone: shop.store.timezone, test: true });
+        if (!v.send) return json({ preview: content, settings });
+        if (!settings.ready) return json({ error: `Order email isn't set up. Missing: ${settings.missing.join(', ')}.`, preview: content }, 409);
+        const send = emailSender(env, fetchImpl);
+        try {
+          await send({ to: settings.to, cc: settings.cc, replyTo: settings.replyTo, subject: content.subject, text: content.text, idempotencyKey: `order-test-${order.id}` });
+        } catch (err) {
+          return json({ error: `The email service refused it: ${String(err?.message ?? err).slice(0, 200)}` }, 502);
+        }
+        await audit('orders.test_email', { to: settings.to });
+        return json({ sent: true, to: settings.to, cc: settings.cc });
       }
 
       // ---- quotes

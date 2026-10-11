@@ -63,11 +63,14 @@ const email = product.contactEmail;
       <ul>
         <li><strong>Stripe</strong> processes payments and stores order details.</li>
         <li>
-          <strong>Our print partner</strong> gets your name, shipping address, and order so they can print and ship
-          your shirt.
+          <strong>Our print partner</strong> gets your name, shipping address, and order by email so they can print and
+          ship your shirt. They don't get your email address or payment details.
         </li>
         <li>
           <strong>Netlify</strong> hosts this website and stores our order records, quote requests and fan photos.
+        </li>
+        <li>
+          <strong>Resend</strong> sends our order emails to the print partner. <Confirm />
         </li>
         <li><strong>The shipping carrier</strong> gets your name and address to deliver the package.</li>
       </ul>

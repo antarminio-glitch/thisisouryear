@@ -18,7 +18,7 @@ const ways = [
   { href: '/shop/?style=hoodie', title: 'Hoodies', note: status('adult-hoodie'), line: 'For the cold-weather faithful.' },
   { href: '/shop/?fit=kids', title: 'Kids', note: status('kids-tee'), line: 'Start them early. They have decades of hope ahead.' },
   { href: '/matching-sets/', title: 'Matching sets', note: 'One adult, one kid', line: 'Same colors, different sizes.' },
-  { href: '/fantasy-leagues/', title: 'Fantasy leagues', note: 'Mixed sizes', line: 'Last place. Wrong colors.' },
+  { href: '/fantasy-leagues/', title: 'Fantasy leagues', note: shop.bulkTiers.length ? `Up to ${Math.max(...shop.bulkTiers.map((t) => t.percentOff))}% off` : 'Mixed sizes', line: 'Last place. Wrong colors.' },
   { href: '/gifts/rival-colors/', title: 'Rival gifts', note: 'You choose what they wear', line: 'A thoughtful gift. For a terrible friend.' },
 ];
 ---

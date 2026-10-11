@@ -90,7 +90,11 @@ test('bad quantities and an oversized cart are refused', () => {
   const shop = realShop();
   assert.equal(shop.quote([tee({ quantity: 0 })]).lines[0].code, 'bad_quantity');
   assert.equal(shop.quote([tee({ quantity: 1.5 })]).lines[0].code, 'bad_quantity');
-  assert.equal(shop.quote([tee({ quantity: 11 })]).lines[0].code, 'too_many');
+  assert.equal(shop.quote([tee({ quantity: 50 })]).lines[0].ok, true);
+  assert.equal(shop.quote([tee({ quantity: 51 })]).lines[0].code, 'too_many');
+  const huge = shop.quote([tee({ quantity: 50 }), tee({ quantity: 50, size: 'XL' }), tee({ quantity: 1, size: 'M' })]);
+  assert.equal(huge.ok, false, 'more than 100 in one order goes through a quote');
+  assert.match(huge.problems[0], /bulk quote/);
   assert.equal(shop.quote([]).ok, false);
   assert.equal(shop.quote(Array.from({ length: 41 }, () => tee())).ok, false);
   assert.equal(shop.quote('nonsense').ok, false);

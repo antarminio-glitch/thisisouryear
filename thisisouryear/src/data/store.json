@@ -9,7 +9,8 @@
   "shipMinDays": 5,
   "shipMaxDays": 10,
 
-  "maxQuantity": 10,
+  "maxQuantity": 50,
+  "maxOrderQuantity": 100,
   "maxCartLines": 40,
   "automaticTax": false,
 

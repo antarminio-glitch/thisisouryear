@@ -22,9 +22,11 @@ import ShopData from '../components/ShopData.astro';
         <p class="hint" data-checking role="status">Checking prices and sizes.</p>
         <dl class="total">
           <div><dt>Subtotal</dt><dd data-subtotal></dd></div>
+          <div data-bulk-row hidden><dt data-bulk-label>Bulk discount</dt><dd data-bulk></dd></div>
           <div><dt>Shipping</dt><dd data-shipping></dd></div>
           <div class="grand"><dt>Total</dt><dd data-total></dd></div>
         </dl>
+        <p class="bulk-note" data-bulk-note hidden></p>
         <p class="hint" data-tax-note>Sales tax, if any, is added at checkout.</p>
 
         <div class="field">
@@ -52,7 +54,7 @@ import ShopData from '../components/ShopData.astro';
   import { track } from '../scripts/analytics.js';
   import { drawGarment, fillCitySelect, show, dollars, postJson, designById } from '../scripts/ui.js';
 
-  type Line = { ok: boolean; code: string; message: string; notices: { code: string; message: string }[]; unitCents: number | null; lineCents: number | null };
+  type Line = { ok: boolean; code: string; message: string; notices: { code: string; message: string }[]; unitCents: number | null; regularUnitCents?: number | null; lineCents: number | null };
   const root = document.querySelector<HTMLElement>('[data-cart]')!;
   const $ = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel);
   const list = $('[data-lines]')!;
@@ -108,7 +110,8 @@ import ShopData from '../components/ShopData.astro';
       if (item.giftNote) info.append(el('p', 'where', `Note: ${item.giftNote}`));
 
       const price = el('p', 'money');
-      if (line?.ok) price.textContent = item.quantity > 1 ? `${dollars(line.lineCents!)} (${dollars(line.unitCents!)} each)` : dollars(line.lineCents!);
+      const bulkPriced = !!line?.ok && !!line.regularUnitCents && line.unitCents! < line.regularUnitCents;
+      if (line?.ok) price.textContent = item.quantity > 1 ? `${dollars(line.lineCents!)} (${dollars(line.unitCents!)} each${bulkPriced ? ', bulk price' : ''})` : `${dollars(line.lineCents!)}${bulkPriced ? ' bulk price' : ''}`;
       info.append(price);
       for (const n of line?.notices ?? []) info.append(el('p', 'notice', n.message));
       if (line && !line.ok) info.append(el('p', 'problem', line.message));
@@ -164,7 +167,26 @@ import ShopData from '../components/ShopData.astro';
 
     const q = lastQuote;
     const ready = !!q?.ok;
-    $('[data-subtotal]')!.textContent = ready ? dollars(q!.subtotalCents) : 'Not yet';
+    // Subtotal at regular prices, then the bulk discount, so the rows add up.
+    const bulk = q?.bulk ?? null;
+    const saving = ready && bulk?.percentOff ? bulk.savingsCents : 0;
+    $('[data-subtotal]')!.textContent = ready ? dollars(q!.subtotalCents + saving) : 'Not yet';
+    $('[data-bulk-row]')!.hidden = !saving;
+    if (saving) {
+      $('[data-bulk-label]')!.textContent = `Bulk discount (${bulk.percentOff}% off)`;
+      $('[data-bulk]')!.textContent = `−${dollars(saving)}`;
+    }
+    const tiers = shop.bulkTiers;
+    let note = '';
+    if (tiers.length && bulk) {
+      if (bulk.next) {
+        const n = bulk.next.unitsAway;
+        note = `Add ${n} more ${n === 1 ? 'item' : 'items'} and everything in your order is ${bulk.next.percentOff}% off.`;
+      } else if (bulk.percentOff) {
+        note = `You've got the biggest bulk discount: ${bulk.percentOff}% off everything.`;
+      }
+    }
+    show($('[data-bulk-note]'), note);
     $('[data-shipping]')!.textContent = ready ? dollars(q!.shippingCents) : dollars(shop.store.shippingCents);
     $('[data-total]')!.textContent = ready ? dollars(q!.totalCents) : 'Not yet';
     const problem = q && !q.ok ? 'Fix or remove the flagged items to check out.' : '';
@@ -339,5 +361,12 @@ import ShopData from '../components/ShopData.astro';
       position: sticky;
       top: 20px;
     }
+  }
+  .bulk-note {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    background: var(--panel);
+    font-weight: 600;
   }
 </style>

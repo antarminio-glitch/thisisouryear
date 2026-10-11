@@ -23,7 +23,8 @@ test('the original buy button still works: { slug, size } opens checkout for one
   assert.equal(p.line_items.length, 1);
   assert.equal(p.line_items[0].price_data.unit_amount, 1999);
   assert.equal(p.line_items[0].price_data.product_data.name, 'This Is Our Year Tee, Dallas, Navy / Silver, Size L');
-  assert.deepEqual(p.line_items[0].adjustable_quantity, { enabled: true, minimum: 1, maximum: 10 });
+  // Capped one below the first bulk tier, so nobody pays full price for 12.
+  assert.deepEqual(p.line_items[0].adjustable_quantity, { enabled: true, minimum: 1, maximum: 11 });
   assert.deepEqual(p.shipping_address_collection, { allowed_countries: ['US'] });
   assert.equal(p.shipping_options[0].shipping_rate_data.fixed_amount.amount, 499);
   assert.equal(p.metadata.city, 'Dallas');

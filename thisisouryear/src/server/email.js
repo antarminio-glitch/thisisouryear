@@ -1,8 +1,8 @@
 // Sending email, and unsubscribe links.
 //
 // No email service is connected by default, and nothing here sends until one
-// is. The one adapter included is for Resend. It has been tested against a
-// stand-in server, not against the real service.
+// is. The one adapter included is for Resend. It is used for two things: the
+// order email to the print vendor, and (only when switched on) campaigns.
 import { createHmac } from 'node:crypto';
 import { sameSecret } from './http.js';
 
@@ -33,10 +33,14 @@ export function readUnsubscribeToken(token, secret) {
 
 // Returns a send() function for the configured service, or null if there
 // isn't one. `fetchImpl` is only swapped out in tests.
+//
+// send() takes one address or a list in `to`, and optionally `cc`, `replyTo`
+// and an unsubscribe link (marketing email only).
 export function emailSender(env, fetchImpl = fetch) {
   if (env.EMAIL_PROVIDER !== 'resend' || !env.RESEND_API_KEY || !env.EMAIL_FROM) return null;
   const base = env.RESEND_API_BASE || 'https://api.resend.com';
-  return async function send({ to, subject, text, unsubscribeUrl, idempotencyKey }) {
+  const list = (v) => (Array.isArray(v) ? v : v ? [v] : []);
+  return async function send({ to, cc, replyTo, subject, text, unsubscribeUrl, idempotencyKey }) {
     const res = await fetchImpl(`${base}/emails`, {
       method: 'POST',
       headers: {
@@ -47,10 +51,12 @@ export function emailSender(env, fetchImpl = fetch) {
       },
       body: JSON.stringify({
         from: env.EMAIL_FROM,
-        to: [to],
+        to: list(to),
+        ...(list(cc).length ? { cc: list(cc) } : {}),
+        ...(list(replyTo).length ? { reply_to: list(replyTo) } : {}),
         subject,
         text,
-        headers: { 'List-Unsubscribe': `<${unsubscribeUrl}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
+        ...(unsubscribeUrl ? { headers: { 'List-Unsubscribe': `<${unsubscribeUrl}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' } } : {}),
       }),
     });
     const body = await res.json().catch(() => ({}));

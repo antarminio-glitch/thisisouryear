@@ -141,7 +141,7 @@ root.querySelector('[data-signout]').addEventListener('click', () => {
   showGate('');
 });
 
-const VIEWS = { setup, season, campaigns, quotes, fans };
+const VIEWS = { setup, orders, season, campaigns, quotes, fans };
 function open(name, preloaded) {
   if (!VIEWS[name]) name = 'setup';
   for (const t of tabs) t.setAttribute('aria-current', t.dataset.tab === name ? 'page' : 'false');
@@ -172,6 +172,7 @@ async function setup(preloaded) {
     ['Order records', s.stripe.webhook ? 'On' : 'Off. Paid orders are not being recorded here.'],
     ['Saving things (orders, quotes, photos)', s.storage === 'unavailable' ? 'Not available' : 'Working'],
     ['Site address', s.siteUrl ?? 'Not set'],
+    ['Order email to the vendor', s.orderEmail.ready ? `On. Goes to ${s.orderEmail.to.join(', ')}${s.orderEmail.cc.length ? `, copy to ${s.orderEmail.cc.join(', ')}` : ''}.` : `Off. Missing: ${s.orderEmail.missing.join(', ')}.`],
     ['Marketing email', s.email.ready ? 'Ready' : 'Off'],
     ['Color reference', `Version ${s.colors.version}. ${s.colors.appliedSurfaces} surfaces from the reference, ${s.colors.customSurfaces.length} custom.`],
     ['Cities with vendor-approved colors', `${s.colors.vendorApprovedCities} of ${s.colors.cities}`],
@@ -179,7 +180,7 @@ async function setup(preloaded) {
     ['Ask about marketing email at checkout', yes(s.settings.collectMarketingConsent)],
     ['Gift notes', yes(s.settings.giftNotes)],
     ['Sales tax collection', yes(s.settings.automaticTax)],
-    ['Bulk discount tiers', String(s.settings.bulkTiers)],
+    ['Bulk pricing', s.bulkTiers.length ? s.bulkTiers.map((t) => `${t.minQuantity}+ items ${t.percentOff}% off`).join(', ') : 'None'],
   ];
   const counts = s.counts
     ? [
@@ -444,6 +445,90 @@ async function campaigns() {
         out,
         h('details', {}, h('summary', { text: 'Send it for real' }), field('Type: SEND elimination, then the city shown in the box', sendConfirm, 'This emails real customers. It cannot be undone. Each person can only ever get it once.'), send),
       ),
+    );
+  };
+  draw();
+}
+
+// ---------- orders ----------
+async function orders() {
+  const draw = async (message = '', kind = '') => {
+    const res = await call('orders.list');
+    if (!res.ok) return failed(res);
+    const { orders: list, orderEmail } = res.body;
+
+    const out = h('div', { class: 'preview-out' });
+    const testPreview = button('Preview the order email', null);
+    testPreview.addEventListener(
+      'click',
+      busy(testPreview, async () => {
+        const r = await call('orders.test_email', {});
+        out.replaceChildren(r.ok ? h('pre', { text: `Subject: ${r.body.preview.subject}\n\n${r.body.preview.text}` }) : note(problem(r), 'bad'));
+      }),
+    );
+    const testSend = button('Send a test email', null);
+    testSend.addEventListener(
+      'click',
+      busy(testSend, async () => {
+        const r = await call('orders.test_email', { send: true });
+        out.replaceChildren(r.ok ? note(`Test sent to ${r.body.to.join(', ')}${r.body.cc.length ? `, copy to ${r.body.cc.join(', ')}` : ''}. Check that it arrived.`) : note(problem(r), 'bad'));
+      }),
+    );
+
+    const rows = list.map((o) => {
+      const status = o.vendorEmail?.status ?? 'none';
+      const words = { sent: `Sent ${when(o.vendorEmail.at)}`, failed: `Failed: ${o.vendorEmail.error ?? ''}`, not_configured: 'Not sent: email not set up', sending: 'Sending', none: 'Not sent' }[status] ?? status;
+      const preview = button('See the email', null);
+      const holder = h('div');
+      preview.addEventListener(
+        'click',
+        busy(preview, async () => {
+          const r = await call('orders.preview', { id: o.id });
+          holder.replaceChildren(r.ok ? h('pre', { text: `Subject: ${r.body.subject}\n\n${r.body.text}` }) : note(problem(r), 'bad'));
+        }),
+      );
+      const confirm = h('input', { type: 'text', autocomplete: 'off', spellcheck: false, placeholder: 'SEND' });
+      const resend = button('Send to the vendor again', null);
+      resend.addEventListener(
+        'click',
+        busy(resend, async () => {
+          const r = await call('orders.email', { id: o.id, confirm: confirm.value.trim() });
+          draw(r.ok ? `${o.ref} sent to ${r.body.to.join(', ')}.` : problem(r), r.ok ? '' : 'bad');
+        }),
+      );
+      return h(
+        'section',
+        { class: 'card' },
+        h('h3', {}, o.ref, ' ', h('span', { class: 'tag', text: o.status })),
+        h(
+          'dl',
+          { class: 'facts' },
+          [
+            ['Paid', when(o.createdAt)],
+            ['Items', `${o.units}${o.bulkPercentOff ? `, bulk price ${o.bulkPercentOff}% off` : ''}`],
+            ['Total', money(o.totalCents)],
+            ['Ship to', o.shipTo ? [o.shipTo.name, [o.shipTo.city, o.shipTo.state].filter(Boolean).join(', ')].filter(Boolean).join(', ') : 'Not recorded'],
+            ['Vendor email', words],
+            ['Stripe reference', o.id],
+          ].map(([k, v]) => h('div', {}, h('dt', { text: k }), h('dd', { text: v }))),
+        ),
+        h('div', { class: 'btns' }, preview),
+        holder,
+        h('details', {}, h('summary', { text: 'Send the vendor email again' }), field('Type SEND to confirm', confirm, 'Only if the vendor lost it. They get a second copy.'), resend),
+      );
+    });
+
+    fill(
+      h('h2', { text: 'Orders' }),
+      h('p', { class: 'sub', text: 'Paid orders, from Stripe\'s signed messages. Each one is emailed to the vendor once, automatically. Stripe has the full details, including the customer\'s email.' }),
+      message ? note(message, kind) : null,
+      orderEmail.ready
+        ? note(`Order emails go to ${orderEmail.to.join(', ')}${orderEmail.cc.length ? `, with a copy to ${orderEmail.cc.join(', ')}` : ''}.`)
+        : note(`Order emails are off. Missing: ${orderEmail.missing.join(', ')}.`, 'bad'),
+      h('div', { class: 'btns' }, testPreview, testSend),
+      out,
+      h('h3', { text: `Recent orders (${list.length})` }),
+      list.length ? rows : note('No paid orders recorded yet. They show up here once the Stripe webhook is set up and someone buys.'),
     );
   };
   draw();

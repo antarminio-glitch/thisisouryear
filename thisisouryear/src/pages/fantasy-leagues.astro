@@ -5,12 +5,14 @@ import Shirt from '../components/Shirt.astro';
 import catalog from '../data/catalog.json';
 import store from '../data/store.json';
 
-const tiers = catalog.bulk?.tiers ?? [];
+const tiers = [...(catalog.bulk?.tiers ?? [])].sort((a, b) => a.minQuantity - b.minQuantity);
+// "12+ shirts: 10% off. 24+: 15% off. 48+: 20% off."
+const tierLine = tiers.map((t, i) => `${t.minQuantity}+${i === 0 ? ' shirts' : ''}: ${t.percentOff}% off`).join('. ');
 ---
 
 <Layout
   title="Fantasy League Punishment Shirts"
-  description="Last place. Wrong colors. The loser of your fantasy league wears the winner's colors. Build one order in mixed sizes or ask for a bulk quote."
+  description={`Last place. Wrong colors. The loser of your fantasy league wears the winner's colors. One order in mixed sizes${tiers.length ? `, with bulk pricing from ${tiers[0].minQuantity} shirts` : ''}.`}
 >
   <ShopData />
   <div class="wrap page builder" data-league>
@@ -19,6 +21,7 @@ const tiers = catalog.bulk?.tiers ?? [];
       Simple rule: whoever finishes last wears the winner's colors. Commissioners, build one order in everybody's size, or
       ask for a quote on a bigger batch.
     </p>
+    {tiers.length > 0 && <p class="tiers">{tierLine}. Taken off automatically at checkout.</p>}
 
     <div class="builder-grid">
       <div class="builder-stage">
@@ -48,12 +51,15 @@ const tiers = catalog.bulk?.tiers ?? [];
         <dl class="total" data-total hidden>
           <div><dt>Shirts</dt><dd data-count></dd></div>
           <div><dt>Subtotal</dt><dd data-subtotal></dd></div>
+          <div data-bulk-row hidden><dt data-bulk-label>Bulk discount</dt><dd data-bulk></dd></div>
           <div><dt>Shipping</dt><dd data-shipping></dd></div>
+          <div class="grand"><dt>Total</dt><dd data-grand></dd></div>
         </dl>
+        <p class="bulk-note" data-bulk-note hidden></p>
         <p class="hint">
           {
             tiers.length
-              ? "Bulk pricing isn't automatic. Totals here use the regular price. Ask for a quote and we'll confirm yours before you pay."
+              ? `Bulk pricing counts every shirt in the order, all sizes together. More than ${store.maxQuantity} of one size, or more than ${store.maxOrderQuantity} in all, goes through a quote.`
               : "There's no bulk discount set up, so totals use the regular price. A quote request is how you ask for one."
           }
         </p>
@@ -227,13 +233,34 @@ const tiers = catalog.bulk?.tiers ?? [];
         reason ||= !shop.isSellable(product) || r.quantity > shop.store.maxQuantity ? 'Some rows can only go on a quote request, so this list can\'t be added to the cart as is.' : '';
       }
     }
+    if (count > (shop.store.maxOrderQuantity ?? Infinity)) {
+      allOk = false;
+      reason ||= `More than ${shop.store.maxOrderQuantity} shirts in one order goes through a quote request.`;
+    }
     const total = $('[data-total]')!;
     total.hidden = !(allOk && city);
+    // Bulk pricing, the same rule checkout uses.
+    const tier = shop.bulkTierFor(count);
+    let saving = 0;
+    if (tier) for (const r of state.rows) { const f = check(r); if (f.ok) saving += (f.priceCents - shop.bulkPrice(f.priceCents, tier.percentOff)) * r.quantity; }
     if (allOk && city) {
       $('[data-count]')!.textContent = String(count);
       $('[data-subtotal]')!.textContent = dollars(subtotal);
+      $('[data-bulk-row]')!.hidden = !saving;
+      $('[data-bulk-label]')!.textContent = tier ? `Bulk discount (${tier.percentOff}% off)` : 'Bulk discount';
+      $('[data-bulk]')!.textContent = `−${dollars(saving)}`;
       $('[data-shipping]')!.textContent = `${dollars(shop.store.shippingCents)} flat`;
+      $('[data-grand]')!.textContent = dollars(subtotal - saving + shop.store.shippingCents);
     }
+    const next = shop.nextTierFor(count);
+    show(
+      $('[data-bulk-note]'),
+      allOk && city && shop.bulkTiers.length
+        ? next
+          ? `Add ${next.unitsAway} more ${next.unitsAway === 1 ? 'shirt' : 'shirts'} and every shirt is ${next.percentOff}% off.`
+          : `Biggest bulk discount applied: ${tier!.percentOff}% off every shirt.`
+        : '',
+    );
     show($('[data-availability]'), reason);
     $<HTMLButtonElement>('[data-add]')!.disabled = !!reason;
     show($('[data-msg]'), '');
@@ -365,5 +392,16 @@ const tiers = catalog.bulk?.tiers ?? [];
     width: 1px;
     height: 1px;
     overflow: hidden;
+  }
+  .tiers {
+    margin: -6px 0 0;
+    font-weight: 600;
+  }
+  .bulk-note {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    background: var(--panel);
+    font-weight: 600;
   }
 </style>

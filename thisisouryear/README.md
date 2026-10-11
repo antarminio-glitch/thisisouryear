@@ -140,7 +140,7 @@ To put a design on sale, set its `status` to `"live"`, give it an `artworkVersio
 
 `npm run check` refuses a product marked sellable with something missing, so you can't half-launch one by accident.
 
-**Bulk discounts:** `bulk.tiers` is empty, so the fantasy league page says plainly there's no discount and offers a quote request instead. Add tiers like `{ "minQuantity": 12, "percentOff": 10 }` once you've decided. Tiers are shown on the league page and noted on each quote request. Checkout never applies a discount by itself: you answer the quote and settle the price by hand.
+**Bulk pricing:** `bulk.tiers` sets it: 12+ items 10% off, 24+ 15% off, 48+ 20% off. Every item in the order counts, all sizes, colors and kinds of order together, and the best tier reached applies to everything, upcharged sizes included. The server works it out at checkout, the cart shows the saving and how many more items reach the next tier, and Stripe's page shows each line at its bulk price. Change the numbers here and push. A bigger order must always get a bigger discount, or the data check refuses it.
 
 **Matching sets:** `sets.discountCents` is 0, so a set is just both items at regular price, and the page says so.
 
@@ -153,7 +153,7 @@ To put a design on sale, set its `status` to `"live"`, give it an `artworkVersio
 | `contactEmail` | Shows on the contact, shipping, privacy, terms, fans and thank-you pages. `hello@thisisouryear.team` is a placeholder |
 | `shippingCents`, `shippingLabel`, `shipMinDays`, `shipMaxDays` | Flat shipping per order and the delivery estimate. `0` is free shipping |
 | `automaticTax` | Off. To collect sales tax, set up Stripe Tax in your Stripe dashboard first, then set this to `true` |
-| `maxQuantity`, `maxCartLines` | The most of one item, and the most lines, in one order. Bigger league orders go through a quote request |
+| `maxQuantity`, `maxOrderQuantity`, `maxCartLines` | The most of one size (50), the most items in one order (100), and the most lines. Anything bigger goes through a quote request |
 | `collectMarketingConsent` | Off. When `true`, Stripe's checkout asks shoppers whether they want marketing email. Nobody can ever get a campaign email without having ticked that box |
 | `giftNotes` | Off. When `true`, the rival gift page shows a gift note box. Only turn it on if the vendor will actually include the note |
 | `noteMaxLength`, `leagueNameMaxLength` | Limits for those two text boxes |
@@ -212,19 +212,20 @@ Old `/teams/[city]` addresses redirect to `/[city]/`.
 
 The browser never sets a price. It sends which product, design, city, size, quantity and purchase mode, and the server looks everything up in the catalog. A made-up price from the browser is ignored, an item that isn't for sale is refused, and half a matching set is refused.
 
-Every Stripe order line carries this metadata: `team_id`, `city`, `colors`, `colorway_version`, `design_id`, `artwork_version`, `product_id`, `product_style`, `audience`, `size`, `variant_key`, `provider_variant_id`, `fulfillment_provider`, `print_approval`, `purchase_mode`, and when they apply, `bundle_id` (matching sets), `league_order_id` and `league_name` (league orders), `recipient_team_id` and `gift_note` (rival gifts). The order itself carries `customer_favorite_team_id` if the shopper told us their own city, kept apart from what they bought.
+Every Stripe order line carries this metadata: `team_id`, `city`, `colors`, `colorway_version`, `design_id`, `artwork_version`, `product_id`, `product_style`, `audience`, `size`, `variant_key`, `provider_variant_id`, `fulfillment_provider`, `print_approval`, `purchase_mode`, `bulk_percent_off` when a bulk price applied, and when they apply, `bundle_id` (matching sets), `league_order_id` and `league_name` (league orders), `recipient_team_id` and `gift_note` (rival gifts). The order itself carries `customer_favorite_team_id` if the shopper told us their own city, kept apart from what they bought.
 
-**Filling orders** is manual for now. Each paid order shows in your Stripe dashboard under **Payments**, with the item spelled out and the metadata above. Send that to your print vendor.
+**Filling orders** happens by email. Every paid order is emailed to the vendor (`ORDER_EMAIL_TO`) with a copy to you (`ORDER_EMAIL_CC`): where to ship, what to print, and each item's exact colors with HEX and Pantone. No prices and no customer email address. It goes out once per order, even when Stripe repeats itself, and if the email service fails, Stripe is told and tries again. The admin screen's Orders tab shows every order, whether the email went, a preview of it, a test email, and a resend button. Stripe still has the full order under **Payments**.
 
-If `STRIPE_WEBHOOK_SECRET` is set, every paid order is also recorded on the site (so campaigns know who bought what). Without it, nothing is recorded and campaigns have nobody to email.
+All of this hangs on `STRIPE_WEBHOOK_SECRET`. With it, every paid order is recorded on the site and emailed to the vendor. Without it, nothing is recorded, no order email goes out, and you'd be filling orders from the Stripe dashboard by hand.
 
 ---
 
 ## The admin screen
 
-Open `/admin/` and enter the password you saved in Netlify as `ADMIN_TOKEN`. Five sections:
+Open `/admin/` and enter the password you saved in Netlify as `ADMIN_TOKEN`. Six sections:
 
 - **Setup**: reads the real settings and says exactly what isn't set up yet, by name. Start here
+- **Orders**: every paid order, whether the vendor email went out, a preview of it, a test email to check the setup, and a resend button
 - **Season**: enter the round the season is in and each city's status, with where you checked it. Recording a loss changes nothing. A city only becomes "eliminated" when you say why (mathematically, or lost a playoff game) and cite a source. The bandwagon only shows survivors when the round is confirmed, recent, and all 32 cities have a confirmed status
 - **Campaigns**: all five start switched off. Turning one on takes typing `ACTIVATE` and its name. Window campaigns (schedule release, Week 1) need real dates for that season. The elimination follow-up has a dry run that shows who would get the email and the exact words, and sends nothing
 - **Quotes**: league quote requests, to answer by email and mark as answered or ordered
@@ -259,11 +260,13 @@ In Netlify, open the project, then **Project configuration > Environment variabl
 | `ADMIN_TOKEN` | The admin password. 16 characters or more. Without it the admin screen is off |
 | `BUILD_HOOK_URL` | From Netlify: **Build & deploy > Build hooks > Add build hook**. Lets the site rebuild itself every morning so counters stay right |
 | `CAMPAIGNS_LIVE` | Must be exactly `true` before any campaign email can go out |
-| `EMAIL_PROVIDER` | `resend` is the only service the site knows |
-| `RESEND_API_KEY` | From resend.com |
-| `EMAIL_FROM` | The address emails come from, on a domain verified at Resend |
+| `EMAIL_PROVIDER` | `resend` is the only service the site knows. Needed for order emails |
+| `RESEND_API_KEY` | From resend.com. Needed for order emails |
+| `EMAIL_FROM` | The address emails come from, on a domain verified at Resend, like `This Is Our Year <orders@thisisouryear.team>`. Needed for order emails |
 | `EMAIL_POSTAL_ADDRESS` | Your mailing address. Marketing email has to show one |
 | `UNSUBSCRIBE_SECRET` | Any long random string (16+). Signs the unsubscribe links |
+| `ORDER_EMAIL_TO` | The vendor's email. Every paid order goes here. Several addresses can be separated by commas |
+| `ORDER_EMAIL_CC` | Your email, for a copy of every order. The vendor's replies come here. With only this set, orders come to you to forward |
 
 After adding a variable, go to **Deploys** and choose **Trigger deploy**.
 
@@ -318,7 +321,7 @@ netlify.toml           tells Netlify how to build and serve the site
 
 ## Not built yet
 
-- Sending each paid order to a print service automatically (orders are forwarded by hand from Stripe)
+- Sending orders into a print service's own system. Orders reach the vendor by email
 - Real product photos
 - An email service other than Resend, and the Resend adapter hasn't been exercised against the real service
 - Anything that posts to social media. The repost queue is a to-do list for a person

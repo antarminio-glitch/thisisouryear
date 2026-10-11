@@ -7,10 +7,12 @@
 // Paid orders are what campaigns and reports are built from. A button click on
 // the site is never counted as a sale.
 import { json, sha256 } from './http.js';
+import { shipToFrom, sendOrderEmail } from './order-email.js';
 
 const LINE_KEYS = [
   'team_id', 'design_id', 'product_id', 'product_style', 'audience', 'size', 'purchase_mode', 'bundle_id',
   'league_order_id', 'recipient_team_id', 'variant_key', 'provider_variant_id', 'artwork_version', 'colorway_version',
+  'league_name', 'gift_note', 'print_approval', 'bulk_percent_off',
 ];
 
 export const customerIdFor = (email) => `c_${sha256(String(email).trim().toLowerCase()).slice(0, 24)}`;
@@ -30,6 +32,9 @@ export async function recordPaidOrder({ session, stripe, storage, now }) {
     favoriteTeamId: session.metadata?.customer_favorite_team_id ?? null,
     status: 'paid',
     totalCents: session.amount_total ?? null,
+    // Where the vendor ships it. Stripe collected it at checkout.
+    shipTo: shipToFrom(session),
+    bulkPercentOff: session.metadata?.bulk_percent_off ? Number(session.metadata.bulk_percent_off) : 0,
     lines: (items.data ?? []).map((li) => {
       const meta = li.price?.product?.metadata ?? {};
       const line = { quantity: li.quantity ?? 1, amountCents: li.amount_total ?? null };
@@ -57,7 +62,8 @@ export async function markRefunded({ charge, storage, now }) {
   return { found: true, order };
 }
 
-export function makeWebhookHandler({ env, stripeFor, getStorage, now = () => new Date() }) {
+// `shop` and `palettes` are only needed for the order email to the vendor.
+export function makeWebhookHandler({ env, stripeFor, getStorage, shop = null, palettes = null, fetchImpl = fetch, now = () => new Date() }) {
   return async (req) => {
     if (req.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: { Allow: 'POST' } });
     const secret = env.STRIPE_WEBHOOK_SECRET;
@@ -81,7 +87,16 @@ export function makeWebhookHandler({ env, stripeFor, getStorage, now = () => new
       if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
         const session = event.data.object;
         // "completed" can arrive before a slow payment method has paid.
-        if (session.payment_status === 'paid') await recordPaidOrder({ session, stripe, storage, now });
+        if (session.payment_status === 'paid') {
+          await recordPaidOrder({ session, stripe, storage, now });
+          // Tell the vendor. Runs again on Stripe's repeats, but only ever
+          // sends once. If it fails, Stripe is told, and tries again later.
+          if (shop) {
+            const sent = await sendOrderEmail({ orderId: session.id, storage, shop, palettes, env, fetchImpl, now });
+            if (sent.status === 'failed') throw new Error(`Order email failed: ${sent.error}`);
+            if (sent.status === 'not_configured') console.warn(`Order ${session.id} recorded, but no order email went out. Missing: ${sent.missing.join(', ')}.`);
+          }
+        }
       } else if (event.type === 'charge.refunded') {
         await markRefunded({ charge: event.data.object, storage, now });
       }

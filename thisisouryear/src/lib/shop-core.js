@@ -118,12 +118,31 @@ export function createShop({ teams, catalog, store, palettes = null, approvals =
     return `${d.name} ${p.name}, ${c.name}, ${c.colors}, Size ${size}`;
   }
 
+  // Bulk pricing. Tiers come from catalog.json and count every item in the
+  // order, whatever the size, color or kind of order. The best tier reached
+  // applies to every item.
+  const tiers = [...(catalog.bulk?.tiers ?? [])]
+    .filter((t) => Number.isInteger(t.minQuantity) && t.minQuantity > 0 && Number.isInteger(t.percentOff) && t.percentOff > 0 && t.percentOff < 100)
+    .sort((a, b) => a.minQuantity - b.minQuantity);
+
+  function bulkTierFor(units) {
+    let best = null;
+    for (const t of tiers) if (units >= t.minQuantity) best = t;
+    return best;
+  }
+  function nextTierFor(units) {
+    const t = tiers.find((x) => units < x.minQuantity);
+    return t ? { ...t, unitsAway: t.minQuantity - units } : null;
+  }
+  // The discounted price of one item, rounded to the cent.
+  const bulkPrice = (unitCents, percentOff) => (percentOff ? Math.round((unitCents * (100 - percentOff)) / 100) : unitCents);
+
   // Checks a whole cart and prices it. Every line comes back marked ok or not,
   // with a plain-English reason. Totals are only given when every line is ok.
   function quote(rawItems) {
     const problems = [];
     if (!Array.isArray(rawItems) || rawItems.length === 0) {
-      return { ok: false, lines: [], problems: ['Your cart is empty.'], subtotalCents: 0, shippingCents: 0, totalCents: 0 };
+      return { ok: false, lines: [], problems: ['Your cart is empty.'], subtotalCents: 0, shippingCents: 0, totalCents: 0, bulk: null };
     }
     if (rawItems.length > store.maxCartLines) {
       return {
@@ -133,6 +152,7 @@ export function createShop({ teams, catalog, store, palettes = null, approvals =
         subtotalCents: 0,
         shippingCents: 0,
         totalCents: 0,
+        bulk: null,
       };
     }
 
@@ -285,11 +305,34 @@ export function createShop({ teams, catalog, store, palettes = null, approvals =
       }
     }
 
-    const ok = lines.every((l) => l.ok);
+    // Very big orders go through a quote, so the owner can check the vendor
+    // can take them.
+    const units = lines.reduce((n, l) => n + (l.ok ? l.quantity : 0), 0);
+    if (Number.isInteger(store.maxOrderQuantity) && units > store.maxOrderQuantity) {
+      problems.push(`That's more than ${store.maxOrderQuantity} items in one order. Ask for a bulk quote and we'll sort it out with you.`);
+    }
+
+    // Bulk pricing, worked out on every item in the order.
+    const tier = bulkTierFor(units);
+    const percentOff = tier?.percentOff ?? 0;
+    let savingsCents = 0;
+    for (const l of lines) {
+      if (!l.ok) continue;
+      l.regularUnitCents = l.unitCents;
+      if (percentOff) {
+        l.unitCents = bulkPrice(l.regularUnitCents, percentOff);
+        l.lineCents = l.unitCents * l.quantity;
+        l.metadata.bulk_percent_off = String(percentOff);
+        savingsCents += (l.regularUnitCents - l.unitCents) * l.quantity;
+      }
+    }
+    const bulk = { units, percentOff, minQuantity: tier?.minQuantity ?? null, savingsCents, next: nextTierFor(units) };
+
+    const ok = lines.every((l) => l.ok) && problems.length === 0;
     const subtotalCents = ok ? lines.reduce((sum, l) => sum + l.lineCents, 0) : 0;
     const shippingCents = ok ? store.shippingCents : 0;
     for (const l of lines) if (!l.ok) problems.push(l.message);
-    return { ok, lines, problems, subtotalCents, shippingCents, totalCents: subtotalCents + shippingCents };
+    return { ok, lines, problems, subtotalCents, shippingCents, totalCents: subtotalCents + shippingCents, bulk };
   }
 
   return {
@@ -307,6 +350,10 @@ export function createShop({ teams, catalog, store, palettes = null, approvals =
     availability,
     priceRange,
     itemName,
+    bulkTiers: tiers,
+    bulkTierFor,
+    nextTierFor,
+    bulkPrice,
     quote,
   };
 }

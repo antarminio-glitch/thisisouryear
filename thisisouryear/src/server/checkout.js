@@ -53,9 +53,11 @@ function publicQuote(quote) {
       message: l.message,
       notices: l.notices,
       unitCents: l.unitCents ?? null,
+      regularUnitCents: l.regularUnitCents ?? null,
       lineCents: l.lineCents ?? null,
       name: l.name ?? null,
     })),
+    bulk: quote.bulk ?? null,
   };
 }
 
@@ -108,6 +110,7 @@ export function makeCheckoutHandler({ shop, env, stripeFor }) {
           league_order_ids: clip(unique(lines.map((l) => l.leagueOrderId)).join(','), 480),
           league_name: unique(lines.map((l) => l.leagueName))[0] ?? '',
         };
+    if (quote.bulk?.percentOff) summary.bulk_percent_off = String(quote.bulk.percentOff);
     for (const k of Object.keys(summary)) if (summary[k] === '') delete summary[k];
 
     // The shopper's own city is optional and kept apart from what they bought.
@@ -124,14 +127,20 @@ export function makeCheckoutHandler({ shop, env, stripeFor }) {
           quantity: l.quantity,
           // Only a plain single-item order can change quantity on Stripe's
           // page. Sets and league orders keep the exact quantities chosen.
+          // The most it allows stays under the first bulk tier, so nobody pays
+          // full price for an order that should have been discounted.
           ...(one && one.mode === 'standard' && order.single
-            ? { adjustable_quantity: { enabled: true, minimum: 1, maximum: store.maxQuantity } }
+            ? { adjustable_quantity: { enabled: true, minimum: 1, maximum: Math.max(1, Math.min(store.maxQuantity, (shop.bulkTiers[0]?.minQuantity ?? store.maxQuantity + 1) - 1)) } }
             : {}),
           price_data: {
             currency: catalog.currency,
             unit_amount: l.unitCents,
             ...(tax ? { tax_behavior: 'exclusive' } : {}),
-            product_data: { name: l.name, metadata: l.metadata },
+            product_data: {
+              name: l.name,
+              ...(l.unitCents < l.regularUnitCents ? { description: `Bulk price: ${quote.bulk.percentOff}% off ${quote.bulk.minQuantity}+ items.` } : {}),
+              metadata: l.metadata,
+            },
           },
         })),
         shipping_address_collection: { allowed_countries: ['US'] },

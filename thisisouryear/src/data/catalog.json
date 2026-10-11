@@ -75,7 +75,11 @@
   ],
   "bulk": {
     "quoteRequests": true,
-    "tiers": []
+    "tiers": [
+      { "minQuantity": 12, "percentOff": 10 },
+      { "minQuantity": 24, "percentOff": 15 },
+      { "minQuantity": 48, "percentOff": 20 }
+    ]
   },
   "sets": {
     "discountCents": 0

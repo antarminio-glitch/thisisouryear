@@ -99,12 +99,21 @@ export function validateData({ teams, palettes, catalog, store, history, stories
       warn(`${where}: has a price but is not sellable, so the price is never shown.`);
     }
   }
+  const tierMins = new Set();
   for (const t of catalog?.bulk?.tiers ?? []) {
     if (!Number.isInteger(t.minQuantity) || !Number.isInteger(t.percentOff)) err('catalog.json bulk tier: needs whole-number minQuantity and percentOff.');
+    else if (t.minQuantity < 2) err(`catalog.json bulk tier: minQuantity ${t.minQuantity} is too small. A bulk tier starts at 2 or more.`);
+    else if (t.percentOff < 1 || t.percentOff > 90) err(`catalog.json bulk tier at ${t.minQuantity}: percentOff has to be between 1 and 90.`);
+    if (tierMins.has(t.minQuantity)) err(`catalog.json bulk tiers: two tiers start at ${t.minQuantity}.`);
+    tierMins.add(t.minQuantity);
+  }
+  const sortedTiers = [...(catalog?.bulk?.tiers ?? [])].sort((a, b) => a.minQuantity - b.minQuantity);
+  for (let i = 1; i < sortedTiers.length; i++) {
+    if (sortedTiers[i].percentOff <= sortedTiers[i - 1].percentOff) err('catalog.json bulk tiers: a bigger order has to get a bigger discount.');
   }
 
   // ---- store settings
-  for (const k of ['shippingCents', 'maxQuantity', 'maxCartLines', 'shipMinDays', 'shipMaxDays', 'noteMaxLength', 'leagueNameMaxLength']) {
+  for (const k of ['shippingCents', 'maxQuantity', 'maxOrderQuantity', 'maxCartLines', 'shipMinDays', 'shipMaxDays', 'noteMaxLength', 'leagueNameMaxLength']) {
     if (!Number.isInteger(store?.[k]) || store[k] < 0) err(`store.json: ${k} must be a whole number.`);
   }
   if (!store?.contactEmail) err('store.json: contactEmail is missing.');
