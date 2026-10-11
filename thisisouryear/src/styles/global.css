@@ -363,11 +363,7 @@ a {
 }
 
 /* The real photo. The lettering on it is the same vector artwork as on the
-   drawings; a faint shadow settles it onto the cloth. */
-.shirt-real .print {
-  opacity: 0.96;
-  filter: drop-shadow(0 0.4px 0.4px rgb(0 0 0 / 0.16));
-}
+   drawings, drawn solid: no opacity, blending or shadow to wash it out. */
 /* Photos come on white, so anything holding one goes white too. */
 .shirt-real {
   background: #fff;
@@ -381,6 +377,7 @@ a {
   --line1: #7b8087;
   --line2: #7b8087;
   --outline: #c3c7cb;
+  --border: #4b5057;
 }
 
 /* ---------- Shopping interface: stage, fields, size buttons ---------- */
@@ -394,6 +391,7 @@ a {
   --line1: #ffffff;
   --line2: #ffffff;
   --outline: #d7dadd;
+  --border: #3a3e43;
   background: var(--tile);
 }
 .concept {

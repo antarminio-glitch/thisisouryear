@@ -57,6 +57,15 @@ function softText(bg, text) {
   return text;
 }
 
+// The solid dark border around the first line of lettering: the shirt color,
+// or the shirt color darkened until it clearly separates white letters from
+// the outline. Never the fabric showing through.
+export function borderFor(shirt) {
+  let color = shirt;
+  for (let i = 0; i < 40 && contrast(color, WHITE) < 6; i++) color = mix(color, '#000000', 0.94);
+  return color;
+}
+
 // Turns a city's four colors into the full set of page colors.
 export function themeFor(team) {
   const page = readableOn(team.shirt);
@@ -76,6 +85,7 @@ export function themeFor(team) {
     '--line1': team.line1,
     '--line2': team.line2,
     '--outline': team.outline,
+    '--border': borderFor(team.shirt),
   };
 }
 

@@ -1,6 +1,7 @@
 // Small helpers for showing a city's colors in words.
 import teams from '../data/teams.json';
 import palettes from '../data/palettes.json';
+import { borderFor } from './colors.js';
 
 export { teams };
 
@@ -26,7 +27,7 @@ export function colorNames(team) {
   return Object.fromEntries(['shirt', 'line1', 'line2', 'outline'].map((s) => [s, tidy(fromPalette(s) ?? fallback[s])]));
 }
 
-export const shirtVars = (t) => ({ '--shirt': t.shirt, '--line1': t.line1, '--line2': t.line2, '--outline': t.outline });
+export const shirtVars = (t) => ({ '--shirt': t.shirt, '--line1': t.line1, '--line2': t.line2, '--outline': t.outline, '--border': borderFor(t.shirt) });
 
 // What the search boxes match: the city name plus any nearby places listed
 // under "aka" in teams.json.

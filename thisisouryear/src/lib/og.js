@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import * as fontkit from 'fontkit';
-import { themeFor } from './colors.js';
+import { themeFor, borderFor } from './colors.js';
 import { DEFAULT_LINES } from './garment.js';
 
 const fontDir = path.join(process.cwd(), 'public', 'fonts');
@@ -62,7 +62,7 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 // file name, so when the counter ticks over or a color changes the card gets
 // a new address and old copies can't linger in caches.
 export function cardKey(team, counterText, lines = DEFAULT_LINES, version = '') {
-  const input = JSON.stringify([team.slug, team.name, team.colors, team.shirt, team.line1, team.line2, team.outline, counterText, lines, version, 'card-reference-v1']);
+  const input = JSON.stringify([team.slug, team.name, team.colors, team.shirt, team.line1, team.line2, team.outline, counterText, lines, version, 'card-reference-v2']);
   return createHash('sha1').update(input).digest('hex').slice(0, 8);
 }
 
@@ -83,9 +83,9 @@ export function cardSvg(team, counterText, lines = DEFAULT_LINES, siteHost = 'th
   // The share image uses exactly the same path artwork as the shirt.
   const size = 130;
   const top = 175;
-  const palette = { line1: team.line1, line2: team.line2, shirt: team.shirt, outline: team.outline };
+  const palette = { line1: team.line1, line2: team.line2, shirt: team.shirt, outline: team.outline, border: borderFor(team.shirt) };
   const lettering = varsityArtwork({ lines, x: W / 2, top: 50, width: 600, capHeight: 144, rowGap: 23 })
-    .replace(/var\(--(line1|line2|shirt|outline), [^)]+\)/g, (_, key) => palette[key]);
+    .replace(/var\(--(border|line1|line2|shirt|outline), (?:[^()]|\([^()]*\))*\)/g, (_, key) => palette[key]);
 
   // The counter line, wrapped to at most three lines.
   // Each sentence starts on its own line.
