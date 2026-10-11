@@ -3,7 +3,7 @@
 import { createShop } from '../lib/shop-core.js';
 
 const el = document.getElementById('shop-data');
-export const data = el ? JSON.parse(el.textContent) : { cities: [], catalog: { products: [], designs: [] }, store: {}, approvals: {}, version: null };
+export const data = el ? JSON.parse(el.textContent) : { cities: [], catalog: { products: [], designs: [] }, store: {}, approvals: {}, version: null, photos: { garments: {} } };
 export const cities = data.cities;
 export const shop = createShop({
   teams: cities,

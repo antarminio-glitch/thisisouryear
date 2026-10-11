@@ -14,3 +14,6 @@ hand off/
 private/
 *Color_Master*.json
 Store_Color_Map.json
+
+# Downloads kept by "npm run photos" so a re-run is quick.
+.cache/

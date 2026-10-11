@@ -362,28 +362,25 @@ a {
   stroke-width: 4.5;
 }
 
-/* The lettering */
-.lt text {
-  font-family: var(--display);
-  text-anchor: middle;
-  /* Round joins. Sharp (miter) joins leave hairline spikes in this font. */
-  stroke-linejoin: round;
+/* The real photo. The lettering on it is the same vector artwork as on the
+   drawings; a faint shadow settles it onto the cloth. */
+.shirt-real .print {
+  opacity: 0.96;
+  filter: drop-shadow(0 0.4px 0.4px rgb(0 0 0 / 0.16));
 }
-.lt-rim {
-  fill: var(--outline);
-  stroke: var(--outline);
+/* Photos come on white, so anything holding one goes white too. */
+.shirt-real {
+  background: #fff;
+  border-radius: 8px;
 }
-.lt-gap {
-  fill: var(--shirt);
-  stroke: var(--shirt);
+.stage:has(.shirt-real),
+.tile:has(.shirt-real) {
+  background: #fff;
 }
-.lt-1 {
-  fill: var(--line1);
-  stroke: var(--line1);
-}
-.lt-2 {
-  fill: var(--line2);
-  stroke: var(--line2);
+.stage.is-neutral:has(.shirt-real) {
+  --line1: #7b8087;
+  --line2: #7b8087;
+  --outline: #c3c7cb;
 }
 
 /* ---------- Shopping interface: stage, fields, size buttons ---------- */
@@ -902,9 +899,3 @@ tbody th {
     animation: none !important;
   }
 }
-
-/* Product photography sits on a clean studio background. */
-.shirt-real { background: #fff; border-radius: 8px; }
-.stage:has(.shirt-real) { background: #fff; }
-.tile:has(.shirt-real) { background: #fff; }
-.shirt-real .lt { filter: drop-shadow(0 0.3px 0.35px rgb(0 0 0 / 12%)); }

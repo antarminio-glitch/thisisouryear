@@ -1,92 +1,21 @@
-import { varsityArtwork, REFERENCE_LAYOUT } from './varsity-artwork.js';
-import photos from '../data/garment-photos.json' with { type: 'json' };
 // Draws the garment previews as SVG text. Plain strings in, plain strings out,
 // so the exact same drawing code runs when the site is built and in the browser
 // when someone changes a choice in the picker.
 //
-// Adult tees use supplier photos with an editable print overlay. Other
-// garments remain concept illustrations until their blanks are selected.
+// A garment is a drawing unless a real photo of the blank is passed in (see
+// src/lib/photos.js). Then the photo is shown with the lettering printed on it.
 //
 // Colors are never baked in. The drawing reads four CSS variables from whatever
 // wraps it: --shirt, --line1, --line2, --outline.
-
-// Width of each character in the Graduate font, in thousandths of the letter
-// size. Placing every letter by hand keeps the print the same shape on every
-// device, even in the moment before the font file has loaded.
-const ADVANCE = {
-  A: 657, B: 684, C: 600, D: 690, E: 636, F: 596, G: 620, H: 792, I: 392, J: 540, K: 669, L: 556, M: 946,
-  N: 812, O: 650, P: 624, Q: 650, R: 699, S: 600, T: 580, U: 740, V: 687, W: 1026, X: 649, Y: 607, Z: 596,
-  ' ': 350, "'": 240, '.': 200, ',': 200, '!': 260, '-': 509, '&': 674,
-};
-const DIGIT = 650;
+//
+// The lettering itself is the vector artwork in src/lib/varsity-artwork.js,
+// rebuilt from the reference shirt, so it is the same shape everywhere.
+import { varsityArtwork } from './varsity-artwork.js';
 
 export const DEFAULT_LINES = ['THIS IS', 'OUR YEAR'];
 
 function esc(text) {
   return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-// Width of a line of lettering, in units of the letter size.
-export function lineWidth(text, track = 0.1) {
-  const chars = [...String(text).toUpperCase()];
-  return chars.reduce((sum, c) => sum + (ADVANCE[c] ?? DIGIT) / 1000, 0) + track * (chars.length - 1);
-}
-
-function place(text, x, size, track) {
-  const chars = [...String(text).toUpperCase()];
-  const widths = chars.map((c) => ((ADVANCE[c] ?? DIGIT) / 1000) * size);
-  const total = widths.reduce((sum, w) => sum + w, 0) + track * size * (chars.length - 1);
-  let cursor = x - total / 2;
-  const centers = widths.map((w) => {
-    const center = cursor + w / 2;
-    cursor += w + track * size;
-    return center.toFixed(2);
-  });
-  return { text: chars.join(''), xs: centers.join(' ') };
-}
-
-// The chest print: two stacked lines of block lettering with the classic
-// athletic double outline. Each line is drawn three times, back to front:
-//   1. a wide stroke in the outline color
-//   2. a narrower stroke in the shirt color, which makes the gap
-//   3. the letter itself
-export function letteringSvg({
-  x = 0, // horizontal center
-  y = 0, // baseline of the first line
-  size = 46, // letter size
-  lines = DEFAULT_LINES,
-  // The rest are multiples of the letter size.
-  leading = 1.16, // distance between the two baselines
-  track = 0.1, // extra space between letters, so the outlines have room
-  weight = 0.025, // how much the letters are thickened
-  gap = 0.045, // width of the shirt-colored gap
-  rim = 0.05, // width of the outer outline
-} = {}) {
-  const fillStroke = (size * weight * 2).toFixed(2);
-  const gapStroke = (size * (weight + gap) * 2).toFixed(2);
-  const rimStroke = (size * (weight + gap + rim) * 2).toFixed(2);
-  const fills = ['lt-1', 'lt-2'];
-
-  const layers = lines
-    .slice(0, 2)
-    .map((line, i) => {
-      const p = place(line, x, size, track);
-      const at = `x="${p.xs}" y="${(y + i * size * leading).toFixed(2)}"`;
-      const t = esc(p.text);
-      return (
-        `<text ${at} class="lt-rim" stroke-width="${rimStroke}">${t}</text>` +
-        `<text ${at} class="lt-gap" stroke-width="${gapStroke}">${t}</text>` +
-        `<text ${at} class="${fills[i]}" stroke-width="${fillStroke}">${t}</text>`
-      );
-    })
-    .join('');
-  return `<g class="lt" font-size="${size}">${layers}</g>`;
-}
-
-// Picks a letter size so the widest line fits the print area.
-function fitSize(lines, maxWidth, maxSize) {
-  const widest = Math.max(...lines.map((l) => lineWidth(l)));
-  return Math.min(maxSize, Math.floor((maxWidth / (widest + 0.3)) * 10) / 10);
 }
 
 const TEE = {
@@ -105,34 +34,7 @@ const HOODIE = {
   pocket: 'M224 428L376 428L404 506Q406 512 400 512L200 512Q194 512 196 506Z',
 };
 
-// Supplier photography is a visual reference, not a selected production blank.
-// Explicit city mappings keep photo selection independent of the print references.
-const PHOTO_COLORS = {
-  arizona: 'Cardinal', atlanta: 'JetBlack', baltimore: 'TeamPurple', buffalo: 'TrueRoyal',
-  carolina: 'JetBlack', chicago: 'TrueNavy', cincinnati: 'JetBlack', cleveland: 'DkChocBrn',
-  dallas: 'TrueNavy', denver: 'TrueNavy', detroit: 'Sapphire', 'green-bay': 'DarkGreen',
-  houston: 'TrueNavy', indianapolis: 'TrueRoyal', jacksonville: 'Teal', 'kansas-city': 'Red',
-  'las-vegas': 'JetBlack', 'los-angeles-powder': 'Sapphire', 'los-angeles-royal': 'TrueRoyal',
-  miami: 'Teal', minnesota: 'Purple', 'new-england': 'TrueNavy', 'new-orleans': 'JetBlack',
-  'new-york-blue': 'TrueRoyal', 'new-york-green': 'DarkGreen', philadelphia: 'Teal',
-  pittsburgh: 'JetBlack', 'san-francisco': 'Red', seattle: 'TrueNavy',
-  'tampa-bay': 'Cardinal', tennessee: 'TrueNavy', washington: 'AthlMaroon',
-};
-
-export function photoFor(slug) {
-  return photos[PHOTO_COLORS[slug] ?? 'White'];
-}
-
-// Shared proportions reconstructed from the customer's reference shirt.
-export const PHOTO_PRINT = REFERENCE_LAYOUT;
-function photoTeeSvg(lines, slug) {
-  const photo = photoFor(slug);
-  return `<image href="${photo.src}" x="0" y="-45" width="600" height="899.38" preserveAspectRatio="none"/>` +
-    varsityArtwork({ lines, x: PHOTO_PRINT.centerX, ...PHOTO_PRINT });
-}
-
 function teeSvg(lines) {
-  const size = fitSize(lines, 290, 48);
   return (
     `<path class="tee-fill" d="${TEE.body}"/>` +
     `<g clip-path="url(#tee-clip)">` +
@@ -154,7 +56,6 @@ function teeSvg(lines) {
 }
 
 function hoodieSvg(lines) {
-  const size = fitSize(lines, 252, 42);
   return (
     `<path class="tee-fill" d="${HOODIE.body}"/>` +
     `<g clip-path="url(#hood-clip)">` +
@@ -180,14 +81,28 @@ function hoodieSvg(lines) {
   );
 }
 
-// One garment, any colors. `style` is "tee" or "hoodie". Kids' items use the
-// same drawing, a little smaller.
-export function garmentSvg({ style = 'tee', audience = 'adult', lines = DEFAULT_LINES, label = '', decorative = false, className = '', slug = '' } = {}) {
-  const isPhoto = style === 'tee' && audience === 'adult';
-  const inner = isPhoto ? photoTeeSvg(lines, slug) : style === 'hoodie' ? hoodieSvg(lines) : teeSvg(lines);
-  const body = audience === 'kids' ? `<g transform="translate(42 44) scale(0.86)">${inner}</g>` : inner;
+// A real photo of the blank garment, with the lettering placed on the chest.
+// `photo` comes from garment-photos.json: { src, hex, print }. The hex is the
+// fabric color measured from the photo where the print goes. The artwork's
+// keyline is drawn in the shirt color, so inside the print that variable is
+// set to the measured color and the fabric looks like it shows through.
+function photoSvg(photo, lines) {
+  const print = photo.print ?? { x: 300, top: 152, width: 236, capHeight: 57, rowGap: 9 };
+  const { x, top, width, capHeight, rowGap } = print;
+  return (
+    `<image href="${esc(photo.src)}" x="0" y="0" width="600" height="600" preserveAspectRatio="xMidYMid meet"/>` +
+    `<g class="print" style="--shirt:${esc(photo.hex ?? '')}">${varsityArtwork({ lines, x, top, width, capHeight, rowGap })}</g>`
+  );
+}
+
+// One garment, any colors. `style` is "tee" or "hoodie". With a `photo` the
+// real blank is shown (kids' photos are already kids-sized); without one,
+// kids' items use the same drawing, a little smaller.
+export function garmentSvg({ style = 'tee', audience = 'adult', lines = DEFAULT_LINES, label = '', decorative = false, className = '', photo = null } = {}) {
+  const inner = photo ? photoSvg(photo, lines) : style === 'hoodie' ? hoodieSvg(lines) : teeSvg(lines);
+  const body = audience === 'kids' && !photo ? `<g transform="translate(42 44) scale(0.86)">${inner}</g>` : inner;
   const a11y = decorative ? 'aria-hidden="true"' : `role="img" aria-label="${esc(label)}"`;
-  const cls = ['shirt', `shirt-${style}`, isPhoto ? 'shirt-real' : '', className].filter(Boolean).join(' ');
+  const cls = ['shirt', `shirt-${style}`, photo ? 'shirt-real' : '', className].filter(Boolean).join(' ');
   return `<svg class="${cls}" viewBox="0 0 600 600" ${a11y}>${body}</svg>`;
 }
 
