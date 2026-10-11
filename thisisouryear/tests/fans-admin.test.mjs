@@ -265,6 +265,9 @@ test('the season year rolls over in March, not January', () => {
 });
 
 test('once the refresh date passes, the setup report says the title history is out of date', () => {
-  const report = setupReport({ shop: realShop(), palettes: data.palettes, history: data.history, env: {}, storageKind: 'memory', now: new Date('2027-02-10T12:00:00Z') });
-  assert.equal(report.history.needsRefresh, true);
+  const at = (when) => setupReport({ shop: realShop(), palettes: data.palettes, history: data.history, env: {}, storageKind: 'memory', now: new Date(when) }).history.needsRefresh;
+  // Noon Eastern on the refresh day, and noon the day before.
+  const day = new Date(`${data.history.refreshBy}T17:00:00Z`);
+  assert.equal(at(day), true);
+  assert.equal(at(new Date(day.getTime() - 86_400_000)), false);
 });

@@ -112,7 +112,7 @@ export function validateData({ teams, palettes, catalog, store, history, stories
   // ---- title history
   if (history) {
     const latest = history.latestCompletedSeason;
-    if (!DATE.test(history.refreshBy ?? '')) err('history.json: refreshBy must be a date like 2027-02-01.');
+    if (!DATE.test(history.refreshBy ?? '')) err('history.json: refreshBy must be a date like 2027-02-14.');
     if (latest?.verified === true) {
       if (!slugs.has(latest.championSlug)) err(`history.json: latest champion "${latest.championSlug}" is not a city.`);
       if (!DATE.test(latest.gameDate ?? '')) err('history.json: latestCompletedSeason.gameDate must be a date.');

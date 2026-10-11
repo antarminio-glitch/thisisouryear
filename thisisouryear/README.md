@@ -177,7 +177,7 @@ Each city page says how long it's been. The facts come from this file and nowher
 - The latest champion shows "Let's run it back", and a recent winner shows "Still celebrating"
 - Anything `unknown`, not `verified`, or with no record shows "Still believing. Still our year." and no number
 
-`latestCompletedSeason` is the most recent champion, and `refreshBy` is the date after which **every** counter stops showing a number until someone updates this file. It's set to just before the next big game. After that game: update the champion, their `lastWinDate` and `lastWinSeason`, set every `verifiedOn` to today, push `refreshBy` a year out, and push.
+`latestCompletedSeason` is the most recent champion, and `refreshBy` is the date from which **every** counter stops showing a number until someone updates this file. It's set to the day the next big game is scheduled (February 14, 2027), so the counters stay right through the playoffs and go quiet the moment a new champion could exist. After that game: update the champion, their `lastWinDate` and `lastWinSeason`, set every `verifiedOn` to today, move `refreshBy` to the following year's game day, and push.
 
 The site rebuilds itself once a day (see `BUILD_HOOK_URL` below), and each page also re-checks the counter in the browser, so the number is never a day behind.
 

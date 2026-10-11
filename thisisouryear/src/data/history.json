@@ -1,7 +1,7 @@
 {
  "about": "Each city's most recent win in pro football's championship game, the one played every February since 1967. Wins under an earlier home city count for the franchise that moved. Earlier league titles from before that game existed are not counted. Checked against two independent record tables. Source links are kept with the private handoff notes.",
  "latestCompletedSeason": {"season": 2025, "championSlug": "seattle", "gameDate": "2026-02-08", "verified": true, "verifiedOn": "2026-10-10"},
- "refreshBy": "2027-02-01",
+ "refreshBy": "2027-02-14",
  "cities": {
   "arizona": {"state": "never_won", "lastWinDate": null, "lastWinSeason": null, "verified": true, "verifiedOn": "2026-10-10"},
   "atlanta": {"state": "never_won", "lastWinDate": null, "lastWinSeason": null, "verified": true, "verifiedOn": "2026-10-10"},
