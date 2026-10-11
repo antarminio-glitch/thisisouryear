@@ -386,6 +386,27 @@ a {
   stroke: var(--line2);
 }
 
+/* The real photo. The outline gap takes the fabric color measured from the
+   photo, so the shirt looks like it shows through the print. */
+.shirt-real .lt-gap {
+  fill: var(--print-gap, var(--shirt));
+  stroke: var(--print-gap, var(--shirt));
+}
+.shirt-real .print {
+  opacity: 0.96;
+  filter: drop-shadow(0 0.4px 0.4px rgb(0 0 0 / 0.16));
+}
+/* Photos come on white, so anything holding one goes white too. */
+.stage:has(.shirt-real),
+.tile:has(.shirt-real) {
+  background: #fff;
+}
+.stage.is-neutral:has(.shirt-real) {
+  --line1: #7b8087;
+  --line2: #7b8087;
+  --outline: #c3c7cb;
+}
+
 /* ---------- Shopping interface: stage, fields, size buttons ---------- */
 .stage {
   padding: 4% 6%;

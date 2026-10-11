@@ -2,17 +2,20 @@
 import { garmentSvg } from '../lib/garment.js';
 import { dollars } from '../lib/shop-core.js';
 import { data, shop, cities } from './shop-data.js';
+import { photoFor, productIdFor } from '../lib/photos.js';
 
 export { dollars };
 
 export const designById = (id) => data.catalog.designs.find((d) => d.id === id) ?? data.catalog.designs[0];
 export const productFor = (style, audience) => shop.findProduct(style, audience);
 
-// Redraws the garment for a style, fit and design. Colors come from CSS
-// variables on a parent element, so changing city doesn't need a redraw.
-export function drawGarment(holder, { style, audience, designId }, label = '') {
+// Redraws the garment for a style, fit, design and city. Lettering colors come
+// from CSS variables on a parent element. The city picks which photo of the
+// blank is shown; without one, the drawing is used.
+export function drawGarment(holder, { style, audience, designId, slug = '' }, label = '') {
   if (!holder) return;
-  holder.innerHTML = garmentSvg({ style, audience, lines: designById(designId).lines, label, decorative: !label });
+  const photo = photoFor(data.photos, productIdFor(data.catalog.products, style, audience), slug);
+  holder.innerHTML = garmentSvg({ style, audience, lines: designById(designId).lines, label, decorative: !label, photo });
 }
 
 const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);

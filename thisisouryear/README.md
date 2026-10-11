@@ -60,6 +60,7 @@ Saved things (orders, quotes, fan photos, season facts) are kept in a local stor
 | `npm run dev` | Pages only, with live reload |
 | `npm run dev:checkout` | Pages plus the server functions, like the live site |
 | `npm run check` | Checks the data files against each other |
+| `npm run photos` | Fetches the real blank-garment photos from SanMar. See "Real product photos" |
 | `npm run build` | Checks the data, then builds the site into `dist/` |
 | `npm test` | Unit tests: catalog rules, cart, checkout, counters, campaigns, fan photos, admin |
 | `npm run test:site` | Checks the built site: all 32 pages, titles, sitemap, search-engine data, and the naming rule |
@@ -86,7 +87,8 @@ Open `src/data/teams.json`. Each city is one entry:
 | `outline` | The outer outline on both lines |
 | `apply` | Which color from the reference palette each surface uses. `null` means "a custom color I chose" |
 | `aka` | Optional. Nearby places the search box should also match, like `["Texas","DFW"]` |
-| `image` | Optional. A real product photo that replaces the drawn tee |
+| `blank` | Optional. Which of the vendor's blank colors to photograph this city on, if you don't like the automatic pick. See "Real product photos" below |
+| `image` | Optional. Your own photo of the finished, printed tee. Replaces the vendor photo and the drawing |
 
 Colors are hex codes. Change the code, save, done. The page background, text color, and button color for that city all work themselves out from these four colors.
 
@@ -102,7 +104,49 @@ node scripts/import-colors.mjs <path to the color reference .json> <path to Stor
 
 The import copies hex values exactly. It never converts or guesses. Optional rows (metallics, uniform variants, unconfirmed candidates) are kept in the file but never used as a default color.
 
-**Add a city:** copy an entry, change the values, give it a palette in the map file and run the import. **Remove a city:** delete its entry and its palette.
+**Add a city:** copy an entry, change the values, give it a palette in the map file and run the import. Then run `npm run photos` so it gets a photo. **Remove a city:** delete its entry and its palette.
+
+---
+
+## Real product photos
+
+Every garment on the site is a real photo of the blank from SanMar, the supplier the print vendor buys from, with the lettering placed on the chest. No drawings, nothing generated.
+
+```
+npm run photos
+```
+
+That one command does all of it. For each garment in `src/data/garments.json` it looks the style number up on sanmar.com, reads every color that blank comes in, measures the real fabric color from each one's photo, picks the closest blank to each city's shirt color, downloads the front photo of every blank it needs, trims and squares it, and writes `src/data/garment-photos.json`. The photos land in `public/images/garments/`. Both are committed, so the live build never talks to SanMar.
+
+It prints what it chose, one line per city:
+
+```
+dallas               #0C2340  ->  True Navy              TrueNavy     distance 4.1
+```
+
+The distance is how far the city's color is from the fabric. Under 5 is the same color to most eyes; over 15 gets a note suggesting you choose by hand.
+
+**To choose a blank by hand**, add `blank` to the city in `teams.json` with the color code from that list (the code, like `TrueRoyal`, not the name):
+
+```json
+{"slug":"new-york-blue", ..., "blank":"TrueRoyal"}
+```
+
+That applies to every garment. To pick per garment, use an object keyed by the product id or the style number: `"blank":{"adult-tee":"TrueRoyal","PC78H":"Royal"}`. Two cities ship with a hand pick: New York (Blue) and Indianapolis, whose blues sit between navy and royal and would otherwise land on a purple or a navy.
+
+**To change which blanks are used**, edit `src/data/garments.json`: one entry per product, with the SanMar style number, a label, the color to show before a city is chosen, and where the print sits on that garment's photo (`print`, in the drawing's 600 by 600 space). Heathers, camo, neons and fashion colors like pinks are never picked automatically; `skipColors` is that list. A blank can still be named by hand in `blank`.
+
+Other commands:
+
+| Command | What it does |
+| --- | --- |
+| `npm run photos -- --dry-run` | Shows the picks without downloading the big photos or writing anything |
+| `npm run photos -- --force` | Fetches everything again, for example after SanMar reshoots a color |
+| `npm run photos -- --only adult-hoodie` | One garment |
+
+Pages and small images are kept in `.cache/` (ignored by git) so re-runs are quick.
+
+A city with no photo for a garment falls back to the drawing, and `npm test` tells you which. SanMar allows its customers to use this photography to sell SanMar products. Don't use the photos for anything else, and keep the source links that `garment-photos.json` records.
 
 ---
 
@@ -306,15 +350,15 @@ Anything still waiting on you or the print vendor is marked with a yellow `[CONF
 ```
 src/data/              the data files above
 src/pages/             one file per page. [slug].astro makes all 32 city pages
-src/components/        the picker, the garment drawing, the city grid
-src/lib/               shared rules: catalog and cart rules, counters, colors, share cards, search-engine data
+src/components/        the picker, the garment preview, the city grid
+src/lib/               shared rules: catalog and cart rules, counters, colors, photos, share cards, search-engine data
 src/scripts/           what runs in the browser: picker, cart, admin screen
 src/server/            what runs on Netlify: checkout, webhook, quotes, season, campaigns, email, fan photos, admin
 src/styles/global.css  site-wide look
 netlify/functions/     thin wrappers that Netlify runs. The logic is in src/server/
-scripts/               the data check and the color import
+scripts/               the data check, the color import and the photo fetch
 tests/                 unit tests, and tests/site/ for the built site
-public/                fonts, icon, and the image used when the site is shared
+public/                fonts, icon, the garment photos, and the image used when the site is shared
 netlify.toml           tells Netlify how to build and serve the site
 .env.example           every environment variable, blank
 ```
@@ -322,7 +366,7 @@ netlify.toml           tells Netlify how to build and serve the site
 ## Not built yet
 
 - Sending orders into a print service's own system. Orders reach the vendor by email
-- Real product photos
+- Photos of the finished, printed shirts. The site shows the vendor's blanks with the design placed on them digitally
 - An email service other than Resend, and the Resend adapter hasn't been exercised against the real service
 - Anything that posts to social media. The repost queue is a to-do list for a person
 - Rate limiting on the public forms. Netlify's own limits apply

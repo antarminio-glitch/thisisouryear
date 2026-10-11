@@ -1,0 +1,1075 @@
+{
+  "vendor": "SanMar",
+  "vendorSite": "https://www.sanmar.com",
+  "fetched": "2026-10-11",
+  "garments": {
+    "adult-tee": {
+      "style": "PC54",
+      "name": "Port & Company Core Cotton Tee",
+      "code": "3985",
+      "neutral": "White",
+      "print": {
+        "x": 300,
+        "y": 232,
+        "maxWidth": 236,
+        "maxSize": 40
+      },
+      "colors": {
+        "White": {
+          "name": "White",
+          "src": "/images/garments/pc54-white.webp",
+          "hex": "#EDF1F4",
+          "sourcePage": "https://www.sanmar.com/p/3985_White",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h65/h76/30561349173278/1200W_3985_White-12-PC54WhiteFlatFront5/1200W-3985-White-12-PC54WhiteFlatFront5.jpg"
+        },
+        "Cardinal": {
+          "name": "Cardinal",
+          "src": "/images/garments/pc54-cardinal.webp",
+          "hex": "#6E2735",
+          "sourcePage": "https://www.sanmar.com/p/3985_Cardinal",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hd7/hb4/30549797339166/1200W_3985_Cardinal-12-PC54CardinalFlatFront5/1200W-3985-Cardinal-12-PC54CardinalFlatFront5.jpg"
+        },
+        "JetBlack": {
+          "name": "Jet Black",
+          "src": "/images/garments/pc54-jetblack.webp",
+          "hex": "#1A1C1B",
+          "sourcePage": "https://www.sanmar.com/p/3985_JetBlack",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hb6/hd4/30560956874782/1200W_3985_JetBlack-12-PC54JetBlackFlatFront4/1200W-3985-JetBlack-12-PC54JetBlackFlatFront4.jpg"
+        },
+        "TeamPurple": {
+          "name": "Team Purple",
+          "src": "/images/garments/pc54-teampurple.webp",
+          "hex": "#3A3168",
+          "sourcePage": "https://www.sanmar.com/p/3985_TeamPurple",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h5c/h6c/30561344389150/1200W_3985_TeamPurple-12-PC54TeamPurpleFlatFront5/1200W-3985-TeamPurple-12-PC54TeamPurpleFlatFront5.jpg"
+        },
+        "TrueRoyal": {
+          "name": "True Royal",
+          "src": "/images/garments/pc54-trueroyal.webp",
+          "hex": "#1A4685",
+          "sourcePage": "https://www.sanmar.com/p/3985_TrueRoyal",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hea/h4c/30561347600414/1200W_3985_TrueRoyal-12-PC54TrueRoyalFlatFront4/1200W-3985-TrueRoyal-12-PC54TrueRoyalFlatFront4.jpg"
+        },
+        "TrueNavy": {
+          "name": "True Navy",
+          "src": "/images/garments/pc54-truenavy.webp",
+          "hex": "#202B3D",
+          "sourcePage": "https://www.sanmar.com/p/3985_TrueNavy",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hc4/haf/30561346813982/1200W_3985_TrueNavy-12-PC54TrueNavyFlatFront1/1200W-3985-TrueNavy-12-PC54TrueNavyFlatFront1.jpg"
+        },
+        "DkChocBrn": {
+          "name": "Dark Chocolate Brown",
+          "src": "/images/garments/pc54-dkchocbrn.webp",
+          "hex": "#3F3029",
+          "sourcePage": "https://www.sanmar.com/p/3985_DkChocBrn",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h31/h15/30560945668126/1200W_3985_DkChocBrn-12-PC54DkChocBrnFlatFront5/1200W-3985-DkChocBrn-12-PC54DkChocBrnFlatFront5.jpg"
+        },
+        "Royal": {
+          "name": "Royal",
+          "src": "/images/garments/pc54-royal.webp",
+          "hex": "#2869AB",
+          "sourcePage": "https://www.sanmar.com/p/3985_Royal",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h49/h70/30561336393758/1200W_3985_Royal-12-PC54RoyalFlatFront5/1200W-3985-Royal-12-PC54RoyalFlatFront5.jpg"
+        },
+        "DarkGreen": {
+          "name": "Dark Green",
+          "src": "/images/garments/pc54-darkgreen.webp",
+          "hex": "#233A32",
+          "sourcePage": "https://www.sanmar.com/p/3985_DarkGreen",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hf7/h77/30560944881694/1200W_3985_DarkGreen-12-PC54DarkGreenFlatFront5/1200W-3985-DarkGreen-12-PC54DarkGreenFlatFront5.jpg"
+        },
+        "Navy": {
+          "name": "Navy",
+          "src": "/images/garments/pc54-navy.webp",
+          "hex": "#223345",
+          "sourcePage": "https://www.sanmar.com/p/3985_Navy",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h7f/hf4/30560964018206/1200W_3985_Navy-12-PC54NavyFlatFront5/1200W-3985-Navy-12-PC54NavyFlatFront5.jpg"
+        },
+        "Teal": {
+          "name": "Teal",
+          "src": "/images/garments/pc54-teal.webp",
+          "hex": "#016575",
+          "sourcePage": "https://www.sanmar.com/p/3985_Teal",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/he5/h0b/30561343602718/1200W_3985_Teal-12-PC54TealFlatFront5/1200W-3985-Teal-12-PC54TealFlatFront5.jpg"
+        },
+        "Red": {
+          "name": "Red",
+          "src": "/images/garments/pc54-red.webp",
+          "hex": "#AA1928",
+          "sourcePage": "https://www.sanmar.com/p/3985_Red",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hc0/h0f/30561335607326/1200W_3985_Red-12-PC54RedFlatFront5/1200W-3985-Red-12-PC54RedFlatFront5.jpg"
+        },
+        "Sapphire": {
+          "name": "Sapphire",
+          "src": "/images/garments/pc54-sapphire.webp",
+          "hex": "#028DB9",
+          "sourcePage": "https://www.sanmar.com/p/3985_Sapphire",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h3f/hc5/30561340391454/1200W_3985_Sapphire-12-PC54SapphireFlatFront5/1200W-3985-Sapphire-12-PC54SapphireFlatFront5.jpg"
+        },
+        "BrightAqua": {
+          "name": "Bright Aqua",
+          "src": "/images/garments/pc54-brightaqua.webp",
+          "hex": "#02909F",
+          "sourcePage": "https://www.sanmar.com/p/3985_BrightAqua",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h88/h85/30549795766302/1200W_3985_BrightAqua-12-PC54BrightAquaFlatFront5/1200W-3985-BrightAqua-12-PC54BrightAquaFlatFront5.jpg"
+        },
+        "AthKlly": {
+          "name": "Athletic Kelly",
+          "src": "/images/garments/pc54-athklly.webp",
+          "hex": "#226941",
+          "sourcePage": "https://www.sanmar.com/p/3985_AthKlly",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hf6/h58/30549793407006/1200W_3985_AthKlly-12-PC54AthKllyFlatFront1/1200W-3985-AthKlly-12-PC54AthKllyFlatFront1.jpg"
+        }
+      },
+      "cities": {
+        "arizona": {
+          "color": "Cardinal",
+          "how": "auto",
+          "distance": 8.3
+        },
+        "atlanta": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.3
+        },
+        "baltimore": {
+          "color": "TeamPurple",
+          "how": "auto",
+          "distance": 9
+        },
+        "buffalo": {
+          "color": "TrueRoyal",
+          "how": "auto",
+          "distance": 6.7
+        },
+        "carolina": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.4
+        },
+        "chicago": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 7.2
+        },
+        "cincinnati": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.3
+        },
+        "cleveland": {
+          "color": "DkChocBrn",
+          "how": "auto",
+          "distance": 9.8
+        },
+        "dallas": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 5.4
+        },
+        "denver": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 7
+        },
+        "detroit": {
+          "color": "Royal",
+          "how": "auto",
+          "distance": 1.9
+        },
+        "green-bay": {
+          "color": "DarkGreen",
+          "how": "auto",
+          "distance": 1.4
+        },
+        "houston": {
+          "color": "Navy",
+          "how": "auto",
+          "distance": 7.3
+        },
+        "indianapolis": {
+          "color": "TrueRoyal",
+          "how": "blank",
+          "distance": 8.8
+        },
+        "jacksonville": {
+          "color": "Teal",
+          "how": "auto",
+          "distance": 0.8
+        },
+        "kansas-city": {
+          "color": "Red",
+          "how": "auto",
+          "distance": 11.4
+        },
+        "las-vegas": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.3
+        },
+        "los-angeles-powder": {
+          "color": "Sapphire",
+          "how": "auto",
+          "distance": 8.5
+        },
+        "los-angeles-royal": {
+          "color": "TrueRoyal",
+          "how": "auto",
+          "distance": 6.5
+        },
+        "miami": {
+          "color": "BrightAqua",
+          "how": "auto",
+          "distance": 2.5
+        },
+        "minnesota": {
+          "color": "TeamPurple",
+          "how": "auto",
+          "distance": 8.1
+        },
+        "new-england": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 7
+        },
+        "new-orleans": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.3
+        },
+        "new-york-blue": {
+          "color": "TrueRoyal",
+          "how": "blank",
+          "distance": 11.9
+        },
+        "new-york-green": {
+          "color": "AthKlly",
+          "how": "auto",
+          "distance": 7.6
+        },
+        "philadelphia": {
+          "color": "Teal",
+          "how": "auto",
+          "distance": 8.7
+        },
+        "pittsburgh": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.3
+        },
+        "san-francisco": {
+          "color": "Red",
+          "how": "auto",
+          "distance": 8.3
+        },
+        "seattle": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 7
+        },
+        "tampa-bay": {
+          "color": "Red",
+          "how": "auto",
+          "distance": 2.3
+        },
+        "tennessee": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 5.4
+        },
+        "washington": {
+          "color": "Cardinal",
+          "how": "auto",
+          "distance": 3.6
+        }
+      }
+    },
+    "adult-hoodie": {
+      "style": "PC78H",
+      "name": "Port & Company Core Fleece Pullover Hooded Sweatshirt",
+      "code": "4180",
+      "neutral": "White",
+      "print": {
+        "x": 300,
+        "y": 252,
+        "maxWidth": 190,
+        "maxSize": 34
+      },
+      "colors": {
+        "White": {
+          "name": "White",
+          "src": "/images/garments/pc78h-white.webp",
+          "hex": "#F1F5F8",
+          "sourcePage": "https://www.sanmar.com/p/4180_White",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hb1/hff/31355413790750/1200W_4180_White-12-PC78HWhiteFlatFront3/1200W-4180-White-12-PC78HWhiteFlatFront3.jpg"
+        },
+        "Cardinal": {
+          "name": "Cardinal",
+          "src": "/images/garments/pc78h-cardinal.webp",
+          "hex": "#76273A",
+          "sourcePage": "https://www.sanmar.com/p/4180_Cardinal",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hd1/hf1/31354400014366/1200W_4180_Cardinal-12-PC78HCardinalFlatFront3/1200W-4180-Cardinal-12-PC78HCardinalFlatFront3.jpg"
+        },
+        "JetBlack": {
+          "name": "Jet Black",
+          "src": "/images/garments/pc78h-jetblack.webp",
+          "hex": "#1F2120",
+          "sourcePage": "https://www.sanmar.com/p/4180_JetBlack",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hdd/hdf/31355109244958/1200W_4180_JetBlack-12-PC78HJetBlackFlatFront3/1200W-4180-JetBlack-12-PC78HJetBlackFlatFront3.jpg"
+        },
+        "TeamPurple": {
+          "name": "Team Purple",
+          "src": "/images/garments/pc78h-teampurple.webp",
+          "hex": "#47336E",
+          "sourcePage": "https://www.sanmar.com/p/4180_TeamPurple",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h36/h36/31355407368222/1200W_4180_TeamPurple-12-PC78HTeamPurpleFlatFront3/1200W-4180-TeamPurple-12-PC78HTeamPurpleFlatFront3.jpg"
+        },
+        "TrueRoyal": {
+          "name": "True Royal",
+          "src": "/images/garments/pc78h-trueroyal.webp",
+          "hex": "#204C8B",
+          "sourcePage": "https://www.sanmar.com/p/4180_TrueRoyal",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h8d/h28/31355411628062/1200W_4180_TrueRoyal-12-PC78HTrueRoyalFlatFront3/1200W-4180-TrueRoyal-12-PC78HTrueRoyalFlatFront3.jpg"
+        },
+        "TrueNavy": {
+          "name": "True Navy",
+          "src": "/images/garments/pc78h-truenavy.webp",
+          "hex": "#2E3853",
+          "sourcePage": "https://www.sanmar.com/p/4180_TrueNavy",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h1a/h44/31355410579486/1200W_4180_TrueNavy-12-PC78HTrueNavyFlatFront3/1200W-4180-TrueNavy-12-PC78HTrueNavyFlatFront3.jpg"
+        },
+        "DkChocBrn": {
+          "name": "Dark Chocolate Brown",
+          "src": "/images/garments/pc78h-dkchocbrn.webp",
+          "hex": "#44352E",
+          "sourcePage": "https://www.sanmar.com/p/4180_DkChocBrn",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hbe/h4d/31354408402974/1200W_4180_DkChocBrn-12-PC78HDkChocBrnFlatFront3/1200W-4180-DkChocBrn-12-PC78HDkChocBrnFlatFront3.jpg"
+        },
+        "Royal": {
+          "name": "Royal",
+          "src": "/images/garments/pc78h-royal.webp",
+          "hex": "#235496",
+          "sourcePage": "https://www.sanmar.com/p/4180_Royal",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h5a/h77/31355134541854/1200W_4180_Royal-12-PC78HRoyalFlatFront3/1200W-4180-Royal-12-PC78HRoyalFlatFront3.jpg"
+        },
+        "DarkGreen": {
+          "name": "Dark Green",
+          "src": "/images/garments/pc78h-darkgreen.webp",
+          "hex": "#2C4740",
+          "sourcePage": "https://www.sanmar.com/p/4180_DarkGreen",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/he9/h1e/31354407354398/1200W_4180_DarkGreen-12-PC78HDarkGreenFlatFront3/1200W-4180-DarkGreen-12-PC78HDarkGreenFlatFront3.jpg"
+        },
+        "Navy": {
+          "name": "Navy",
+          "src": "/images/garments/pc78h-navy.webp",
+          "hex": "#273C51",
+          "sourcePage": "https://www.sanmar.com/p/4180_Navy",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hd4/h68/31355118747678/1200W_4180_Navy-12-PC78HNavyFlatFront3/1200W-4180-Navy-12-PC78HNavyFlatFront3.jpg"
+        },
+        "Teal": {
+          "name": "Teal",
+          "src": "/images/garments/pc78h-teal.webp",
+          "hex": "#066875",
+          "sourcePage": "https://www.sanmar.com/p/4180_Teal",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h8e/ha0/31355406319646/1200W_4180_Teal-12-PC78HTealFlatFront3/1200W-4180-Teal-12-PC78HTealFlatFront3.jpg"
+        },
+        "Red": {
+          "name": "Red",
+          "src": "/images/garments/pc78h-red.webp",
+          "hex": "#A61D2D",
+          "sourcePage": "https://www.sanmar.com/p/4180_Red",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h02/he4/31355133493278/1200W_4180_Red-12-PC78HRedFlatFront3/1200W-4180-Red-12-PC78HRedFlatFront3.jpg"
+        },
+        "Sapphire": {
+          "name": "Sapphire",
+          "src": "/images/garments/pc78h-sapphire.webp",
+          "hex": "#0994BE",
+          "sourcePage": "https://www.sanmar.com/p/4180_Sapphire",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h8c/h51/31355402059806/1200W_4180_Sapphire-12-PC78HSapphireFlatFront3/1200W-4180-Sapphire-12-PC78HSapphireFlatFront3.jpg"
+        },
+        "BrightAqua": {
+          "name": "Bright Aqua",
+          "src": "/images/garments/pc78h-brightaqua.webp",
+          "hex": "#07A7A7",
+          "sourcePage": "https://www.sanmar.com/p/4180_BrightAqua",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h71/h17/31354397851678/1200W_4180_BrightAqua-12-PC78HBrightAquaFlatFront3/1200W-4180-BrightAqua-12-PC78HBrightAquaFlatFront3.jpg"
+        }
+      },
+      "cities": {
+        "arizona": {
+          "color": "Cardinal",
+          "how": "auto",
+          "distance": 7.9
+        },
+        "atlanta": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.6
+        },
+        "baltimore": {
+          "color": "TeamPurple",
+          "how": "auto",
+          "distance": 8.4
+        },
+        "buffalo": {
+          "color": "TrueRoyal",
+          "how": "auto",
+          "distance": 6.5
+        },
+        "carolina": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.5
+        },
+        "chicago": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 9.2
+        },
+        "cincinnati": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.6
+        },
+        "cleveland": {
+          "color": "DkChocBrn",
+          "how": "auto",
+          "distance": 9.6
+        },
+        "dallas": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 5.8
+        },
+        "denver": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 7
+        },
+        "detroit": {
+          "color": "Royal",
+          "how": "auto",
+          "distance": 10.3
+        },
+        "green-bay": {
+          "color": "DarkGreen",
+          "how": "auto",
+          "distance": 3.2
+        },
+        "houston": {
+          "color": "Navy",
+          "how": "auto",
+          "distance": 8.4
+        },
+        "indianapolis": {
+          "color": "TrueRoyal",
+          "how": "blank",
+          "distance": 8.5
+        },
+        "jacksonville": {
+          "color": "Teal",
+          "how": "auto",
+          "distance": 2.9
+        },
+        "kansas-city": {
+          "color": "Red",
+          "how": "auto",
+          "distance": 13.6
+        },
+        "las-vegas": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.6
+        },
+        "los-angeles-powder": {
+          "color": "Sapphire",
+          "how": "auto",
+          "distance": 9.1
+        },
+        "los-angeles-royal": {
+          "color": "TrueRoyal",
+          "how": "auto",
+          "distance": 6.3
+        },
+        "miami": {
+          "color": "BrightAqua",
+          "how": "auto",
+          "distance": 6.9
+        },
+        "minnesota": {
+          "color": "TeamPurple",
+          "how": "auto",
+          "distance": 6.5
+        },
+        "new-england": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 7
+        },
+        "new-orleans": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.6
+        },
+        "new-york-blue": {
+          "color": "TrueRoyal",
+          "how": "blank",
+          "distance": 11.6
+        },
+        "new-york-green": {
+          "color": "DarkGreen",
+          "how": "auto",
+          "distance": 11.1
+        },
+        "philadelphia": {
+          "color": "Teal",
+          "how": "auto",
+          "distance": 7
+        },
+        "pittsburgh": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.6
+        },
+        "san-francisco": {
+          "color": "Red",
+          "how": "auto",
+          "distance": 8.8
+        },
+        "seattle": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 7
+        },
+        "tampa-bay": {
+          "color": "Red",
+          "how": "auto",
+          "distance": 2
+        },
+        "tennessee": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 5.8
+        },
+        "washington": {
+          "color": "Cardinal",
+          "how": "auto",
+          "distance": 2.9
+        }
+      }
+    },
+    "kids-tee": {
+      "style": "PC54Y",
+      "name": "Port & Company Youth Core Cotton Tee",
+      "code": "3986",
+      "neutral": "White",
+      "print": {
+        "x": 300,
+        "y": 232,
+        "maxWidth": 236,
+        "maxSize": 40
+      },
+      "colors": {
+        "White": {
+          "name": "White",
+          "src": "/images/garments/pc54y-white.webp",
+          "hex": "#EFF3F6",
+          "sourcePage": "https://www.sanmar.com/p/3986_White",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/had/h7f/30563106324510/1200W_3986_White-12-PC54YWhiteFlatFront1/1200W-3986-White-12-PC54YWhiteFlatFront1.jpg"
+        },
+        "Cardinal": {
+          "name": "Cardinal",
+          "src": "/images/garments/pc54y-cardinal.webp",
+          "hex": "#732C3A",
+          "sourcePage": "https://www.sanmar.com/p/3986_Cardinal",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hc2/h78/30561900331038/1200W_3986_Cardinal-12-PC54YCardinalFlatFront1/1200W-3986-Cardinal-12-PC54YCardinalFlatFront1.jpg"
+        },
+        "JetBlack": {
+          "name": "Jet Black",
+          "src": "/images/garments/pc54y-jetblack.webp",
+          "hex": "#1D1F1E",
+          "sourcePage": "https://www.sanmar.com/p/3986_JetBlack",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hc3/h45/30561909964830/1200W_3986_JetBlack-12-PC54YJetBlackFlatFront1/1200W-3986-JetBlack-12-PC54YJetBlackFlatFront1.jpg"
+        },
+        "TeamPurple": {
+          "name": "Team Purple",
+          "src": "/images/garments/pc54y-teampurple.webp",
+          "hex": "#3E356C",
+          "sourcePage": "https://www.sanmar.com/p/3986_TeamPurple",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hb2/hba/30563104751646/1200W_3986_TeamPurple-12-PC54YTeamPurpleFlatFront2/1200W-3986-TeamPurple-12-PC54YTeamPurpleFlatFront2.jpg"
+        },
+        "TrueRoyal": {
+          "name": "True Royal",
+          "src": "/images/garments/pc54y-trueroyal.webp",
+          "hex": "#1E4A89",
+          "sourcePage": "https://www.sanmar.com/p/3986_TrueRoyal",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h86/he2/30563105538078/1200W_3986_TrueRoyal-12-PC54YTrueRoyalFlatFront2/1200W-3986-TrueRoyal-12-PC54YTrueRoyalFlatFront2.jpg"
+        },
+        "TrueNavy": {
+          "name": "True Navy",
+          "src": "/images/garments/pc54y-truenavy.webp",
+          "hex": "#242F41",
+          "sourcePage": "https://www.sanmar.com/p/3986_TrueNavy",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hec/hd9/30592916258846/1200W_3986_TrueNavy-12-PC54YTrueNavyFlatFront/1200W-3986-TrueNavy-12-PC54YTrueNavyFlatFront.jpg"
+        },
+        "Royal": {
+          "name": "Royal",
+          "src": "/images/garments/pc54y-royal.webp",
+          "hex": "#2E6FB1",
+          "sourcePage": "https://www.sanmar.com/p/3986_Royal",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hf1/h77/30561921040414/1200W_3986_Royal-12-PC54YRoyalFlatFront1/1200W-3986-Royal-12-PC54YRoyalFlatFront1.jpg"
+        },
+        "DarkGreen": {
+          "name": "Dark Green",
+          "src": "/images/garments/pc54y-darkgreen.webp",
+          "hex": "#273E36",
+          "sourcePage": "https://www.sanmar.com/p/3986_DarkGreen",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h02/ha2/30561902886942/1200W_3986_DarkGreen-12-PC54YDarkGreenFlatFront1/1200W-3986-DarkGreen-12-PC54YDarkGreenFlatFront1.jpg"
+        },
+        "Teal": {
+          "name": "Teal",
+          "src": "/images/garments/pc54y-teal.webp",
+          "hex": "#046A79",
+          "sourcePage": "https://www.sanmar.com/p/3986_Teal",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h2b/h45/30952375484446/1200W_3986_Teal-12-PC54YTealFlatFront/1200W-3986-Teal-12-PC54YTealFlatFront.jpg"
+        },
+        "Red": {
+          "name": "Red",
+          "src": "/images/garments/pc54y-red.webp",
+          "hex": "#AF1E2D",
+          "sourcePage": "https://www.sanmar.com/p/3986_Red",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h17/h15/30561920253982/1200W_3986_Red-12-PC54YRedFlatFront1/1200W-3986-Red-12-PC54YRedFlatFront1.jpg"
+        },
+        "BrightAqua": {
+          "name": "Bright Aqua",
+          "src": "/images/garments/pc54y-brightaqua.webp",
+          "hex": "#0396A3",
+          "sourcePage": "https://www.sanmar.com/p/3986_BrightAqua",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/ha8/h05/30561898758174/1200W_3986_BrightAqua-12-PC54YBrightAquaFlatFront1/1200W-3986-BrightAqua-12-PC54YBrightAquaFlatFront1.jpg"
+        }
+      },
+      "cities": {
+        "arizona": {
+          "color": "Cardinal",
+          "how": "auto",
+          "distance": 7.6
+        },
+        "atlanta": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.9
+        },
+        "baltimore": {
+          "color": "TeamPurple",
+          "how": "auto",
+          "distance": 9.7
+        },
+        "buffalo": {
+          "color": "TrueRoyal",
+          "how": "auto",
+          "distance": 7.5
+        },
+        "carolina": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.6
+        },
+        "chicago": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 7.8
+        },
+        "cincinnati": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.9
+        },
+        "cleveland": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 15.5
+        },
+        "dallas": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 5.8
+        },
+        "denver": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 7.4
+        },
+        "detroit": {
+          "color": "Royal",
+          "how": "auto",
+          "distance": 2.4
+        },
+        "green-bay": {
+          "color": "DarkGreen",
+          "how": "auto",
+          "distance": 2.4
+        },
+        "houston": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 8
+        },
+        "indianapolis": {
+          "color": "TrueRoyal",
+          "how": "blank",
+          "distance": 9.8
+        },
+        "jacksonville": {
+          "color": "Teal",
+          "how": "auto",
+          "distance": 2.1
+        },
+        "kansas-city": {
+          "color": "Red",
+          "how": "auto",
+          "distance": 10.6
+        },
+        "las-vegas": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.9
+        },
+        "los-angeles-powder": {
+          "color": "Royal",
+          "how": "auto",
+          "distance": 8
+        },
+        "los-angeles-royal": {
+          "color": "TrueRoyal",
+          "how": "auto",
+          "distance": 7.2
+        },
+        "miami": {
+          "color": "BrightAqua",
+          "how": "auto",
+          "distance": 2.7
+        },
+        "minnesota": {
+          "color": "TeamPurple",
+          "how": "auto",
+          "distance": 8.1
+        },
+        "new-england": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 7.4
+        },
+        "new-orleans": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.9
+        },
+        "new-york-blue": {
+          "color": "TrueRoyal",
+          "how": "blank",
+          "distance": 12.8
+        },
+        "new-york-green": {
+          "color": "DarkGreen",
+          "how": "auto",
+          "distance": 11.9
+        },
+        "philadelphia": {
+          "color": "Teal",
+          "how": "auto",
+          "distance": 10
+        },
+        "pittsburgh": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.9
+        },
+        "san-francisco": {
+          "color": "Red",
+          "how": "auto",
+          "distance": 8.8
+        },
+        "seattle": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 7.4
+        },
+        "tampa-bay": {
+          "color": "Red",
+          "how": "auto",
+          "distance": 2.5
+        },
+        "tennessee": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 5.8
+        },
+        "washington": {
+          "color": "Cardinal",
+          "how": "auto",
+          "distance": 4.4
+        }
+      }
+    },
+    "kids-hoodie": {
+      "style": "PC78YH",
+      "name": "Port & Company Youth Core Fleece Pullover Hooded Sweatshirt",
+      "code": "80574",
+      "neutral": "White",
+      "print": {
+        "x": 300,
+        "y": 252,
+        "maxWidth": 190,
+        "maxSize": 34
+      },
+      "colors": {
+        "White": {
+          "name": "White",
+          "src": "/images/garments/pc78yh-white.webp",
+          "hex": "#ECF0F3",
+          "sourcePage": "https://www.sanmar.com/p/80574_White",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h05/h15/33520838311966/1200W_80574_White-12-PC78YHWhiteFlatFront1/1200W-80574-White-12-PC78YHWhiteFlatFront1.jpg"
+        },
+        "Red": {
+          "name": "Red",
+          "src": "/images/garments/pc78yh-red.webp",
+          "hex": "#9F1626",
+          "sourcePage": "https://www.sanmar.com/p/80574_Red",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hcb/h19/31688776155166/1200W_80574_Red-12-PC78YHRedFlatFront/1200W-80574-Red-12-PC78YHRedFlatFront.jpg"
+        },
+        "JetBlack": {
+          "name": "Jet Black",
+          "src": "/images/garments/pc78yh-jetblack.webp",
+          "hex": "#1A1C1B",
+          "sourcePage": "https://www.sanmar.com/p/80574_JetBlack",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h12/h53/33520816685086/1200W_80574_JetBlack-12-PC78YHJetBlackFlatFront1/1200W-80574-JetBlack-12-PC78YHJetBlackFlatFront1.jpg"
+        },
+        "TeamPurple": {
+          "name": "Team Purple",
+          "src": "/images/garments/pc78yh-teampurple.webp",
+          "hex": "#3F2B66",
+          "sourcePage": "https://www.sanmar.com/p/80574_TeamPurple",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hb8/hb4/31688817901598/1200W_80574_TeamPurple-12-PC78YHTeamPurpleFlatFront/1200W-80574-TeamPurple-12-PC78YHTeamPurpleFlatFront.jpg"
+        },
+        "TrueRoyal": {
+          "name": "True Royal",
+          "src": "/images/garments/pc78yh-trueroyal.webp",
+          "hex": "#1A4685",
+          "sourcePage": "https://www.sanmar.com/p/80574_TrueRoyal",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hcf/hfc/31688821571614/1200W_80574_TrueRoyal-12-PC78YHTrueRoyalFlatFront/1200W-80574-TrueRoyal-12-PC78YHTrueRoyalFlatFront.jpg"
+        },
+        "TrueNavy": {
+          "name": "True Navy",
+          "src": "/images/garments/pc78yh-truenavy.webp",
+          "hex": "#242E49",
+          "sourcePage": "https://www.sanmar.com/p/80574_TrueNavy",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/ha2/h57/33520837263390/1200W_80574_TrueNavy-12-PC78YHTrueNavyFlatFront1/1200W-80574-TrueNavy-12-PC78YHTrueNavyFlatFront1.jpg"
+        },
+        "DkChocBrn": {
+          "name": "Dark Chocolate Brown",
+          "src": "/images/garments/pc78yh-dkchocbrn.webp",
+          "hex": "#3D2E27",
+          "sourcePage": "https://www.sanmar.com/p/80574_DkChocBrn",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hb1/h40/31688743387166/1200W_80574_DkChocBrn-12-PC78YHDkChocBrnFlatFront/1200W-80574-DkChocBrn-12-PC78YHDkChocBrnFlatFront.jpg"
+        },
+        "Royal": {
+          "name": "Royal",
+          "src": "/images/garments/pc78yh-royal.webp",
+          "hex": "#1C4D8F",
+          "sourcePage": "https://www.sanmar.com/p/80574_Royal",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h19/h5e/31688777596958/1200W_80574_Royal-12-PC78YHRoyalFlatFront/1200W-80574-Royal-12-PC78YHRoyalFlatFront.jpg"
+        },
+        "DarkGreen": {
+          "name": "Dark Green",
+          "src": "/images/garments/pc78yh-darkgreen.webp",
+          "hex": "#28433C",
+          "sourcePage": "https://www.sanmar.com/p/80574_DarkGreen",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hff/h00/33520812490782/1200W_80574_DarkGreen-12-PC78YHDarkGreenFlatFront1/1200W-80574-DarkGreen-12-PC78YHDarkGreenFlatFront1.jpg"
+        },
+        "Navy": {
+          "name": "Navy",
+          "src": "/images/garments/pc78yh-navy.webp",
+          "hex": "#20354A",
+          "sourcePage": "https://www.sanmar.com/p/80574_Navy",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h42/h92/31688927150110/1200W_80574_Navy-12-PC78YHNavyFlatFront/1200W-80574-Navy-12-PC78YHNavyFlatFront.jpg"
+        },
+        "Sapphire": {
+          "name": "Sapphire",
+          "src": "/images/garments/pc78yh-sapphire.webp",
+          "hex": "#0388B1",
+          "sourcePage": "https://www.sanmar.com/p/80574_Sapphire",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h51/h44/31688816721950/1200W_80574_Sapphire-12-PC78YHSapphireFlatFront/1200W-80574-Sapphire-12-PC78YHSapphireFlatFront.jpg"
+        },
+        "Maroon": {
+          "name": "Maroon",
+          "src": "/images/garments/pc78yh-maroon.webp",
+          "hex": "#481E22",
+          "sourcePage": "https://www.sanmar.com/p/80574_Maroon",
+          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h1c/h71/31687887683614/1200W_80574_Maroon-12-PC78YHMaroonFlatFront/1200W-80574-Maroon-12-PC78YHMaroonFlatFront.jpg"
+        }
+      },
+      "cities": {
+        "arizona": {
+          "color": "Red",
+          "how": "auto",
+          "distance": 7.6
+        },
+        "atlanta": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.9
+        },
+        "baltimore": {
+          "color": "TeamPurple",
+          "how": "auto",
+          "distance": 8.8
+        },
+        "buffalo": {
+          "color": "TrueRoyal",
+          "how": "auto",
+          "distance": 7.5
+        },
+        "carolina": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.6
+        },
+        "chicago": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 8.9
+        },
+        "cincinnati": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.9
+        },
+        "cleveland": {
+          "color": "DkChocBrn",
+          "how": "auto",
+          "distance": 10
+        },
+        "dallas": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 5.6
+        },
+        "denver": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 6.8
+        },
+        "detroit": {
+          "color": "Royal",
+          "how": "auto",
+          "distance": 9.6
+        },
+        "green-bay": {
+          "color": "DarkGreen",
+          "how": "auto",
+          "distance": 4.8
+        },
+        "houston": {
+          "color": "Navy",
+          "how": "auto",
+          "distance": 8.7
+        },
+        "indianapolis": {
+          "color": "TrueRoyal",
+          "how": "blank",
+          "distance": 9.8
+        },
+        "jacksonville": {
+          "color": "DarkGreen",
+          "how": "auto",
+          "distance": 15.9
+        },
+        "kansas-city": {
+          "color": "Red",
+          "how": "auto",
+          "distance": 13
+        },
+        "las-vegas": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.9
+        },
+        "los-angeles-powder": {
+          "color": "Sapphire",
+          "how": "auto",
+          "distance": 8.8
+        },
+        "los-angeles-royal": {
+          "color": "TrueRoyal",
+          "how": "auto",
+          "distance": 7.2
+        },
+        "miami": {
+          "color": "Sapphire",
+          "how": "auto",
+          "distance": 11.9
+        },
+        "minnesota": {
+          "color": "TeamPurple",
+          "how": "auto",
+          "distance": 6.4
+        },
+        "new-england": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 6.8
+        },
+        "new-orleans": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.9
+        },
+        "new-york-blue": {
+          "color": "TrueRoyal",
+          "how": "blank",
+          "distance": 12.8
+        },
+        "new-york-green": {
+          "color": "DarkGreen",
+          "how": "auto",
+          "distance": 10.4
+        },
+        "philadelphia": {
+          "color": "DarkGreen",
+          "how": "auto",
+          "distance": 9
+        },
+        "pittsburgh": {
+          "color": "JetBlack",
+          "how": "auto",
+          "distance": 6.9
+        },
+        "san-francisco": {
+          "color": "Red",
+          "how": "auto",
+          "distance": 9.2
+        },
+        "seattle": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 6.8
+        },
+        "tampa-bay": {
+          "color": "Red",
+          "how": "auto",
+          "distance": 1.2
+        },
+        "tennessee": {
+          "color": "TrueNavy",
+          "how": "auto",
+          "distance": 5.6
+        },
+        "washington": {
+          "color": "Maroon",
+          "how": "auto",
+          "distance": 7.7
+        }
+      }
+    }
+  }
+}

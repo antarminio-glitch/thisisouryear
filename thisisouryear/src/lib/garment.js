@@ -2,8 +2,8 @@
 // so the exact same drawing code runs when the site is built and in the browser
 // when someone changes a choice in the picker.
 //
-// Every preview is a drawing, not a photo. Pages that show one label it as a
-// concept preview.
+// A garment is a drawing unless a real photo of the blank is passed in (see
+// src/lib/photos.js). Then the photo is shown with the lettering printed on it.
 //
 // Colors are never baked in. The drawing reads four CSS variables from whatever
 // wraps it: --shirt, --line1, --line2, --outline.
@@ -152,13 +152,27 @@ function hoodieSvg(lines) {
   );
 }
 
-// One garment, any colors. `style` is "tee" or "hoodie". Kids' items use the
-// same drawing, a little smaller.
-export function garmentSvg({ style = 'tee', audience = 'adult', lines = DEFAULT_LINES, label = '', decorative = false, className = '' } = {}) {
-  const inner = style === 'hoodie' ? hoodieSvg(lines) : teeSvg(lines);
-  const body = audience === 'kids' ? `<g transform="translate(42 44) scale(0.86)">${inner}</g>` : inner;
+// A real photo of the blank garment, with the lettering placed on the chest.
+// `photo` comes from garment-photos.json: { src, hex, print }. The hex is the
+// fabric color measured from the photo at chest height. The outline gap takes
+// it, so the shirt looks like it shows through the print.
+function photoSvg(photo, lines) {
+  const print = photo.print ?? { x: 300, y: 232, maxWidth: 236, maxSize: 40 };
+  const size = fitSize(lines, print.maxWidth, print.maxSize);
+  return (
+    `<image href="${esc(photo.src)}" x="0" y="0" width="600" height="600" preserveAspectRatio="xMidYMid meet"/>` +
+    `<g class="print" style="--print-gap:${esc(photo.hex ?? '')}">${letteringSvg({ x: print.x, y: print.y, size, lines })}</g>`
+  );
+}
+
+// One garment, any colors. `style` is "tee" or "hoodie". With a `photo` the
+// real blank is shown (kids' photos are already kids-sized); without one,
+// kids' items use the same drawing, a little smaller.
+export function garmentSvg({ style = 'tee', audience = 'adult', lines = DEFAULT_LINES, label = '', decorative = false, className = '', photo = null } = {}) {
+  const inner = photo ? photoSvg(photo, lines) : style === 'hoodie' ? hoodieSvg(lines) : teeSvg(lines);
+  const body = audience === 'kids' && !photo ? `<g transform="translate(42 44) scale(0.86)">${inner}</g>` : inner;
   const a11y = decorative ? 'aria-hidden="true"' : `role="img" aria-label="${esc(label)}"`;
-  const cls = ['shirt', `shirt-${style}`, className].filter(Boolean).join(' ');
+  const cls = ['shirt', `shirt-${style}`, photo ? 'shirt-real' : '', className].filter(Boolean).join(' ');
   return `<svg class="${cls}" viewBox="0 0 600 600" ${a11y}>${body}</svg>`;
 }
 

@@ -3,21 +3,27 @@
 //   --shirt, --line1, --line2, --outline
 // Set them on this element or on anything that wraps it.
 //
-// The drawing itself lives in src/lib/garment.js so the browser can redraw it
-// when someone changes garment or design in the picker.
+// Where a real photo of the blank exists (src/data/garment-photos.json, built
+// by "npm run photos"), the photo is shown with the lettering printed on it.
+// Otherwise it's the drawing in src/lib/garment.js, which the browser can
+// also redraw when someone changes garment or design in the picker.
 //
-// If a city in teams.json has an "image" field, that photo is shown instead
-// of the drawn tee.
+// A city with an "image" field in teams.json shows that picture instead of
+// either: use it for a photo of the finished, printed shirt.
 import { garmentSvg } from '../lib/garment.js';
+import { photoFor, productIdFor } from '../lib/photos.js';
+import catalog from '../data/catalog.json';
+import photos from '../data/garment-photos.json';
 
 const { team, label = '', decorative = false, style = 'tee', audience = 'adult', lines, class: className = '' } = Astro.props;
-const usePhoto = team?.image && style === 'tee' && audience === 'adult';
+const useOwnPhoto = team?.image && style === 'tee' && audience === 'adult';
+const photo = photoFor(photos, productIdFor(catalog.products, style, audience), team?.slug ?? '');
 ---
 
 {
-  usePhoto ? (
+  useOwnPhoto ? (
     <img class:list={['shirt', 'shirt-photo', className]} src={team.image} alt={decorative ? '' : label} />
   ) : (
-    <Fragment set:html={garmentSvg({ style, audience, lines, label, decorative, className })} />
+    <Fragment set:html={garmentSvg({ style, audience, lines, label, decorative, className, photo })} />
   )
 }

@@ -1,0 +1,38 @@
+{
+  "vendor": "SanMar",
+  "vendorSite": "https://www.sanmar.com",
+  "imageSize": 1000,
+
+  "skipColors": [
+    "heather", "hthr", "camo", "neon", "tie[- ]?dye", "digi", "^s\\. ", "safety", "fluorescent",
+    "^ash$", "^natural$", "creme", "ivory", "sand", "pink", "blush", "blossom", "lavender", "lime",
+    "coral", "zinnia", "candy", "jadeite", "celadon", "tidal", "^light ", "^pale "
+  ],
+
+  "garments": {
+    "adult-tee": {
+      "style": "PC54",
+      "name": "Port & Company Core Cotton Tee",
+      "neutral": "White",
+      "print": { "x": 300, "y": 232, "maxWidth": 236, "maxSize": 40 }
+    },
+    "adult-hoodie": {
+      "style": "PC78H",
+      "name": "Port & Company Core Fleece Pullover Hooded Sweatshirt",
+      "neutral": "White",
+      "print": { "x": 300, "y": 252, "maxWidth": 190, "maxSize": 34 }
+    },
+    "kids-tee": {
+      "style": "PC54Y",
+      "name": "Port & Company Youth Core Cotton Tee",
+      "neutral": "White",
+      "print": { "x": 300, "y": 232, "maxWidth": 236, "maxSize": 40 }
+    },
+    "kids-hoodie": {
+      "style": "PC78YH",
+      "name": "Port & Company Youth Core Fleece Pullover Hooded Sweatshirt",
+      "neutral": "White",
+      "print": { "x": 300, "y": 252, "maxWidth": 190, "maxSize": 34 }
+    }
+  }
+}

@@ -91,6 +91,9 @@ const cities = [...teams].sort((a, b) => a.name.localeCompare(b.name)).filter((t
     border-radius: 6px;
     background: var(--tile);
   }
+  .tile:has(:global(.shirt-real)) {
+    background: #fff;
+  }
   .tile :global(.shirt) {
     transition: transform 0.18s ease-out;
   }
