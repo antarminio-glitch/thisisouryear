@@ -141,7 +141,7 @@ root.querySelector('[data-signout]').addEventListener('click', () => {
   showGate('');
 });
 
-const VIEWS = { setup, orders, season, campaigns, quotes, fans };
+const VIEWS = { setup, orders, runs, season, campaigns, quotes, fans };
 function open(name, preloaded) {
   if (!VIEWS[name]) name = 'setup';
   for (const t of tabs) t.setAttribute('aria-current', t.dataset.tab === name ? 'page' : 'false');
@@ -529,6 +529,138 @@ async function orders() {
       out,
       h('h3', { text: `Recent orders (${list.length})` }),
       list.length ? rows : note('No paid orders recorded yet. They show up here once the Stripe webhook is set up and someone buys.'),
+    );
+  };
+  draw();
+}
+
+// ---------- print runs: the bulk order sheet ----------
+// Hands the browser a file to save, built from text the server sent.
+function download(name, text, type = 'text/csv') {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = h('a', { href: url, download: name });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+const blanksTable = (blanks) =>
+  h(
+    'table',
+    { class: 'wide' },
+    h('thead', {}, h('tr', {}, ['Garment', 'Blank', 'Size', 'Quantity'].map((t) => h('th', { scope: 'col', text: t })))),
+    h(
+      'tbody',
+      {},
+      blanks.map((b) => h('tr', {}, h('td', { text: b.garment }), h('td', { text: [b.style, b.blank].filter(Boolean).join(' ') }), h('td', { text: b.size }), h('td', { text: String(b.quantity) }))),
+    ),
+  );
+
+async function runs() {
+  const draw = async (message = '', kind = '') => {
+    const res = await call('runs.list');
+    if (!res.ok) return failed(res);
+    const { waiting, runs: list, orderEmail } = res.body;
+    const units = (n) => `${n} ${n === 1 ? 'shirt' : 'shirts'}`;
+
+    // What's waiting
+    const sheets = (id, csvs, when) => {
+      const stamp = when.replace(/[^0-9]/g, '').slice(0, 12);
+      return h('div', { class: 'btns' }, button('Download blanks sheet', () => download(`${id}-blanks-${stamp}.csv`, csvs.blanksCsv)), button('Download packing list', () => download(`${id}-packing-${stamp}.csv`, csvs.packingCsv)));
+    };
+    const previewBtns = h('div', { class: 'btns' });
+    const dl = (which) => {
+      const b = button(which === 'blanks' ? 'Download blanks sheet' : 'Download packing list', null);
+      b.addEventListener(
+        'click',
+        busy(b, async () => {
+          const r = await call('runs.preview');
+          if (!r.ok) return draw(problem(r), 'bad');
+          const stamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 12);
+          download(`waiting-${which}-${stamp}.csv`, which === 'blanks' ? r.body.blanksCsv : r.body.packingCsv);
+        }),
+      );
+      return b;
+    };
+    previewBtns.append(dl('blanks'), dl('packing'));
+
+    // Starting a run
+    const noteInput = h('input', { type: 'text', maxLength: 300, placeholder: 'Optional, for example: October batch' });
+    const confirm = h('input', { type: 'text', autocomplete: 'off', spellcheck: false, placeholder: 'PRINT' });
+    const start = button('Start a print run', null, false);
+    start.addEventListener(
+      'click',
+      busy(start, async () => {
+        const r = await call('runs.create', { note: noteInput.value.trim(), confirm: confirm.value.trim() });
+        if (!r.ok) return draw(problem(r), 'bad');
+        draw(`Print run ${r.body.run.id} started: ${units(r.body.run.counts.units)} across ${r.body.run.counts.orders} ${r.body.run.counts.orders === 1 ? 'order' : 'orders'}. Download its sheets below.`);
+      }),
+    );
+
+    // Past runs
+    const cards = list.map((r) => {
+      const holder = h('div');
+      const get = button('Download the sheets', null);
+      get.addEventListener(
+        'click',
+        busy(get, async () => {
+          const s = await call('runs.sheet', { id: r.id });
+          if (!s.ok) return holder.replaceChildren(note(problem(s), 'bad'));
+          holder.replaceChildren(sheets(r.id, s.body, r.createdAt), h('details', {}, h('summary', { text: 'The sheet as plain text' }), h('pre', { text: s.body.text })));
+        }),
+      );
+      const sendConfirm = h('input', { type: 'text', autocomplete: 'off', spellcheck: false, placeholder: 'SEND' });
+      const send = button('Email this run to the vendor', null);
+      send.addEventListener(
+        'click',
+        busy(send, async () => {
+          const e = await call('runs.email', { id: r.id, confirm: sendConfirm.value.trim() });
+          draw(e.ok ? `${r.id} emailed to ${e.body.to.join(', ')}.` : problem(e), e.ok ? '' : 'bad');
+        }),
+      );
+      const emailWords = { sent: `Sent ${when(r.vendorEmail?.at)} to ${(r.vendorEmail?.to ?? []).join(', ')}`, failed: `Failed: ${r.vendorEmail?.error ?? ''}` }[r.vendorEmail?.status] ?? 'Not sent';
+      return h(
+        'section',
+        { class: 'card' },
+        h('h3', {}, r.id, ' ', h('span', { class: 'tag', text: units(r.counts.units) })),
+        h(
+          'dl',
+          { class: 'facts' },
+          [
+            ['Started', `${when(r.createdAt)} by ${r.actor}`],
+            ['Orders', String(r.counts.orders)],
+            ['Note', r.note || 'None'],
+            ['Emailed to the vendor', emailWords],
+          ].map(([k, v]) => h('div', {}, h('dt', { text: k }), h('dd', { text: v }))),
+        ),
+        h('div', { class: 'table-scroll' }, blanksTable(r.blanks)),
+        h('div', { class: 'btns' }, get),
+        holder,
+        h('details', {}, h('summary', { text: 'Email this run to the vendor' }), field('Type SEND to confirm', sendConfirm, orderEmail.ready ? `Goes to ${orderEmail.to.join(', ')} as a plain-text sheet.` : `Order email isn't set up. Missing: ${orderEmail.missing.join(', ')}.`), send),
+      );
+    });
+
+    fill(
+      h('h2', { text: 'Print runs' }),
+      h('p', { class: 'sub', text: 'Shirts are printed in batches. A run gathers every paid order that has not been printed yet into a blanks sheet (what to buy from SanMar) and a packing list (what to print and where it ships), then stamps those orders so they never print twice.' }),
+      message ? note(message, kind) : null,
+      h('h3', { text: 'Waiting to print' }),
+      waiting.counts.orders
+        ? [note(`${units(waiting.counts.units)} across ${waiting.counts.orders} ${waiting.counts.orders === 1 ? 'order' : 'orders'} are waiting.`), h('div', { class: 'table-scroll' }, blanksTable(waiting.blanks)), previewBtns]
+        : note('Nothing is waiting. Every paid order is in a run already.'),
+      waiting.counts.orders
+        ? h(
+            'section',
+            { class: 'card' },
+            h('h3', { text: 'Start a print run' }),
+            h('p', { class: 'sub', text: 'Takes everything waiting above. The sheets are saved with the run, so you can download them again any time.' }),
+            field('Note', noteInput),
+            field('Type PRINT to confirm', confirm),
+            h('div', { class: 'btns' }, start),
+          )
+        : null,
+      h('h3', { text: `Past runs (${list.length})` }),
+      list.length ? cards : note('No print runs yet.'),
     );
   };
   draw();

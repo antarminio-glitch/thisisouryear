@@ -136,6 +136,15 @@ export function photoFor(photos, productId, slug = '') {
   return { src: c.src, hex: c.hex, print: g.print, color: c.name, style: g.style };
 }
 
+// The vendor blank a city is printed on for a product: { style, code, name },
+// for example PC54 / TrueNavy / True Navy. Null when no photo was matched.
+export function blankFor(photos, productId, slug) {
+  const g = photos?.garments?.[productId];
+  const code = g?.cities?.[slug]?.color;
+  const c = code ? g.colors?.[code] : null;
+  return c ? { style: g.style, code, name: c.name } : null;
+}
+
 // The slimmed-down copy that goes to the browser: only what drawing needs.
 export function photosForBrowser(photos) {
   const garments = {};

@@ -10,6 +10,7 @@ import { CAMPAIGNS, loadConfigs, applyConfigUpdate, emailBlockers, planEliminati
 import { emailSender, unsubscribeToken, readUnsubscribeToken } from './email.js';
 import { moderate } from './fans.js';
 import { orderEmailSettings, orderEmailContent, sendOrderEmail, sampleOrder, orderRef } from './order-email.js';
+import { previewPrintRun, createPrintRun, listPrintRuns, runSheets, sheetText, emailPrintRun } from './print-runs.js';
 import { todayIn } from '../lib/counter.js';
 
 const QUOTE_STATUSES = ['new', 'answered', 'ordered', 'closed'];
@@ -85,7 +86,9 @@ export function setupReport({ shop, palettes, history, env, storageKind, now }) 
   };
 }
 
-export function makeAdminHandler({ shop, palettes, history, env, getStorage, fetchImpl = fetch, now = () => new Date() }) {
+// `photos` is garment-photos.json: it says which vendor blank each city is
+// printed on, which the print run sheets need.
+export function makeAdminHandler({ shop, palettes, history, env, getStorage, photos = null, fetchImpl = fetch, now = () => new Date() }) {
   const slugs = shop.teams.map((t) => t.slug);
 
   return async (req) => {
@@ -251,6 +254,37 @@ export function makeAdminHandler({ shop, palettes, history, env, getStorage, fet
         }
         await audit('orders.test_email', { to: settings.to });
         return json({ sent: true, to: settings.to, cc: settings.cc });
+      }
+
+      // ---- print runs (the bulk order sheet)
+      case 'runs.list': {
+        const [runs, waiting] = await Promise.all([listPrintRuns(storage), previewPrintRun(storage, { shop, palettes, photos })]);
+        return json({ orderEmail: orderEmailSettings(env), waiting: { counts: waiting.counts, blanks: waiting.blanks }, runs });
+      }
+      case 'runs.preview': {
+        return json(await previewPrintRun(storage, { shop, palettes, photos }));
+      }
+      case 'runs.create': {
+        if (v.confirm !== 'PRINT') return json({ error: 'To start a print run, type PRINT.' }, 400);
+        const result = await createPrintRun(storage, { shop, palettes, photos, actor, note: typeof v.note === 'string' ? v.note : '', now: now() });
+        if (result.error) return json({ error: result.error }, 409);
+        await audit('runs.create', { id: result.run.id, orders: result.run.counts.orders, units: result.run.counts.units });
+        const { packing, ...run } = result.run;
+        return json({ run, ...runSheets(result.run) });
+      }
+      case 'runs.sheet': {
+        const run = await storage.store('orders').get(`run/${v.id}`);
+        if (!run) return json({ error: 'No such print run.' }, 404);
+        return json({ id: run.id, ...runSheets(run), text: sheetText(run, { timezone: shop.store.timezone }) });
+      }
+      case 'runs.email': {
+        if (v.confirm !== 'SEND') return json({ error: 'To email the run to the vendor, type SEND.' }, 400);
+        const result = await emailPrintRun({ runId: v.id, storage, shop, env, fetchImpl, now });
+        await audit('runs.email', { id: v.id, status: result.status });
+        if (result.status === 'missing') return json({ error: 'No such print run.' }, 404);
+        if (result.status === 'not_configured') return json({ error: `Order email isn't set up. Missing: ${result.missing.join(', ')}.` }, 409);
+        if (result.status === 'failed') return json({ error: `The email service refused it: ${result.error}` }, 502);
+        return json(result);
       }
 
       // ---- quotes

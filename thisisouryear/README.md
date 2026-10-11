@@ -270,12 +270,25 @@ Open `/admin/` and enter the password you saved in Netlify as `ADMIN_TOKEN`. Six
 
 - **Setup**: reads the real settings and says exactly what isn't set up yet, by name. Start here
 - **Orders**: every paid order, whether the vendor email went out, a preview of it, a test email to check the setup, and a resend button
+- **Print runs**: the bulk order sheet. Everything paid and not yet printed, grouped by blank and size, as two downloadable sheets. Starting a run stamps those orders so the next run only has new ones. See "Print runs" below
 - **Season**: enter the round the season is in and each city's status, with where you checked it. Recording a loss changes nothing. A city only becomes "eliminated" when you say why (mathematically, or lost a playoff game) and cite a source. The bandwagon only shows survivors when the round is confirmed, recent, and all 32 cities have a confirmed status
 - **Campaigns**: all five start switched off. Turning one on takes typing `ACTIVATE` and its name. Window campaigns (schedule release, Week 1) need real dates for that season. The elimination follow-up has a dry run that shows who would get the email and the exact words, and sends nothing
 - **Quotes**: league quote requests, to answer by email and mark as answered or ordered
 - **Fan photos**: approve, reject, remove, and a repost queue. Nothing shows on the site until you approve it. Reposting is only offered when the fan ticked the second box. The site never posts to social media by itself
 
 Everything the admin screen changes is written to an audit log.
+
+### Print runs: the bulk order sheet
+
+Shirts are cheaper printed in batches, so orders are gathered into print runs. Open the admin screen's **Print runs** tab:
+
+1. The top shows what is waiting: every paid order that hasn't been in a run, totalled by garment, vendor blank and size. **Download blanks sheet** is the shopping list for SanMar (style, color, size, quantity). **Download packing list** is one row per shirt: the design, the exact ink colors with Pantone references, any gift or league notes, and the ship-to address.
+2. When you're ready to print, type `PRINT` and press **Start a print run**. The run gets a reference like `R-7F3K9Q2M`, both sheets are saved with it exactly as they were, and every order in it is stamped so it never appears in a later run.
+3. Each run can be downloaded again any time, and **Email to the vendor** sends the run as a plain-text sheet to the same addresses as the order emails (type `SEND`).
+
+Which blank a city is printed on comes from `src/data/garment-photos.json`, the same file the product photos use. Fully refunded orders never print. A partly refunded order is included with a note to check it in Stripe first.
+
+The per-order vendor emails still go out as each order is paid. If you only ever print from runs, tell the vendor to work from the run sheets and treat the single-order emails as notices.
 
 ---
 
