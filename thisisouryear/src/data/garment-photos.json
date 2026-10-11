@@ -10,9 +10,10 @@
       "neutral": "White",
       "print": {
         "x": 300,
-        "y": 232,
-        "maxWidth": 236,
-        "maxSize": 40
+        "top": 152,
+        "width": 236,
+        "capHeight": 57,
+        "rowGap": 9
       },
       "colors": {
         "White": {
@@ -53,7 +54,7 @@
         "TrueNavy": {
           "name": "True Navy",
           "src": "/images/garments/pc54-truenavy.webp",
-          "hex": "#202B3D",
+          "hex": "#212C3E",
           "sourcePage": "https://www.sanmar.com/p/3985_TrueNavy",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hc4/haf/30561346813982/1200W_3985_TrueNavy-12-PC54TrueNavyFlatFront1/1200W-3985-TrueNavy-12-PC54TrueNavyFlatFront1.jpg"
         },
@@ -74,7 +75,7 @@
         "DarkGreen": {
           "name": "Dark Green",
           "src": "/images/garments/pc54-darkgreen.webp",
-          "hex": "#233A32",
+          "hex": "#243B33",
           "sourcePage": "https://www.sanmar.com/p/3985_DarkGreen",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hf7/h77/30560944881694/1200W_3985_DarkGreen-12-PC54DarkGreenFlatFront5/1200W-3985-DarkGreen-12-PC54DarkGreenFlatFront5.jpg"
         },
@@ -95,14 +96,14 @@
         "Red": {
           "name": "Red",
           "src": "/images/garments/pc54-red.webp",
-          "hex": "#AA1928",
+          "hex": "#AB1A29",
           "sourcePage": "https://www.sanmar.com/p/3985_Red",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hc0/h0f/30561335607326/1200W_3985_Red-12-PC54RedFlatFront5/1200W-3985-Red-12-PC54RedFlatFront5.jpg"
         },
         "Sapphire": {
           "name": "Sapphire",
           "src": "/images/garments/pc54-sapphire.webp",
-          "hex": "#028DB9",
+          "hex": "#028EB9",
           "sourcePage": "https://www.sanmar.com/p/3985_Sapphire",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h3f/hc5/30561340391454/1200W_3985_Sapphire-12-PC54SapphireFlatFront5/1200W-3985-Sapphire-12-PC54SapphireFlatFront5.jpg"
         },
@@ -291,9 +292,10 @@
       "neutral": "White",
       "print": {
         "x": 300,
-        "y": 252,
-        "maxWidth": 190,
-        "maxSize": 34
+        "top": 208,
+        "width": 190,
+        "capHeight": 54,
+        "rowGap": 9
       },
       "colors": {
         "White": {
@@ -306,35 +308,35 @@
         "Cardinal": {
           "name": "Cardinal",
           "src": "/images/garments/pc78h-cardinal.webp",
-          "hex": "#76273A",
+          "hex": "#752639",
           "sourcePage": "https://www.sanmar.com/p/4180_Cardinal",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hd1/hf1/31354400014366/1200W_4180_Cardinal-12-PC78HCardinalFlatFront3/1200W-4180-Cardinal-12-PC78HCardinalFlatFront3.jpg"
         },
         "JetBlack": {
           "name": "Jet Black",
           "src": "/images/garments/pc78h-jetblack.webp",
-          "hex": "#1F2120",
+          "hex": "#1E201F",
           "sourcePage": "https://www.sanmar.com/p/4180_JetBlack",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hdd/hdf/31355109244958/1200W_4180_JetBlack-12-PC78HJetBlackFlatFront3/1200W-4180-JetBlack-12-PC78HJetBlackFlatFront3.jpg"
         },
         "TeamPurple": {
           "name": "Team Purple",
           "src": "/images/garments/pc78h-teampurple.webp",
-          "hex": "#47336E",
+          "hex": "#46326D",
           "sourcePage": "https://www.sanmar.com/p/4180_TeamPurple",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h36/h36/31355407368222/1200W_4180_TeamPurple-12-PC78HTeamPurpleFlatFront3/1200W-4180-TeamPurple-12-PC78HTeamPurpleFlatFront3.jpg"
         },
         "TrueRoyal": {
           "name": "True Royal",
           "src": "/images/garments/pc78h-trueroyal.webp",
-          "hex": "#204C8B",
+          "hex": "#1F4B8A",
           "sourcePage": "https://www.sanmar.com/p/4180_TrueRoyal",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h8d/h28/31355411628062/1200W_4180_TrueRoyal-12-PC78HTrueRoyalFlatFront3/1200W-4180-TrueRoyal-12-PC78HTrueRoyalFlatFront3.jpg"
         },
         "TrueNavy": {
           "name": "True Navy",
           "src": "/images/garments/pc78h-truenavy.webp",
-          "hex": "#2E3853",
+          "hex": "#2D3752",
           "sourcePage": "https://www.sanmar.com/p/4180_TrueNavy",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h1a/h44/31355410579486/1200W_4180_TrueNavy-12-PC78HTrueNavyFlatFront3/1200W-4180-TrueNavy-12-PC78HTrueNavyFlatFront3.jpg"
         },
@@ -355,7 +357,7 @@
         "DarkGreen": {
           "name": "Dark Green",
           "src": "/images/garments/pc78h-darkgreen.webp",
-          "hex": "#2C4740",
+          "hex": "#2B463F",
           "sourcePage": "https://www.sanmar.com/p/4180_DarkGreen",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/he9/h1e/31354407354398/1200W_4180_DarkGreen-12-PC78HDarkGreenFlatFront3/1200W-4180-DarkGreen-12-PC78HDarkGreenFlatFront3.jpg"
         },
@@ -369,7 +371,7 @@
         "Teal": {
           "name": "Teal",
           "src": "/images/garments/pc78h-teal.webp",
-          "hex": "#066875",
+          "hex": "#056774",
           "sourcePage": "https://www.sanmar.com/p/4180_Teal",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h8e/ha0/31355406319646/1200W_4180_Teal-12-PC78HTealFlatFront3/1200W-4180-Teal-12-PC78HTealFlatFront3.jpg"
         },
@@ -409,12 +411,12 @@
         "baltimore": {
           "color": "TeamPurple",
           "how": "auto",
-          "distance": 8.4
+          "distance": 8.6
         },
         "buffalo": {
           "color": "TrueRoyal",
           "how": "auto",
-          "distance": 6.5
+          "distance": 6.7
         },
         "carolina": {
           "color": "JetBlack",
@@ -434,7 +436,7 @@
         "cleveland": {
           "color": "DkChocBrn",
           "how": "auto",
-          "distance": 9.6
+          "distance": 9.8
         },
         "dallas": {
           "color": "TrueNavy",
@@ -464,7 +466,7 @@
         "indianapolis": {
           "color": "TrueRoyal",
           "how": "blank",
-          "distance": 8.5
+          "distance": 8.8
         },
         "jacksonville": {
           "color": "Teal",
@@ -484,17 +486,17 @@
         "los-angeles-powder": {
           "color": "Sapphire",
           "how": "auto",
-          "distance": 9.1
+          "distance": 9.4
         },
         "los-angeles-royal": {
           "color": "TrueRoyal",
           "how": "auto",
-          "distance": 6.3
+          "distance": 6.5
         },
         "miami": {
           "color": "BrightAqua",
           "how": "auto",
-          "distance": 6.9
+          "distance": 7.3
         },
         "minnesota": {
           "color": "TeamPurple",
@@ -514,7 +516,7 @@
         "new-york-blue": {
           "color": "TrueRoyal",
           "how": "blank",
-          "distance": 11.6
+          "distance": 11.9
         },
         "new-york-green": {
           "color": "DarkGreen",
@@ -534,7 +536,7 @@
         "san-francisco": {
           "color": "Red",
           "how": "auto",
-          "distance": 8.8
+          "distance": 8.7
         },
         "seattle": {
           "color": "TrueNavy",
@@ -565,9 +567,10 @@
       "neutral": "White",
       "print": {
         "x": 300,
-        "y": 232,
-        "maxWidth": 236,
-        "maxSize": 40
+        "top": 152,
+        "width": 236,
+        "capHeight": 57,
+        "rowGap": 9
       },
       "colors": {
         "White": {
@@ -629,7 +632,7 @@
         "Teal": {
           "name": "Teal",
           "src": "/images/garments/pc54y-teal.webp",
-          "hex": "#046A79",
+          "hex": "#036A79",
           "sourcePage": "https://www.sanmar.com/p/3986_Teal",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h2b/h45/30952375484446/1200W_3986_Teal-12-PC54YTealFlatFront/1200W-3986-Teal-12-PC54YTealFlatFront.jpg"
         },
@@ -643,7 +646,7 @@
         "BrightAqua": {
           "name": "Bright Aqua",
           "src": "/images/garments/pc54y-brightaqua.webp",
-          "hex": "#0396A3",
+          "hex": "#0396A4",
           "sourcePage": "https://www.sanmar.com/p/3986_BrightAqua",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/ha8/h05/30561898758174/1200W_3986_BrightAqua-12-PC54YBrightAquaFlatFront1/1200W-3986-BrightAqua-12-PC54YBrightAquaFlatFront1.jpg"
         }
@@ -702,12 +705,12 @@
         "detroit": {
           "color": "Royal",
           "how": "auto",
-          "distance": 2.4
+          "distance": 2.6
         },
         "green-bay": {
           "color": "DarkGreen",
           "how": "auto",
-          "distance": 2.4
+          "distance": 2.1
         },
         "houston": {
           "color": "TrueNavy",
@@ -722,7 +725,7 @@
         "jacksonville": {
           "color": "Teal",
           "how": "auto",
-          "distance": 2.1
+          "distance": 1.1
         },
         "kansas-city": {
           "color": "Red",
@@ -737,7 +740,7 @@
         "los-angeles-powder": {
           "color": "Royal",
           "how": "auto",
-          "distance": 8
+          "distance": 7.6
         },
         "los-angeles-royal": {
           "color": "TrueRoyal",
@@ -772,12 +775,12 @@
         "new-york-green": {
           "color": "DarkGreen",
           "how": "auto",
-          "distance": 11.9
+          "distance": 12.1
         },
         "philadelphia": {
           "color": "Teal",
           "how": "auto",
-          "distance": 10
+          "distance": 9.9
         },
         "pittsburgh": {
           "color": "JetBlack",
@@ -818,9 +821,10 @@
       "neutral": "White",
       "print": {
         "x": 300,
-        "y": 252,
-        "maxWidth": 190,
-        "maxSize": 34
+        "top": 208,
+        "width": 190,
+        "capHeight": 54,
+        "rowGap": 9
       },
       "colors": {
         "White": {
@@ -840,7 +844,7 @@
         "JetBlack": {
           "name": "Jet Black",
           "src": "/images/garments/pc78yh-jetblack.webp",
-          "hex": "#1A1C1B",
+          "hex": "#191B1A",
           "sourcePage": "https://www.sanmar.com/p/80574_JetBlack",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h12/h53/33520816685086/1200W_80574_JetBlack-12-PC78YHJetBlackFlatFront1/1200W-80574-JetBlack-12-PC78YHJetBlackFlatFront1.jpg"
         },
@@ -896,7 +900,7 @@
         "Sapphire": {
           "name": "Sapphire",
           "src": "/images/garments/pc78yh-sapphire.webp",
-          "hex": "#0388B1",
+          "hex": "#0387B0",
           "sourcePage": "https://www.sanmar.com/p/80574_Sapphire",
           "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h51/h44/31688816721950/1200W_80574_Sapphire-12-PC78YHSapphireFlatFront/1200W-80574-Sapphire-12-PC78YHSapphireFlatFront.jpg"
         },
@@ -972,7 +976,7 @@
         "houston": {
           "color": "Navy",
           "how": "auto",
-          "distance": 8.7
+          "distance": 8.4
         },
         "indianapolis": {
           "color": "TrueRoyal",

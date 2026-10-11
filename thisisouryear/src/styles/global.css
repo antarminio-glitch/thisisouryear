@@ -362,41 +362,17 @@ a {
   stroke-width: 4.5;
 }
 
-/* The lettering */
-.lt text {
-  font-family: var(--display);
-  text-anchor: middle;
-  /* Round joins. Sharp (miter) joins leave hairline spikes in this font. */
-  stroke-linejoin: round;
-}
-.lt-rim {
-  fill: var(--outline);
-  stroke: var(--outline);
-}
-.lt-gap {
-  fill: var(--shirt);
-  stroke: var(--shirt);
-}
-.lt-1 {
-  fill: var(--line1);
-  stroke: var(--line1);
-}
-.lt-2 {
-  fill: var(--line2);
-  stroke: var(--line2);
-}
-
-/* The real photo. The outline gap takes the fabric color measured from the
-   photo, so the shirt looks like it shows through the print. */
-.shirt-real .lt-gap {
-  fill: var(--print-gap, var(--shirt));
-  stroke: var(--print-gap, var(--shirt));
-}
+/* The real photo. The lettering on it is the same vector artwork as on the
+   drawings; a faint shadow settles it onto the cloth. */
 .shirt-real .print {
   opacity: 0.96;
   filter: drop-shadow(0 0.4px 0.4px rgb(0 0 0 / 0.16));
 }
 /* Photos come on white, so anything holding one goes white too. */
+.shirt-real {
+  background: #fff;
+  border-radius: 8px;
+}
 .stage:has(.shirt-real),
 .tile:has(.shirt-real) {
   background: #fff;

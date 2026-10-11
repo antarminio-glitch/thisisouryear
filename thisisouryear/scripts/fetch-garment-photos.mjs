@@ -230,14 +230,15 @@ async function squareUp(buffer, size) {
 }
 
 // The fabric color where the print goes. The lettering is drawn in a 600 by
-// 600 space, so the print position is scaled to the photo's size.
+// 600 space, so the print rectangle is scaled to the photo's size.
 function fabricHex(square, size, print) {
   const k = size / 600;
+  const height = print.capHeight * 2 + print.rowGap;
   return averageHex(square, {
     left: Math.round((print.x - 30) * k),
-    top: Math.round((print.y - print.maxSize) * k),
+    top: Math.round(print.top * k),
     width: Math.round(60 * k),
-    height: Math.round(print.maxSize * 2.2 * k),
+    height: Math.round(height * k),
   });
 }
 

@@ -7,84 +7,15 @@
 //
 // Colors are never baked in. The drawing reads four CSS variables from whatever
 // wraps it: --shirt, --line1, --line2, --outline.
-
-// Width of each character in the Graduate font, in thousandths of the letter
-// size. Placing every letter by hand keeps the print the same shape on every
-// device, even in the moment before the font file has loaded.
-const ADVANCE = {
-  A: 657, B: 684, C: 600, D: 690, E: 636, F: 596, G: 620, H: 792, I: 392, J: 540, K: 669, L: 556, M: 946,
-  N: 812, O: 650, P: 624, Q: 650, R: 699, S: 600, T: 580, U: 740, V: 687, W: 1026, X: 649, Y: 607, Z: 596,
-  ' ': 350, "'": 240, '.': 200, ',': 200, '!': 260, '-': 509, '&': 674,
-};
-const DIGIT = 650;
+//
+// The lettering itself is the vector artwork in src/lib/varsity-artwork.js,
+// rebuilt from the reference shirt, so it is the same shape everywhere.
+import { varsityArtwork } from './varsity-artwork.js';
 
 export const DEFAULT_LINES = ['THIS IS', 'OUR YEAR'];
 
 function esc(text) {
   return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-// Width of a line of lettering, in units of the letter size.
-export function lineWidth(text, track = 0.1) {
-  const chars = [...String(text).toUpperCase()];
-  return chars.reduce((sum, c) => sum + (ADVANCE[c] ?? DIGIT) / 1000, 0) + track * (chars.length - 1);
-}
-
-function place(text, x, size, track) {
-  const chars = [...String(text).toUpperCase()];
-  const widths = chars.map((c) => ((ADVANCE[c] ?? DIGIT) / 1000) * size);
-  const total = widths.reduce((sum, w) => sum + w, 0) + track * size * (chars.length - 1);
-  let cursor = x - total / 2;
-  const centers = widths.map((w) => {
-    const center = cursor + w / 2;
-    cursor += w + track * size;
-    return center.toFixed(2);
-  });
-  return { text: chars.join(''), xs: centers.join(' ') };
-}
-
-// The chest print: two stacked lines of block lettering with the classic
-// athletic double outline. Each line is drawn three times, back to front:
-//   1. a wide stroke in the outline color
-//   2. a narrower stroke in the shirt color, which makes the gap
-//   3. the letter itself
-export function letteringSvg({
-  x = 0, // horizontal center
-  y = 0, // baseline of the first line
-  size = 46, // letter size
-  lines = DEFAULT_LINES,
-  // The rest are multiples of the letter size.
-  leading = 1.16, // distance between the two baselines
-  track = 0.1, // extra space between letters, so the outlines have room
-  weight = 0.025, // how much the letters are thickened
-  gap = 0.045, // width of the shirt-colored gap
-  rim = 0.05, // width of the outer outline
-} = {}) {
-  const fillStroke = (size * weight * 2).toFixed(2);
-  const gapStroke = (size * (weight + gap) * 2).toFixed(2);
-  const rimStroke = (size * (weight + gap + rim) * 2).toFixed(2);
-  const fills = ['lt-1', 'lt-2'];
-
-  const layers = lines
-    .slice(0, 2)
-    .map((line, i) => {
-      const p = place(line, x, size, track);
-      const at = `x="${p.xs}" y="${(y + i * size * leading).toFixed(2)}"`;
-      const t = esc(p.text);
-      return (
-        `<text ${at} class="lt-rim" stroke-width="${rimStroke}">${t}</text>` +
-        `<text ${at} class="lt-gap" stroke-width="${gapStroke}">${t}</text>` +
-        `<text ${at} class="${fills[i]}" stroke-width="${fillStroke}">${t}</text>`
-      );
-    })
-    .join('');
-  return `<g class="lt" font-size="${size}">${layers}</g>`;
-}
-
-// Picks a letter size so the widest line fits the print area.
-function fitSize(lines, maxWidth, maxSize) {
-  const widest = Math.max(...lines.map((l) => lineWidth(l)));
-  return Math.min(maxSize, Math.floor((maxWidth / (widest + 0.3)) * 10) / 10);
 }
 
 const TEE = {
@@ -104,7 +35,6 @@ const HOODIE = {
 };
 
 function teeSvg(lines) {
-  const size = fitSize(lines, 290, 48);
   return (
     `<path class="tee-fill" d="${TEE.body}"/>` +
     `<g clip-path="url(#tee-clip)">` +
@@ -121,12 +51,11 @@ function teeSvg(lines) {
     `<path class="tee-seam" d="M231 54C243 118 357 118 369 54"/><path class="tee-seam-hi" d="M240 48C251 98 349 98 360 48"/>` +
     `</g>` +
     `<path class="tee-edge" d="${TEE.body}"/>` +
-    letteringSvg({ x: 300, y: 262, size, lines })
+    varsityArtwork({ x: 300, top: 162, width: 244, capHeight: 59, rowGap: 9, lines })
   );
 }
 
 function hoodieSvg(lines) {
-  const size = fitSize(lines, 252, 42);
   return (
     `<path class="tee-fill" d="${HOODIE.body}"/>` +
     `<g clip-path="url(#hood-clip)">` +
@@ -148,20 +77,21 @@ function hoodieSvg(lines) {
     `<path class="hood-tip" d="M266 204L265 216M334 204L335 216"/>` +
     `</g>` +
     `<path class="tee-edge" d="${HOODIE.body}"/>` +
-    letteringSvg({ x: 300, y: 292, size, lines })
+    varsityArtwork({ x: 300, top: 224, width: 224, capHeight: 54, rowGap: 9, lines })
   );
 }
 
 // A real photo of the blank garment, with the lettering placed on the chest.
 // `photo` comes from garment-photos.json: { src, hex, print }. The hex is the
-// fabric color measured from the photo at chest height. The outline gap takes
-// it, so the shirt looks like it shows through the print.
+// fabric color measured from the photo where the print goes. The artwork's
+// keyline is drawn in the shirt color, so inside the print that variable is
+// set to the measured color and the fabric looks like it shows through.
 function photoSvg(photo, lines) {
-  const print = photo.print ?? { x: 300, y: 232, maxWidth: 236, maxSize: 40 };
-  const size = fitSize(lines, print.maxWidth, print.maxSize);
+  const print = photo.print ?? { x: 300, top: 152, width: 236, capHeight: 57, rowGap: 9 };
+  const { x, top, width, capHeight, rowGap } = print;
   return (
     `<image href="${esc(photo.src)}" x="0" y="0" width="600" height="600" preserveAspectRatio="xMidYMid meet"/>` +
-    `<g class="print" style="--print-gap:${esc(photo.hex ?? '')}">${letteringSvg({ x: print.x, y: print.y, size, lines })}</g>`
+    `<g class="print" style="--shirt:${esc(photo.hex ?? '')}">${varsityArtwork({ lines, x, top, width, capHeight, rowGap })}</g>`
   );
 }
 

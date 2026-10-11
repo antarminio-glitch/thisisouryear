@@ -51,7 +51,7 @@ test('every garment in garments.json is a product in the catalog, with a print p
   for (const [id, g] of Object.entries(garments.garments)) {
     assert.ok(data.catalog.products.some((p) => p.id === id), `${id} is not a product`);
     assert.match(g.style, /^[A-Z0-9]+$/, `${id} style`);
-    for (const k of ['x', 'y', 'maxWidth', 'maxSize']) assert.equal(typeof g.print[k], 'number', `${id} print.${k}`);
+    for (const k of ['x', 'top', 'width', 'capHeight', 'rowGap']) assert.equal(typeof g.print[k], 'number', `${id} print.${k}`);
   }
   assert.equal(productIdFor(data.catalog.products, 'tee', 'adult'), 'adult-tee');
   assert.equal(productIdFor(data.catalog.products, 'hoodie', 'kids'), 'kids-hoodie');
@@ -91,8 +91,8 @@ test('with a photo the garment is the photo plus lettering, without one it is th
   const real = garmentSvg({ style: 'tee', audience: 'adult', photo, label: 'x' });
   assert.ok(real.includes('shirt-real'));
   assert.ok(real.includes(`<image href="${photo.src}"`));
-  assert.ok(real.includes(`--print-gap:${photo.hex}`));
-  assert.ok(real.includes('OUR YEAR'));
+  assert.ok(real.includes(`--shirt:${photo.hex}`), 'the lettering keyline takes the measured fabric color');
+  assert.ok(real.includes('varsity-artwork'), 'the same reference lettering as everywhere else');
   assert.ok(!real.includes('tee-fill'), 'no drawn shirt under the photo');
   const drawn = garmentSvg({ style: 'tee', audience: 'adult', label: 'x' });
   assert.ok(drawn.includes('tee-fill'));
