@@ -388,7 +388,9 @@ async function main() {
     let product;
     if (code) {
       try {
-        product = await productPage(`${code}_${g.neutral}`);
+        const known = Object.keys(previous.garments?.[id]?.colors ?? {})[0];
+        if (!known) throw new Error("no color known yet");
+        product = await productPage(`${code}_${known}`);
         if (product.styleNumber?.toUpperCase() !== g.style.toUpperCase()) throw new Error('style mismatch');
       } catch {
         code = null;
@@ -416,9 +418,6 @@ async function main() {
     const wanted = new Map();
     const byCode = Object.fromEntries(colors.map((c) => [c.code, c]));
     const want = (c) => wanted.set(c.code, c);
-    const neutral = byCode[g.neutral];
-    if (!neutral) problems.push(`${id}: neutral color "${g.neutral}" is not one of ${g.style}'s colors.`);
-    else want(neutral);
 
     for (const t of teams) {
       // "blank" in teams.json names the vendor color by hand: one code for
@@ -486,7 +485,7 @@ async function main() {
     // Drop cities whose photo failed, so the site falls back to the drawing.
     for (const [slug, c] of Object.entries(cities)) if (!photos[c.color]) delete cities[slug];
 
-    out.garments[id] = { style: g.style, name: g.name, code, neutral: g.neutral, print: g.print, colors: photos, cities };
+    out.garments[id] = { style: g.style, name: g.name, code, print: g.print, colors: photos, cities };
   }
 
   if (DRY) {

@@ -61,7 +61,6 @@ test('garment-photos.json points every city at a photo that exists', () => {
   assert.ok(Object.keys(photos.garments).length > 0, 'run "npm run photos" first');
   for (const [id, g] of Object.entries(photos.garments)) {
     assert.ok(garments.garments[id], `${id} is in garment-photos.json but not garments.json`);
-    assert.ok(g.colors[g.neutral]?.src, `${id}: neutral blank "${g.neutral}" has no photo`);
     for (const t of data.teams) {
       const city = g.cities[t.slug];
       assert.ok(city, `${id}: ${t.slug} has no photo. Run "npm run photos".`);
@@ -74,11 +73,11 @@ test('garment-photos.json points every city at a photo that exists', () => {
   }
 });
 
-test('a city gets its photo, no city gets the white blank, and unknown products get nothing', () => {
+test('a city gets its photo, no city gets no photo at all, and unknown products get nothing', () => {
   const p = photoFor(photos, 'adult-tee', 'dallas');
   assert.ok(p?.src.startsWith('/images/garments/'));
   assert.ok(p.hex && p.print);
-  assert.equal(photoFor(photos, 'adult-tee', '').color, 'White');
+  assert.equal(photoFor(photos, 'adult-tee', ''), null, 'no city, no shirt picture');
   assert.equal(photoFor(photos, 'not-a-product', 'dallas'), null);
   assert.equal(photoFor(null, 'adult-tee', 'dallas'), null);
   const slim = photosForBrowser(photos);

@@ -134,7 +134,7 @@ The distance is how far the city's color is from the fabric. Under 5 is the same
 
 That applies to every garment. To pick per garment, use an object keyed by the product id or the style number: `"blank":{"adult-tee":"TrueRoyal","PC78H":"Royal"}`. Two cities ship with a hand pick: New York (Blue) and Indianapolis, whose blues sit between navy and royal and would otherwise land on a purple or a navy.
 
-**To change which blanks are used**, edit `src/data/garments.json`: one entry per product, with the SanMar style number, a label, the color to show before a city is chosen, and where the print sits on that garment's photo (`print`, in the drawing's 600 by 600 space). Heathers, camo, neons and fashion colors like pinks are never picked automatically; `skipColors` is that list. A blank can still be named by hand in `blank`.
+**To change which blanks are used**, edit `src/data/garments.json`: one entry per product, with the SanMar style number, a label, and where the print sits on that garment's photo (`print`, in the drawing's 600 by 600 space). Heathers, camo, neons and fashion colors like pinks are never picked automatically; `skipColors` is that list. A blank can still be named by hand in `blank`.
 
 Other commands:
 

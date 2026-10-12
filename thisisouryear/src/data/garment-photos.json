@@ -7,7 +7,6 @@
       "style": "PC54",
       "name": "Port & Company Core Cotton Tee",
       "code": "3985",
-      "neutral": "White",
       "print": {
         "x": 300,
         "top": 152,
@@ -16,13 +15,6 @@
         "rowGap": 9
       },
       "colors": {
-        "White": {
-          "name": "White",
-          "src": "/images/garments/pc54-white.webp",
-          "hex": "#EDF1F4",
-          "sourcePage": "https://www.sanmar.com/p/3985_White",
-          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h65/h76/30561349173278/1200W_3985_White-12-PC54WhiteFlatFront5/1200W-3985-White-12-PC54WhiteFlatFront5.jpg"
-        },
         "Red": {
           "name": "Red",
           "src": "/images/garments/pc54-red.webp",
@@ -385,7 +377,6 @@
       "style": "PC78H",
       "name": "Port & Company Core Fleece Pullover Hooded Sweatshirt",
       "code": "4180",
-      "neutral": "White",
       "print": {
         "x": 300,
         "top": 208,
@@ -394,13 +385,6 @@
         "rowGap": 9
       },
       "colors": {
-        "White": {
-          "name": "White",
-          "src": "/images/garments/pc78h-white.webp",
-          "hex": "#F1F5F8",
-          "sourcePage": "https://www.sanmar.com/p/4180_White",
-          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hb1/hff/31355413790750/1200W_4180_White-12-PC78HWhiteFlatFront3/1200W-4180-White-12-PC78HWhiteFlatFront3.jpg"
-        },
         "Red": {
           "name": "Red",
           "src": "/images/garments/pc78h-red.webp",
@@ -763,7 +747,6 @@
       "style": "PC54Y",
       "name": "Port & Company Youth Core Cotton Tee",
       "code": "3986",
-      "neutral": "White",
       "print": {
         "x": 300,
         "top": 152,
@@ -772,13 +755,6 @@
         "rowGap": 9
       },
       "colors": {
-        "White": {
-          "name": "White",
-          "src": "/images/garments/pc54y-white.webp",
-          "hex": "#EFF3F6",
-          "sourcePage": "https://www.sanmar.com/p/3986_White",
-          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/had/h7f/30563106324510/1200W_3986_White-12-PC54YWhiteFlatFront1/1200W-3986-White-12-PC54YWhiteFlatFront1.jpg"
-        },
         "Red": {
           "name": "Red",
           "src": "/images/garments/pc54y-red.webp",
@@ -1120,7 +1096,6 @@
       "style": "PC78YH",
       "name": "Port & Company Youth Core Fleece Pullover Hooded Sweatshirt",
       "code": "80574",
-      "neutral": "White",
       "print": {
         "x": 300,
         "top": 208,
@@ -1129,13 +1104,6 @@
         "rowGap": 9
       },
       "colors": {
-        "White": {
-          "name": "White",
-          "src": "/images/garments/pc78yh-white.webp",
-          "hex": "#ECF0F3",
-          "sourcePage": "https://www.sanmar.com/p/80574_White",
-          "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h05/h15/33520838311966/1200W_80574_White-12-PC78YHWhiteFlatFront1/1200W-80574-White-12-PC78YHWhiteFlatFront1.jpg"
-        },
         "Red": {
           "name": "Red",
           "src": "/images/garments/pc78yh-red.webp",

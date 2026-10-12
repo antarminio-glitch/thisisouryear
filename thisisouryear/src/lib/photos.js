@@ -123,14 +123,14 @@ export function productIdFor(products, style, audience) {
   return (products ?? []).find((p) => p.style === style && p.audience === audience)?.id ?? `${audience}-${style}`;
 }
 
-// The photo for a product and a city: { src, hex, print, color }. With no
-// city, the garment's neutral blank (white) so pickers have something to show
-// before a city is chosen. Null when there is no photo, in which case the
-// drawing is used.
+// The photo for a product and a city: { src, hex, print, color }. Null when
+// there is no city yet (no shirt is shown until one is picked) or no photo,
+// in which case the drawing is used.
 export function photoFor(photos, productId, slug = '') {
   const g = photos?.garments?.[productId];
   if (!g) return null;
-  const key = slug ? g.cities?.[slug]?.color : g.neutral;
+  if (!slug) return null;
+  const key = g.cities?.[slug]?.color;
   const c = key ? g.colors?.[key] : null;
   if (!c?.src) return null;
   return { src: c.src, hex: c.hex, print: g.print, color: c.name, style: g.style };
@@ -199,7 +199,6 @@ export function photosForBrowser(photos) {
   for (const [id, g] of Object.entries(photos?.garments ?? {})) {
     garments[id] = {
       style: g.style,
-      neutral: g.neutral,
       print: g.print,
       colors: Object.fromEntries(Object.entries(g.colors ?? {}).map(([k, c]) => [k, { src: c.src, hex: c.hex, name: c.name }])),
       cities: Object.fromEntries(Object.entries(g.cities ?? {}).map(([k, c]) => [k, { color: c.color }])),
