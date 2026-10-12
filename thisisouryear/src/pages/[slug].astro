@@ -6,6 +6,7 @@ import Picker from '../components/Picker.astro';
 import ShopData from '../components/ShopData.astro';
 import Confirm from '../components/Confirm.astro';
 import ModelShot from '../components/ModelShot.astro';
+import ThisWeek from '../components/ThisWeek.astro';
 import teams from '../data/teams.json';
 import models from '../data/model-photos.json';
 import photos from '../data/garment-photos.json';
@@ -78,6 +79,16 @@ const counterData = {
 
 <Layout title={title} description={description} theme={styleString(theme)} themeColor={team.shirt} image={card} imageAlt={cardDescription} structuredData={structuredData}>
   <ShopData />
+
+  <aside class="wait" aria-label="How long it's been" data-wait>
+    <div class="wrap">
+      <p class="wait-kicker">{season.banner.kicker} · {place}</p>
+      <p class="wait-big" data-wait-big>{counter.banner.big}</p>
+      <p class="wait-line" data-wait-line>{counter.banner.line}</p>
+      <ThisWeek city={team.slug} />
+    </div>
+  </aside>
+
   <div class="wrap city">
     <Picker city={team} lockCity buyNow id="city">
       <div slot="intro" class="intro">
@@ -229,6 +240,10 @@ const counterData = {
       const text = box.querySelector('[data-counter-text]');
       const context = box.querySelector<HTMLElement>('[data-counter-context]');
       if (text && text.textContent !== now.text) text.textContent = now.text;
+      const big = document.querySelector('[data-wait-big]');
+      const line = document.querySelector('[data-wait-line]');
+      if (big && big.textContent !== now.banner.big) big.textContent = now.banner.big;
+      if (line && line.textContent !== now.banner.line) line.textContent = now.banner.line;
       if (context) {
         context.textContent = now.context;
         context.hidden = !now.context;
@@ -291,6 +306,31 @@ const counterData = {
   }
   .intro {
     margin-bottom: 18px;
+  }
+  .wait {
+    padding: 18px 0 20px;
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  .wait .wrap {
+    padding-block: 0;
+  }
+  .wait-kicker {
+    font: 400 0.875rem / 1.4 var(--display);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .wait-big {
+    margin-top: 4px;
+    font: 400 clamp(2.75rem, 13vw, 5.5rem) / 1 var(--display);
+    text-transform: uppercase;
+  }
+  .wait-line {
+    margin-top: 8px;
+    max-width: var(--read);
+    font-size: 1.125rem;
+    text-wrap: balance;
   }
   .colorway {
     margin-top: 8px;

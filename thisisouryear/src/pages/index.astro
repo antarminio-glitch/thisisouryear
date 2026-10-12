@@ -6,6 +6,8 @@ import CityGrid from '../components/CityGrid.astro';
 import ShopData from '../components/ShopData.astro';
 import ModelShot from '../components/ModelShot.astro';
 import Shirt from '../components/Shirt.astro';
+import WaitTicker from '../components/WaitTicker.astro';
+import ThisWeek from '../components/ThisWeek.astro';
 import { shirtVars } from '../lib/cities.js';
 import { styleString } from '../lib/colors.js';
 import teams from '../data/teams.json';
@@ -79,6 +81,9 @@ const ways = [
       <span class="season-note">{season.banner.note}</span>
     </div>
   </aside>
+
+  <WaitTicker />
+  <ThisWeek />
 
   <section class="find" id="find">
     <div class="wrap">
