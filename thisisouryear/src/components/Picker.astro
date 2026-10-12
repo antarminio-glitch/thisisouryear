@@ -12,7 +12,7 @@ import { dollars } from '../lib/shop-core.js';
 import { teams, shirtVars, searchText, colorNames } from '../lib/cities.js';
 import { styleString } from '../lib/colors.js';
 
-const { city = null, lockCity = false, id = 'picker', buyNow = false, syncUrl = true, heading = null, defaultCity = null } = Astro.props;
+const { city = null, lockCity = false, id = 'picker', buyNow = false, syncUrl = true, heading = null } = Astro.props;
 const cities = [...teams].sort((a, b) => a.name.localeCompare(b.name));
 const tee = shop.product('adult-tee');
 const range = shop.priceRange('adult-tee');
@@ -31,7 +31,6 @@ const extra = tee.variants.filter((v) => v.extraCents > 0);
   data-picker
   data-group={id}
   data-city={city?.slug ?? ''}
-  data-default-city={defaultCity?.slug ?? ''}
   data-lock={String(lockCity)}
   data-sync-url={String(syncUrl)}
   aria-label={heading ?? 'Build your shirt'}
@@ -42,7 +41,7 @@ const extra = tee.variants.filter((v) => v.extraCents > 0);
         <Shirt team={city} label={city ? `This Is Our Year tee in ${city.name} colors, ${city.colors}` : 'This Is Our Year tee'} decorative={!city} />
       </div>
     </div>
-    <p class="concept">Product mockup. Final print colors and placement may vary.</p>
+    <p class="concept">Mockup. A photo of the blank garment with the design placed on it digitally. Print size and ink colors on the finished item may differ slightly.</p>
     <slot name="stage-extra" />
   </div>
 

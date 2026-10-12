@@ -1,0 +1,55 @@
+{
+  "_about": "The 2026 season layer: one banner for the whole site, one slogan per city, and a short verified history for cities where someone has checked the facts. Slogans are voice, not facts, and never borrow a team's name, nickname or trademarked rallying cry. History facts are shown only when 'verified' is true; each block says where it was checked.",
+  "season": 2026,
+  "banner": {
+    "kicker": "2026 season",
+    "line": "Say it now. Mean it in February.",
+    "note": "Every city starts 0-0. Every fan starts certain."
+  },
+  "cities": {
+    "arizona": { "slogan": "Red, black, and a desert full of belief." },
+    "atlanta": { "slogan": "Black and red. This time we finish." },
+    "baltimore": { "slogan": "Purple and black. Built for January." },
+    "buffalo": { "slogan": "Snow in the forecast. Hope in the stands." },
+    "carolina": { "slogan": "Black and blue, and never backing down." },
+    "chicago": { "slogan": "Navy, orange, and a long memory. This is the year it ends." },
+    "cincinnati": { "slogan": "Black and orange. Doubts out." },
+    "cleveland": { "slogan": "Brown and orange. Loyal beyond reason." },
+    "dallas": {
+      "slogan": "Thirty years is long enough. Navy and silver, all in.",
+      "history": {
+        "verified": true,
+        "verifiedOn": "2026-10-12",
+        "source": "Public championship-game record, cross-checked with src/data/history.json (last win 1996-01-28).",
+        "facts": [
+          "Five championships in the big game, won after the 1971, 1977, 1992, 1993 and 1995 seasons.",
+          "Three of those came in four seasons, from the 1992 season through the 1995 season.",
+          "The last one was won on January 28, 1996. Every fan here has been saying this is the year ever since."
+        ]
+      }
+    },
+    "denver": { "slogan": "A mile high. Expectations higher." },
+    "detroit": { "slogan": "Blue and silver. The wait is over, we decided." },
+    "green-bay": { "slogan": "Green, gold, and frozen certain." },
+    "houston": { "slogan": "Navy, red, and humidity you can taste. Still our year." },
+    "indianapolis": { "slogan": "Blue and white. Quiet confidence, loud October." },
+    "jacksonville": { "slogan": "Teal with something to prove." },
+    "kansas-city": { "slogan": "Red and gold. The standard, and the target." },
+    "las-vegas": { "slogan": "Black and silver. The house always believes." },
+    "los-angeles-powder": { "slogan": "Powder blue and gold. Sunshine and certainty." },
+    "los-angeles-royal": { "slogan": "Royal blue and yellow. A Hollywood ending, every August." },
+    "miami": { "slogan": "Aqua and orange. Perfect weather for a perfect season." },
+    "minnesota": { "slogan": "Purple, gold, and a heart that will not learn." },
+    "new-england": { "slogan": "Navy and red. The dynasty talk starts again." },
+    "new-orleans": { "slogan": "Black and gold. Say it with the whole parish." },
+    "new-york-blue": { "slogan": "Blue and red. Big city, big talk, backed up this time." },
+    "new-york-green": { "slogan": "Green and white. The most optimistic fans in America, by necessity." },
+    "philadelphia": { "slogan": "Midnight green. Nobody likes us, and we are fine with that." },
+    "pittsburgh": { "slogan": "Black and gold. Same standard, new season." },
+    "san-francisco": { "slogan": "Red and gold. Back for more." },
+    "seattle": { "slogan": "Navy and green. Champions, and not done." },
+    "tampa-bay": { "slogan": "Red and pewter. Loud again this fall." },
+    "tennessee": { "slogan": "Navy and light blue. Nashville is all in." },
+    "washington": { "slogan": "Burgundy and gold. The comeback starts now." }
+  }
+}
