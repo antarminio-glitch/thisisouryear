@@ -13,6 +13,7 @@ import { modelPhotoForCity } from '../lib/photos.js';
 import store from '../data/store.json';
 import history from '../data/history.json';
 import stories from '../data/stories.json';
+import season from '../data/season-2026.json';
 import palettes from '../data/palettes.json';
 import { shop } from '../lib/shop.js';
 import { dollars } from '../lib/shop-core.js';
@@ -40,6 +41,9 @@ const modelShot = modelPhotoForCity(models, photos, team.slug);
 const modelGarment = modelShot ? (shop.product(modelShot.productId)?.name ?? 'Shirt') : '';
 const place = placeName(team);
 const story = stories[team.slug];
+// The 2026 season layer: a slogan for every city, verified history for some.
+const seasonCity = season.cities[team.slug] ?? {};
+const seasonHistory = seasonCity.history?.verified === true && Array.isArray(seasonCity.history.facts) && seasonCity.history.facts.length > 0 ? seasonCity.history : null;
 
 // The counter is worked out when the site is built, then re-checked in the
 // browser with today's date, so it's right even if the build is a day old.
@@ -79,6 +83,7 @@ const counterData = {
       <div slot="intro" class="intro">
         <h1>This is our year, {place}.</h1>
         <p class="colorway">{team.colors}</p>
+        <p class="season-tag"><span class="season-kicker">{season.banner.kicker}</span> {seasonCity.slogan ?? season.banner.line}</p>
       </div>
       {
         modelShot && (
@@ -101,6 +106,20 @@ const counterData = {
       <p>{story.story}</p>
       <p class="occasion">{story.occasion}</p>
     </section>
+
+    {
+      seasonHistory && (
+        <section class="history" aria-labelledby="history-h">
+          <h2 id="history-h">How {place} got here</h2>
+          <ul>
+            {seasonHistory.facts.map((fact) => (
+              <li>{fact}</li>
+            ))}
+          </ul>
+          <p class="hint">Checked {seasonHistory.verifiedOn}. {seasonHistory.source}</p>
+        </section>
+      )
+    }
 
     <section class="drought" aria-labelledby="drought-h" data-counter={JSON.stringify(counterData)}>
       <h2 id="drought-h" class="sr-only">How long it's been</h2>
@@ -378,5 +397,36 @@ const counterData = {
     .city {
       padding-block: 40px 16px;
     }
+  }
+</style>
+
+<style>
+  .season-tag {
+    margin: 8px 0 0;
+    color: var(--soft);
+  }
+  .season-tag .season-kicker {
+    display: inline-block;
+    margin-right: 8px;
+    padding: 2px 8px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    font: 400 0.8125rem / 1.5 var(--display);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--on-bg);
+  }
+  .history {
+    margin-top: 36px;
+  }
+  .history h2 {
+    font-size: clamp(1.375rem, 5.4vw, 2rem);
+    margin-bottom: 14px;
+  }
+  .history ul {
+    margin: 0 0 12px;
+    padding-left: 1.2em;
+    display: grid;
+    gap: 8px;
   }
 </style>

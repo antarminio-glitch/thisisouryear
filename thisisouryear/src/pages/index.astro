@@ -14,6 +14,7 @@ import photos from '../data/garment-photos.json';
 import { shop } from '../lib/shop.js';
 import { dollars, fromPriceCents } from '../lib/money.js';
 import { cityForBlank, rotatingPick } from '../lib/photos.js';
+import season from '../data/season-2026.json';
 
 const price = dollars(fromPriceCents());
 
@@ -70,6 +71,14 @@ const ways = [
 
     </div>
   </section>
+
+  <aside class="season-strip" aria-label={`${season.banner.kicker} message`}>
+    <div class="wrap">
+      <span class="season-kicker">{season.banner.kicker}</span>
+      <span class="season-line">{season.banner.line}</span>
+      <span class="season-note">{season.banner.note}</span>
+    </div>
+  </aside>
 
   <section class="find" id="find">
     <div class="wrap">
@@ -213,6 +222,30 @@ const ways = [
   }
   :global(body:has(.hero) .site-head) {
     border-top: 4px solid #f5bd00;
+  }
+  .season-strip {
+    padding: 12px 0;
+    background: #0f3a22;
+    color: #f3f4f5;
+    border-block: 1px solid #ffffff18;
+  }
+  .season-strip .wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 18px;
+  }
+  .season-kicker {
+    font: 400 0.9375rem / 1.4 var(--display);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ffd02e;
+  }
+  .season-line {
+    font-weight: 700;
+  }
+  .season-note {
+    color: #c5d1c7;
   }
   .hero-kicker {
     margin: 0 0 16px;
