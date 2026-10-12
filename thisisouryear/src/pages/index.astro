@@ -23,7 +23,14 @@ const heroShot = (productId) => {
   return photo && team ? { photo, team, garment: shop.product(productId)?.name ?? '' } : null;
 };
 const heroShots = [heroShot('adult-tee'), heroShot('adult-hoodie')].filter(Boolean);
-const sizes = shop.product('adult-tee').variants.map((v) => v.size);
+// "S through 3XL" for adults, plus "XS through XL for kids" once a kids garment is for sale.
+const sizesOf = (id) => shop.product(id).variants.map((v) => v.size);
+const adultSizes = sizesOf('adult-tee');
+const kidsProduct = ['kids-tee', 'kids-hoodie'].find((id) => shop.isSellable(shop.product(id)));
+const kidsSizes = kidsProduct ? sizesOf(kidsProduct) : [];
+const sizeLine = kidsSizes.length
+  ? `Adults ${adultSizes[0]} through ${adultSizes.at(-1)}, kids ${kidsSizes[0]} through ${kidsSizes.at(-1)}.`
+  : `${adultSizes[0]} through ${adultSizes.at(-1)}.`;
 const status = (id) => (shop.isSellable(shop.product(id)) ? `From ${dollars(shop.priceRange(id).lowCents)}` : 'Preview only for now');
 
 // The ways in. Each one says plainly whether it can be bought yet.
@@ -117,7 +124,7 @@ const ways = [
         </li>
         <li>
           <h3>Pick your size</h3>
-          <p>{sizes[0]} through {sizes.at(-1)}. Checkout takes about a minute.</p>
+          <p>{sizeLine} Checkout takes about a minute.</p>
         </li>
         <li>
           <h3>We print and ship</h3>

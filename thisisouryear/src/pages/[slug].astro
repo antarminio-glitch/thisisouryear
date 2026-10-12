@@ -30,7 +30,8 @@ export function getStaticPaths() {
 const { team } = Astro.props;
 const theme = themeFor(team);
 
-// What the tee is, from the maker's spec sheet.
+// What the tee is, from the maker's spec sheet. The block starts on the tee
+// and follows the picker in the browser (see the script at the bottom).
 const tee = specs.products['adult-tee'];
 
 // One small on-model thumbnail, only when a blank this city is printed on
@@ -136,20 +137,20 @@ const counterData = {
       </ul>
     </section>
 
-    <section class="details-block" aria-labelledby="details-h">
-      <h2 id="details-h">About the tee</h2>
+    <section class="details-block" aria-labelledby="details-h" data-about>
+      <h2 id="details-h">About the <span data-about-name>tee</span></h2>
       <dl class="details">
         <div>
           <dt>Fabric</dt>
-          <dd>{tee.fabric}</dd>
+          <dd data-about-fabric>{tee.fabric}</dd>
         </div>
         <div>
           <dt>Fit</dt>
-          <dd>{tee.fit}. <a href="/size-chart/#adult-tee">Size chart</a></dd>
+          <dd><span data-about-fit>{tee.fit}</span>. <a href="/size-chart/#adult-tee" data-about-chart>Size chart</a></dd>
         </div>
         <div>
           <dt>Care</dt>
-          <dd>{tee.care}</dd>
+          <dd data-about-care>{tee.care}</dd>
         </div>
         <div>
           <dt>Print</dt>
@@ -168,6 +169,33 @@ const counterData = {
     <p class="other"><a href="/teams/">Not your city? Pick another</a></p>
   </div>
 </Layout>
+
+<script>
+  // The "About" block follows whatever garment the picker shows: tee, hoodie
+  // or kids tee. The text comes from the same specs the size chart uses.
+  import { data } from '../scripts/shop-data.js';
+
+  const about = document.querySelector<HTMLElement>('[data-about]');
+  const specs = (data as { specs?: Record<string, { fabric: string; fit: string; care: string }> }).specs ?? {};
+  document.addEventListener('picker-change', (e) => {
+    const { product } = (e as CustomEvent).detail as { product: { id: string; name: string; sizeChart?: string } };
+    const spec = specs[product.id];
+    if (!about || !spec) return;
+    const set = (sel: string, text: string) => {
+      const el = about.querySelector(sel);
+      if (el) el.textContent = text;
+    };
+    set('[data-about-name]', product.name.toLowerCase());
+    set('[data-about-fabric]', spec.fabric);
+    set('[data-about-fit]', spec.fit);
+    set('[data-about-care]', spec.care);
+    const chart = about.querySelector<HTMLAnchorElement>('[data-about-chart]');
+    if (chart) {
+      chart.hidden = !product.sizeChart;
+      if (product.sizeChart) chart.href = product.sizeChart;
+    }
+  });
+</script>
 
 <script>
   import { counterFor, todayIn } from '../lib/counter.js';
