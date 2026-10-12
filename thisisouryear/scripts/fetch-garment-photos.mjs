@@ -228,10 +228,14 @@ async function squareUp(buffer, size) {
   const { width, height } = trimmed.info;
   const side = Math.max(width, height);
   const pad = { top: Math.floor((side - height) / 2), left: Math.floor((side - width) / 2) };
-  return sharp(trimmed.data)
+  // Two steps on purpose. sharp always resizes before it extends, whatever
+  // order the calls are in, so one chain would scale the trimmed garment to
+  // size x size (cropping its top and bottom) and pad that. Padding first,
+  // then resizing, keeps the whole garment.
+  const squared = await sharp(trimmed.data)
     .extend({ top: pad.top, bottom: side - height - pad.top, left: pad.left, right: side - width - pad.left, background: '#ffffff' })
-    .resize(size, size)
     .toBuffer();
+  return sharp(squared).resize(size, size).toBuffer();
 }
 
 // The fabric color where the print goes. The lettering is drawn in a 600 by
