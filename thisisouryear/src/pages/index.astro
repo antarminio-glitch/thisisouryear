@@ -44,12 +44,13 @@ const ways = [
 ];
 ---
 
-<Layout description={`Every fan says it every season. Now wear it in your city's colors. One design, ${teams.length} colorways, tees from ${price}.`}>
+<Layout theme="--bg: #15191d; --on-bg: #ffffff; --soft: #c5d1c7;" themeColor="#15191d" description={`Every fan says it every season. Now wear it in your city's colors. One design, ${teams.length} colorways, tees from ${price}.`}>
   <ShopData />
 
   <section class="hero">
     <div class="wrap">
       <p class="campaign" data-campaign role="status" hidden></p>
+      <p class="hero-kicker">{teams.length} cities · One shirt · From {price}</p>
       <h1>
         <span class="sr-only">This Is Our Year</span>
         <svg class="hero-letters" viewBox="0 0 620 232" aria-hidden="true">
@@ -170,8 +171,56 @@ const ways = [
 
 <style>
   .hero {
-    padding-block: 32px 40px;
+    padding-block: 38px 48px;
     text-align: center;
+    /* The lettering takes these the same way a city page's shirt does. */
+    --shirt: #082d18;
+    --border: #082d18;
+    --line1: #ffffff;
+    --line2: #f5bd00;
+    --outline: #082d18;
+    background:
+      linear-gradient(180deg, transparent, #062b18e6),
+      repeating-linear-gradient(90deg, #ffffff09 0 10%, #ffffff00 10% 20%),
+      linear-gradient(125deg, #307849, #165c32);
+    border-top: 1px solid #ffffff12;
+  }
+  :global(body:has(.hero) .site-head) {
+    border-top: 4px solid #f5bd00;
+  }
+  .hero-kicker {
+    margin: 0 0 16px;
+    color: #ffd02e;
+    font: 400 clamp(0.875rem, 2vw, 1.125rem) / 1.5 var(--display);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .hero-actions .btn {
+    min-height: 56px;
+    background: #f5bd00;
+    color: #092619;
+    border-color: #f5bd00;
+  }
+  .hero-actions .btn:hover {
+    background: #ffcf32;
+  }
+  .hero-actions .btn-quiet {
+    background: transparent;
+    color: #fff;
+    border-color: #9ab69e;
+  }
+  .hero-actions .btn-quiet:hover {
+    background: #ffffff12;
+  }
+  .hero-actions a:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 4px;
+  }
+  @media (max-width: 440px) {
+    .hero-kicker {
+      font-size: 0.8125rem;
+      letter-spacing: 0.08em;
+    }
   }
   .campaign {
     display: inline-block;
@@ -247,8 +296,15 @@ const ways = [
     grid-template-columns: 1fr auto;
     gap: 2px 14px;
     align-items: baseline;
-    padding: 14px 0;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--rule);
+    border-left: 3px solid #f5bd00;
+  }
+  .ways li:nth-child(3n + 2) {
+    border-left-color: #55b5de;
+  }
+  .ways li:nth-child(3n) {
+    border-left-color: #b7a1e4;
   }
   .ways a {
     font-weight: 600;
@@ -297,6 +353,7 @@ const ways = [
     align-items: start;
   }
   .how li::before {
+    color: #f5bd00;
     content: counter(step);
     grid-row: span 2;
     font: 400 2.5rem/1 var(--display);
@@ -310,7 +367,7 @@ const ways = [
 
   @media (min-width: 720px) {
     .hero {
-      padding-block: 52px 56px;
+      padding-block: 52px 64px;
     }
     .hero-line {
       font-size: 1.375rem;
