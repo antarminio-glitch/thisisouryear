@@ -5,6 +5,9 @@ import Picker from '../components/Picker.astro';
 import CityGrid from '../components/CityGrid.astro';
 import ShopData from '../components/ShopData.astro';
 import ModelShot from '../components/ModelShot.astro';
+import Shirt from '../components/Shirt.astro';
+import { shirtVars } from '../lib/cities.js';
+import { styleString } from '../lib/colors.js';
 import teams from '../data/teams.json';
 import models from '../data/model-photos.json';
 import photos from '../data/garment-photos.json';
@@ -14,15 +17,15 @@ import { cityForBlank, rotatingPick } from '../lib/photos.js';
 
 const price = dollars(fromPriceCents());
 
-// Two on-model shots for the hero, one tee and one hoodie, each worn in the
+// Two on-model shots lower on the page, one tee and one hoodie, each worn in the
 // colors of a city printed on that blank. They rotate with the daily rebuild.
-const heroShot = (productId) => {
+const wearShot = (productId) => {
   const options = Object.values(models.photos).filter((m) => m.productId === productId);
   const photo = rotatingPick(options);
   const team = photo ? cityForBlank(photos, teams, productId, photo.color) : null;
   return photo && team ? { photo, team, garment: shop.product(productId)?.name ?? '' } : null;
 };
-const heroShots = [heroShot('adult-tee'), heroShot('adult-hoodie')].filter(Boolean);
+const wearShots = [wearShot('adult-tee'), wearShot('adult-hoodie')].filter(Boolean);
 // "S through 3XL" for adults, plus "XS through XL for kids" once a kids garment is for sale.
 const sizesOf = (id) => shop.product(id).variants.map((v) => v.size);
 const adultSizes = sizesOf('adult-tee');
@@ -31,25 +34,25 @@ const kidsSizes = kidsProduct ? sizesOf(kidsProduct) : [];
 const sizeLine = kidsSizes.length
   ? `Adults ${adultSizes[0]} through ${adultSizes.at(-1)}, kids ${kidsSizes[0]} through ${kidsSizes.at(-1)}.`
   : `${adultSizes[0]} through ${adultSizes.at(-1)}.`;
-const status = (id) => (shop.isSellable(shop.product(id)) ? `From ${dollars(shop.priceRange(id).lowCents)}` : 'Preview only for now');
-
-// The ways in. Each one says plainly whether it can be bought yet.
+// A taste of the colorways before the full wall of 32: six cities whose colors read well side by side.
+const featured = ['dallas', 'green-bay', 'buffalo', 'kansas-city', 'baltimore', 'miami'].map((slug) => teams.find((t) => t.slug === slug)).filter(Boolean);
+const teeRange = shop.priceRange('adult-tee');
+const teePrice = teeRange ? dollars(teeRange.lowCents) : null;
 const ways = [
-  { href: '/shop/?style=tee', title: 'Tees', note: status('adult-tee'), line: 'The original. Printed when you order.' },
-  { href: '/shop/?style=hoodie', title: 'Hoodies', note: status('adult-hoodie'), line: 'For the cold-weather faithful.' },
-  { href: '/shop/?fit=kids', title: 'Kids', note: status('kids-tee'), line: 'Start them early. They have decades of hope ahead.' },
-  { href: '/matching-sets/', title: 'Matching sets', note: 'One adult, one kid', line: 'Same colors, different sizes.' },
-  { href: '/fantasy-leagues/', title: 'Fantasy leagues', note: shop.bulkTiers.length ? `Up to ${Math.max(...shop.bulkTiers.map((t) => t.percentOff))}% off` : 'Mixed sizes', line: 'Last place. Wrong colors.' },
-  { href: '/gifts/rival-colors/', title: 'Rival gifts', note: 'You choose what they wear', line: 'A thoughtful gift. For a terrible friend.' },
+  { href: '/matching-sets/', title: 'Raise them right', note: 'Matching adult + kid sets', line: 'Same colors. Same unreasonable optimism.' },
+  { href: '/fantasy-leagues/', title: 'Last place wears it', note: 'Fantasy punishment', line: shop.bulkTiers.length ? `Put the loser in rival colors. Bulk orders up to ${Math.max(...shop.bulkTiers.map((t) => t.percentOff))}% off.` : 'Put the loser in rival colors. Build your league order.' },
+  { href: '/gifts/rival-colors/', title: 'Give them the wrong colors', note: 'Rival gifts', line: 'A thoughtful gift. For a terrible friend.' },
+  { href: '/bandwagon/', title: 'New city. Same confidence.', note: 'The bandwagon', line: 'Looking for a team to back? Find your next colors.' },
 ];
 ---
 
-<Layout description={`Every fan says it every season. Now wear it in your city's colors. One design, ${teams.length} colorways, tees from ${price}.`}>
+<Layout theme="--bg: #15191d; --on-bg: #ffffff; --soft: #c5d1c7;" themeColor="#15191d" description={`Every fan says it every season. Now wear it in your city's colors. One design, ${teams.length} colorways, tees from ${price}.`}>
   <ShopData />
 
   <section class="hero">
     <div class="wrap">
       <p class="campaign" data-campaign role="status" hidden></p>
+      <p class="hero-kicker">{teams.length} cities · {teePrice ? `Tees from ${teePrice}` : 'Your city’s colors'}</p>
       <h1>
         <span class="sr-only">This Is Our Year</span>
         <svg class="hero-letters" viewBox="0 0 620 232" aria-hidden="true">
@@ -58,40 +61,32 @@ const ways = [
       </h1>
       <p class="hero-line">
         <span>Every year. Our year.</span>
-        <span>Your colors. Your annual declaration of unreasonable optimism.</span>
+        <span>Pick your city. Wear your unreasonable optimism.</span>
       </p>
       <div class="hero-actions">
         <a class="btn" href="#find">Find my colors</a>
-        <a class="btn btn-quiet" href="/gifts/rival-colors/">Make it someone else's problem</a>
+        <a class="hero-secondary" href="#ways">Make it someone else's problem</a>
       </div>
-      {
-        heroShots.length > 0 && (
-          <div class="hero-models">
-            {heroShots.map((s) => (
-              <ModelShot photo={s.photo} team={s.team} label={`${s.garment} in ${s.team.name} colors, on a model`} caption={`${s.team.name} ${s.garment.toLowerCase()}`} />
-            ))}
-          </div>
-        )
-      }
+
     </div>
   </section>
 
   <section class="find" id="find">
     <div class="wrap">
+      <p class="find-intro">Your city. Your colors. Your shirt.</p>
       <Picker id="home" heading="Find my colors" />
+      <p class="browse-link"><a href="#cities">Want to browse every colorway?</a></p>
     </div>
   </section>
 
-  <section class="ways" aria-labelledby="ways-h">
+  <section class="ways" id="ways" aria-labelledby="ways-h">
     <div class="wrap">
-      <h2 id="ways-h">Ways to shop</h2>
+      <h2 id="ways-h">More ways to say it</h2>
       <ul>
         {
           ways.map((w) => (
             <li>
-              <a href={w.href}>{w.title}</a>
-              <span class="note">{w.note}</span>
-              <p>{w.line}</p>
+              <a href={w.href}><span class="note">{w.note}</span><span class="way-title">{w.title}</span><span class="way-line">{w.line}</span><span class="way-go" aria-hidden="true">Shop this way →</span></a>
             </li>
           ))
         }
@@ -101,8 +96,40 @@ const ways = [
 
   <section class="cities" id="cities" aria-labelledby="cities-h">
     <div class="wrap">
-      <h2 id="cities-h">{teams.length} cities. One design. Tees from {price}.</h2>
-      <CityGrid id="cities" />
+      <h2 id="featured-h">{teams.length} cities. One design.</h2>
+      <ul class="featured" aria-labelledby="featured-h">
+        {
+          featured.map((t) => (
+            <li>
+              <a href={`/${t.slug}/`} style={styleString(shirtVars(t))}>
+                <span class="tile"><Shirt team={t} decorative /></span>
+                <span class="city">{t.name}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <details>
+        <summary id="cities-h">Browse all {teams.length} cities <span>See every colorway</span></summary>
+        <CityGrid id="cities" />
+      </details>
+    </div>
+  </section>
+
+  <section class="worn" aria-labelledby="worn-h">
+    <div class="wrap">
+      <h2 id="worn-h">How it looks on</h2>
+      {
+        wearShots.length > 0 && (
+          <div class="hero-models">
+            {wearShots.map((s) => (
+              <ModelShot photo={s.photo} team={s.team} label={`${s.garment} in ${s.team.name} colors, on a model`} caption={`${s.team.name} ${s.garment.toLowerCase()}`} />
+            ))}
+          </div>
+        )
+      }
+      <p class="concept">Model mockups: the design is placed digitally on a photo of the blank garment.</p>
+      <p class="worn-link"><a href="#find">Find yours in your city’s colors →</a></p>
     </div>
   </section>
 
@@ -124,11 +151,11 @@ const ways = [
         </li>
         <li>
           <h3>Pick your size</h3>
-          <p>{sizeLine} Checkout takes about a minute.</p>
+          <p>{sizeLine} Check the size chart for your fit.</p>
         </li>
         <li>
           <h3>We print and ship</h3>
-          <p>Printed when you order and mailed to your door, in plenty of time to be wrong again.</p>
+          <p>Printed when you order and mailed to your door. <a href="/shipping-returns/">Shipping details</a>.</p>
         </li>
       </ol>
     </div>
@@ -170,8 +197,56 @@ const ways = [
 
 <style>
   .hero {
-    padding-block: 32px 40px;
+    padding-block: 28px 32px;
     text-align: center;
+    /* The lettering takes these the same way a city page's shirt does. */
+    --shirt: #082d18;
+    --border: #082d18;
+    --line1: #ffffff;
+    --line2: #f5bd00;
+    --outline: #082d18;
+    background:
+      linear-gradient(180deg, transparent, #062b18e6),
+      repeating-linear-gradient(90deg, #ffffff09 0 10%, #ffffff00 10% 20%),
+      linear-gradient(125deg, #307849, #165c32);
+    border-top: 1px solid #ffffff12;
+  }
+  :global(body:has(.hero) .site-head) {
+    border-top: 4px solid #f5bd00;
+  }
+  .hero-kicker {
+    margin: 0 0 16px;
+    color: #ffd02e;
+    font: 400 clamp(0.875rem, 2vw, 1.125rem) / 1.5 var(--display);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .hero-actions .btn {
+    min-height: 56px;
+    background: #f5bd00;
+    color: #092619;
+    border-color: #f5bd00;
+  }
+  .hero-actions .btn:hover {
+    background: #ffcf32;
+  }
+  .hero-actions .btn-quiet {
+    background: transparent;
+    color: #fff;
+    border-color: #9ab69e;
+  }
+  .hero-actions .btn-quiet:hover {
+    background: #ffffff12;
+  }
+  .hero-actions a:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 4px;
+  }
+  @media (max-width: 440px) {
+    .hero-kicker {
+      font-size: 0.8125rem;
+      letter-spacing: 0.08em;
+    }
   }
   .campaign {
     display: inline-block;
@@ -247,8 +322,15 @@ const ways = [
     grid-template-columns: 1fr auto;
     gap: 2px 14px;
     align-items: baseline;
-    padding: 14px 0;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--rule);
+    border-left: 3px solid #f5bd00;
+  }
+  .ways li:nth-child(3n + 2) {
+    border-left-color: #55b5de;
+  }
+  .ways li:nth-child(3n) {
+    border-left-color: #b7a1e4;
   }
   .ways a {
     font-weight: 600;
@@ -297,6 +379,7 @@ const ways = [
     align-items: start;
   }
   .how li::before {
+    color: #f5bd00;
     content: counter(step);
     grid-row: span 2;
     font: 400 2.5rem/1 var(--display);
@@ -310,17 +393,16 @@ const ways = [
 
   @media (min-width: 720px) {
     .hero {
-      padding-block: 52px 56px;
+      padding-block: 40px 44px;
     }
     .hero-line {
       font-size: 1.375rem;
     }
     .hero-actions {
-      grid-template-columns: 1fr 1fr;
-      max-width: 620px;
+      max-width: 420px;
     }
     .ways ul {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       column-gap: 32px;
       border-top: 0;
     }
@@ -333,5 +415,40 @@ const ways = [
       grid-template-columns: repeat(3, 1fr);
       gap: 32px;
     }
+  }
+
+  .hero-secondary { padding: 8px; font-size: 1rem; }
+  .find-intro { color: #ffd02e; margin-bottom: 18px; font-weight: 600; }
+  .browse-link { margin-top: 22px; }
+  .ways ul { gap: 14px; border: 0; }
+  .ways li { display: block; padding: 0; border: 1px solid var(--rule); border-radius: 6px; background: var(--panel); }
+  .ways li a { display: flex; flex-direction: column; height: 100%; padding: 22px; text-decoration: none; }
+  .ways li a:hover { background: #ffffff08; }
+  .ways .note { text-align: left; color: #ffd02e; margin-bottom: 8px; }
+  .way-title { font-size: 1.5rem; line-height: 1.2; }
+  .way-line { color: var(--soft); font-size: 1.0625rem; font-weight: 400; margin-block: 10px 18px; }
+  .way-go { margin-top: auto; text-decoration: underline; font-size: 1rem; }
+  .cities h2 { margin-bottom: 18px; }
+  .featured { list-style: none; margin: 0 0 22px; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .featured a { display: block; text-decoration: none; color: var(--on-bg); }
+  .featured .tile { display: block; padding: 6px; border-radius: 6px; background: #fff; }
+  .featured .tile :global(.shirt) { display: block; width: 100%; height: auto; }
+  .featured .city { display: block; margin-top: 6px; font-weight: 600; font-size: 0.9375rem; }
+  .featured a:hover .city { text-decoration: underline; }
+  @media (min-width: 720px) {
+    .featured { grid-template-columns: repeat(6, 1fr); }
+  }
+  .cities summary { cursor: pointer; padding: 18px 0; font-size: 1.5rem; font-weight: 600; border-block: 1px solid var(--rule); }
+  .cities summary span { display: block; color: var(--soft); font-size: 1rem; font-weight: 400; }
+  .cities details[open] summary { margin-bottom: 24px; }
+  .worn { padding-top: 48px; }
+  .worn h2 { font-size: clamp(1.375rem, 5.4vw, 2rem); }
+  .worn :global(.hero-models) { max-width: 560px; margin: 22px 0 0; }
+  .worn .concept { max-width: 560px; }
+  .worn-link { margin-top: 18px; }
+  @media (max-width: 859px) {
+    .find :global(.stage.is-neutral .stage-empty) { aspect-ratio: auto; min-height: 100px; padding: 20px; }
+    .find :global(.stage.is-neutral .stage-empty p) { max-width: none; }
+    .find :global(.picker-stage:has(.is-neutral) .concept) { display: none; }
   }
 </style>
