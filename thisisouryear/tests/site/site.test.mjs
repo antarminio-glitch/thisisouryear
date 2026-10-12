@@ -184,3 +184,25 @@ test('no team, league or league-event names anywhere in the project or the built
   assert.ok(scanned > 100, `Only ${scanned} files were scanned, so something is off with this check.`);
   assert.deepEqual(problems.slice(0, 20), [], 'Found a name the site is not allowed to use. Say the city and the colors instead.');
 });
+
+test('the city page "About" block starts on the tee and has what it needs to follow the picker', () => {
+  const html = page('dallas');
+  const block = html.match(/<section class="details-block"[\s\S]*?<\/section>/)?.[0] ?? '';
+  assert.ok(block.includes('data-about'), 'the About block is marked for the picker to update');
+  for (const attr of ['data-about-name', 'data-about-fabric', 'data-about-fit', 'data-about-care', 'data-about-chart']) assert.ok(block.includes(attr), attr);
+  assert.ok(text(block).includes('About the tee'), 'starts on the tee');
+  assert.ok(text(block).includes('5.4-ounce, 100% cotton'), 'shows the tee fabric');
+  // The data block carries fabric, fit and care for every garment that is for sale.
+  const data = JSON.parse(html.match(/<script type="application\/json" id="shop-data">([\s\S]*?)<\/script>/)[1]);
+  for (const p of sellable) {
+    for (const k of ['fabric', 'fit', 'care']) assert.ok(typeof data.specs?.[p.id]?.[k] === 'string' && data.specs[p.id][k].length > 0, `${p.id}.${k} is in the data block`);
+  }
+});
+
+test('the homepage sizes line covers adults and kids', () => {
+  const t = text(page(''));
+  const adult = catalog.products.find((p) => p.id === 'adult-tee').variants.map((v) => v.size);
+  const kids = catalog.products.find((p) => p.id === 'kids-tee');
+  if (kids?.sellable) assert.ok(t.includes(`Adults ${adult[0]} through ${adult.at(-1)}, kids ${kids.variants[0].size} through ${kids.variants.at(-1).size}.`), 'adult and kids sizes');
+  else assert.ok(t.includes(`${adult[0]} through ${adult.at(-1)}.`), 'adult sizes');
+});

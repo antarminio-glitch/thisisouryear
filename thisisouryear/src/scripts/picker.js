@@ -106,6 +106,10 @@ export function initPicker(root) {
     check('fit', state.audience);
     check('design', state.designId);
     check('size', state.size);
+
+    // Anything else on the page that follows the picker (the "About" block on
+    // city pages) listens for this.
+    root.dispatchEvent(new CustomEvent('picker-change', { bubbles: true, detail: { product, city, state: { ...state } } }));
   }
 
   function change(patch, { push = true } = {}) {
