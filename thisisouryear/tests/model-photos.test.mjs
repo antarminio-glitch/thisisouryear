@@ -93,3 +93,16 @@ test('every style has a model print placement', () => {
     for (const k of ['x', 'top', 'width', 'capHeight', 'rowGap', 'rotate']) assert.equal(typeof g.modelPrint?.[k], 'number', `${id} modelPrint.${k}`);
   }
 });
+
+test('the kids prints sit on the chest, clear of the collar, the hood hem and the pocket', () => {
+  // Measured on the youth model photos (600x900): the tee collar ends near row 310,
+  // the hoodie's hood hem near row 350 and its pocket starts near row 555.
+  const bottom = (p) => p.top + p.capHeight * 2 + p.rowGap;
+  const tee = garments.garments['kids-tee'].modelPrint;
+  assert.ok(tee.top >= 360, `kids tee print starts at ${tee.top}, too close to the collar`);
+  assert.ok(Math.abs(tee.x - 298) <= 6, 'kids tee print is centered on the torso');
+  const hood = garments.garments['kids-hoodie'].modelPrint;
+  assert.ok(hood.top >= 390, `kids hoodie print starts at ${hood.top}, on the hood hem`);
+  assert.ok(bottom(hood) <= 520, `kids hoodie print ends at ${bottom(hood)}, into the pocket`);
+  assert.ok(Math.abs(hood.x - 301) <= 6, 'kids hoodie print is centered on the torso');
+});

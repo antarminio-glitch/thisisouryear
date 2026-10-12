@@ -26,13 +26,13 @@
       "style": "PC54Y",
       "name": "Port & Company Youth Core Cotton Tee",
       "print": { "x": 300, "top": 152, "width": 236, "capHeight": 57, "rowGap": 9 },
-      "modelPrint": { "x": 300, "top": 314, "width": 160, "capHeight": 38, "rowGap": 7, "rotate": -2 }
+      "modelPrint": { "x": 298, "top": 372, "width": 155, "capHeight": 37, "rowGap": 7, "rotate": -2 }
     },
     "kids-hoodie": {
       "style": "PC78YH",
       "name": "Port & Company Youth Core Fleece Pullover Hooded Sweatshirt",
       "print": { "x": 300, "top": 208, "width": 190, "capHeight": 54, "rowGap": 9 },
-      "modelPrint": { "x": 300, "top": 330, "width": 140, "capHeight": 34, "rowGap": 7, "rotate": -2 }
+      "modelPrint": { "x": 301, "top": 402, "width": 135, "capHeight": 33, "rowGap": 7, "rotate": -2 }
     }
   }
 }
