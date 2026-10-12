@@ -4,14 +4,20 @@
     {
       "id": "this-is-our-year",
       "name": "This Is Our Year",
-      "lines": ["THIS IS", "OUR YEAR"],
+      "lines": [
+        "THIS IS",
+        "OUR YEAR"
+      ],
       "status": "live",
       "artworkVersion": "reference-v1"
     },
     {
       "id": "wait-til-next-year",
       "name": "Wait 'Til Next Year",
-      "lines": ["WAIT 'TIL", "NEXT YEAR"],
+      "lines": [
+        "WAIT 'TIL",
+        "NEXT YEAR"
+      ],
       "status": "concept",
       "artworkVersion": null
     }
@@ -24,16 +30,51 @@
       "audience": "adult",
       "sellable": true,
       "priceCents": 1999,
-      "designs": ["this-is-our-year"],
-      "fulfillment": { "provider": "manual", "providerProductId": null },
+      "designs": [
+        "this-is-our-year"
+      ],
+      "fulfillment": {
+        "provider": "manual",
+        "providerProductId": null
+      },
       "sizeChart": "/size-chart/#adult-tee",
       "variants": [
-        { "size": "S", "extraCents": 0, "inStock": true, "providerVariantId": null },
-        { "size": "M", "extraCents": 0, "inStock": true, "providerVariantId": null },
-        { "size": "L", "extraCents": 0, "inStock": true, "providerVariantId": null },
-        { "size": "XL", "extraCents": 0, "inStock": true, "providerVariantId": null },
-        { "size": "2XL", "extraCents": 200, "inStock": true, "providerVariantId": null },
-        { "size": "3XL", "extraCents": 200, "inStock": true, "providerVariantId": null }
+        {
+          "size": "S",
+          "extraCents": 0,
+          "inStock": true,
+          "providerVariantId": null
+        },
+        {
+          "size": "M",
+          "extraCents": 0,
+          "inStock": true,
+          "providerVariantId": null
+        },
+        {
+          "size": "L",
+          "extraCents": 0,
+          "inStock": true,
+          "providerVariantId": null
+        },
+        {
+          "size": "XL",
+          "extraCents": 0,
+          "inStock": true,
+          "providerVariantId": null
+        },
+        {
+          "size": "2XL",
+          "extraCents": 200,
+          "inStock": true,
+          "providerVariantId": null
+        },
+        {
+          "size": "3XL",
+          "extraCents": 200,
+          "inStock": true,
+          "providerVariantId": null
+        }
       ]
     },
     {
@@ -41,24 +82,102 @@
       "name": "Hoodie",
       "style": "hoodie",
       "audience": "adult",
-      "sellable": false,
-      "priceCents": null,
-      "designs": [],
-      "fulfillment": { "provider": null, "providerProductId": null },
-      "sizeChart": null,
-      "variants": []
+      "sellable": true,
+      "priceCents": 4999,
+      "designs": [
+        "this-is-our-year"
+      ],
+      "fulfillment": {
+        "provider": "manual",
+        "providerProductId": null
+      },
+      "sizeChart": "/size-chart/#adult-hoodie",
+      "variants": [
+        {
+          "size": "S",
+          "extraCents": 0,
+          "inStock": true,
+          "providerVariantId": null
+        },
+        {
+          "size": "M",
+          "extraCents": 0,
+          "inStock": true,
+          "providerVariantId": null
+        },
+        {
+          "size": "L",
+          "extraCents": 0,
+          "inStock": true,
+          "providerVariantId": null
+        },
+        {
+          "size": "XL",
+          "extraCents": 0,
+          "inStock": true,
+          "providerVariantId": null
+        },
+        {
+          "size": "2XL",
+          "extraCents": 200,
+          "inStock": true,
+          "providerVariantId": null
+        },
+        {
+          "size": "3XL",
+          "extraCents": 200,
+          "inStock": true,
+          "providerVariantId": null
+        }
+      ]
     },
     {
       "id": "kids-tee",
       "name": "Kids tee",
       "style": "tee",
       "audience": "kids",
-      "sellable": false,
-      "priceCents": null,
-      "designs": [],
-      "fulfillment": { "provider": null, "providerProductId": null },
-      "sizeChart": null,
-      "variants": []
+      "sellable": true,
+      "priceCents": 999,
+      "designs": [
+        "this-is-our-year"
+      ],
+      "fulfillment": {
+        "provider": "manual",
+        "providerProductId": null
+      },
+      "sizeChart": "/size-chart/#kids-tee",
+      "variants": [
+        {
+          "size": "XS",
+          "extraCents": 0,
+          "inStock": true,
+          "providerVariantId": null
+        },
+        {
+          "size": "S",
+          "extraCents": 0,
+          "inStock": true,
+          "providerVariantId": null
+        },
+        {
+          "size": "M",
+          "extraCents": 0,
+          "inStock": true,
+          "providerVariantId": null
+        },
+        {
+          "size": "L",
+          "extraCents": 0,
+          "inStock": true,
+          "providerVariantId": null
+        },
+        {
+          "size": "XL",
+          "extraCents": 0,
+          "inStock": true,
+          "providerVariantId": null
+        }
+      ]
     },
     {
       "id": "kids-hoodie",
@@ -68,7 +187,10 @@
       "sellable": false,
       "priceCents": null,
       "designs": [],
-      "fulfillment": { "provider": null, "providerProductId": null },
+      "fulfillment": {
+        "provider": null,
+        "providerProductId": null
+      },
       "sizeChart": null,
       "variants": []
     }
@@ -76,9 +198,18 @@
   "bulk": {
     "quoteRequests": true,
     "tiers": [
-      { "minQuantity": 12, "percentOff": 10 },
-      { "minQuantity": 24, "percentOff": 15 },
-      { "minQuantity": 48, "percentOff": 20 }
+      {
+        "minQuantity": 12,
+        "percentOff": 10
+      },
+      {
+        "minQuantity": 24,
+        "percentOff": 15
+      },
+      {
+        "minQuantity": 48,
+        "percentOff": 20
+      }
     ]
   },
   "sets": {

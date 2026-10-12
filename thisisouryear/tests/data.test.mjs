@@ -68,10 +68,10 @@ test('validation catches a malformed HEX, an unknown palette key and an optional
 
 test('validation refuses a product marked sellable without a price or sizes', () => {
   const bad = structuredClone(data);
-  bad.catalog.products.find((p) => p.id === 'adult-hoodie').sellable = true;
+  bad.catalog.products.find((p) => p.id === 'kids-hoodie').sellable = true;
   const { errors } = validateData(bad);
-  assert.ok(errors.some((e) => e.includes('adult-hoodie') && e.includes('no price')));
-  assert.ok(errors.some((e) => e.includes('adult-hoodie') && e.includes('no sizes')));
+  assert.ok(errors.some((e) => e.includes('kids-hoodie') && e.includes('no price')));
+  assert.ok(errors.some((e) => e.includes('kids-hoodie') && e.includes('no sizes')));
 });
 
 test('city stories are all different', () => {

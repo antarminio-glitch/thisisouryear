@@ -1,0 +1,73 @@
+{
+  "_about": "What each garment is made of and how it measures, from the maker's own spec sheets (SanMar, the supplier the print vendor buys from). Measurements are inches, laid flat. 'fitsChest' is the wearer's chest measurement the maker gives for each size. Keyed by product id in catalog.json.",
+  "source": "https://www.sanmar.com",
+  "checked": "2026-10-11",
+  "products": {
+    "adult-tee": {
+      "style": "PC54",
+      "maker": "Port & Company Core Cotton Tee",
+      "specSheet": "https://www.sanmar.com/p/3985_Red/specSheetMeasurements",
+      "fabric": "5.4-ounce, 100% cotton",
+      "fit": "Classic unisex fit, true to size",
+      "features": ["Tear-away label, so nothing scratches your neck"],
+      "care": "Machine wash cold, inside out with like colors. Only non-chlorine bleach when needed. Tumble dry medium, medium or hot iron. Do not iron the print.",
+      "measurements": {
+        "S": { "chest": 18, "length": 28, "fitsChest": "35-37" },
+        "M": { "chest": 20, "length": 29, "fitsChest": "38-40" },
+        "L": { "chest": 22, "length": 30, "fitsChest": "41-43" },
+        "XL": { "chest": 24, "length": 31, "fitsChest": "44-46" },
+        "2XL": { "chest": 26, "length": 32, "fitsChest": "47-49" },
+        "3XL": { "chest": 28, "length": 33, "fitsChest": "50-53" }
+      }
+    },
+    "adult-hoodie": {
+      "style": "PC78H",
+      "maker": "Port & Company Core Fleece Pullover Hooded Sweatshirt",
+      "specSheet": "https://www.sanmar.com/p/4180_Red/specSheetMeasurements",
+      "fabric": "7.8-ounce, 50/50 cotton/poly fleece",
+      "fit": "Classic unisex fit, true to size",
+      "features": ["Two-ply hood with drawcord", "Front pouch pocket", "Tear-away label"],
+      "care": "Machine wash cold, inside out with like colors. Only non-chlorine bleach when needed. Tumble dry low. Do not iron.",
+      "measurements": {
+        "S": { "chest": 20, "length": 27.25, "fitsChest": "35-37" },
+        "M": { "chest": 22, "length": 28.25, "fitsChest": "38-40" },
+        "L": { "chest": 24, "length": 29.25, "fitsChest": "41-43" },
+        "XL": { "chest": 26, "length": 30.25, "fitsChest": "44-46" },
+        "2XL": { "chest": 28, "length": 31.25, "fitsChest": "47-49" },
+        "3XL": { "chest": 30, "length": 32.25, "fitsChest": "50-53" }
+      }
+    },
+    "kids-tee": {
+      "style": "PC54Y",
+      "maker": "Port & Company Youth Core Cotton Tee",
+      "specSheet": "https://www.sanmar.com/p/3986_Red/specSheetMeasurements",
+      "fabric": "5.4-ounce, 100% cotton",
+      "fit": "Classic youth fit. Sizes run by age range, so check the chest numbers",
+      "features": ["Same shirt as the adult tee, sized for kids", "Tear-away label"],
+      "care": "Machine wash cold, inside out with like colors. Only non-chlorine bleach when needed. Tumble dry medium, medium or hot iron. Do not iron the print.",
+      "measurements": {
+        "XS": { "chest": 14, "length": null, "fitsChest": "22-24", "ages": "4-5" },
+        "S": { "chest": 16, "length": 21, "fitsChest": "25-27", "ages": "6-8" },
+        "M": { "chest": 17, "length": 23, "fitsChest": "28-30", "ages": "10-12" },
+        "L": { "chest": 18, "length": 25, "fitsChest": "30-32", "ages": "14-16" },
+        "XL": { "chest": 19, "length": 27, "fitsChest": "32-34", "ages": "18-20" }
+      }
+    },
+    "kids-hoodie": {
+      "style": "PC78YH",
+      "maker": "Port & Company Youth Core Fleece Pullover Hooded Sweatshirt",
+      "specSheet": "https://www.sanmar.com/p/80574_Red/specSheetMeasurements",
+      "fabric": "7.8-ounce, 50/50 cotton/poly fleece",
+      "fit": "Classic youth fit. Sizes run by age range, so check the chest numbers",
+      "features": ["Hood with no drawcord, for kids' safety", "Front pouch pocket", "Tear-away label"],
+      "care": "Machine wash cold, inside out with like colors. Only non-chlorine bleach when needed. Tumble dry medium, medium or hot iron. Do not iron the print.",
+      "measurements": {
+        "XS": { "chest": 14, "length": 18, "fitsChest": "25-26", "ages": "4" },
+        "S": { "chest": 16, "length": 20.5, "fitsChest": "26-28", "ages": "6-8" },
+        "M": { "chest": 17, "length": 23, "fitsChest": "28-30", "ages": "10-12" },
+        "L": { "chest": 18, "length": 25, "fitsChest": "30-32", "ages": "14-16" },
+        "XL": { "chest": 20, "length": 26.5, "fitsChest": "32-35", "ages": "18-20" }
+      }
+    }
+  }
+}
