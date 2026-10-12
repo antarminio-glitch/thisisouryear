@@ -36,3 +36,29 @@ test('every city page shows the season tag and its slogan; Dallas shows verified
     }
   }
 });
+
+const teams = read('teams.json');
+
+test('every city page opens with the wait banner and has a place for "Next up"', () => {
+  for (const t of teams) {
+    const html = page(t.slug);
+    const banner = html.match(/<aside class="wait"[\s\S]*?<\/aside>/)?.[0] ?? '';
+    assert.ok(banner, `${t.slug}: wait banner`);
+    const big = text(banner.match(/<p class="wait-big"[^>]*>([\s\S]*?)<\/p>/)?.[1] ?? '').trim();
+    assert.ok(big.length > 0, `${t.slug}: the big line has something in it`);
+    assert.ok(/data-week[^>]*data-city="[^"]+"/.test(banner) || /data-city="[^"]+"[^>]*data-week/.test(banner), `${t.slug}: next-up placeholder`);
+    assert.ok(banner.includes(season.banner.kicker), `${t.slug}: season kicker`);
+  }
+  // Dallas is the worked example: thirty years, said big.
+  assert.match(text(page('dallas')), /30 years since Dallas last won the big game, on January 28, 1996\. That's [\d,]+ days\. This is our year\./);
+});
+
+test('the homepage runs the ticker for every city and has room for this week', () => {
+  const html = page('');
+  const ticker = html.match(/<aside class="ticker"[\s\S]*?<\/aside>/)?.[0] ?? '';
+  assert.ok(ticker, 'ticker');
+  const first = ticker.match(/<ul class="ticker-list[^"]*"[^>]*>([\s\S]*?)<\/ul>/)?.[1] ?? '';
+  for (const t of teams) assert.ok(first.includes(`href="/${t.slug}/"`), `${t.slug} is in the ticker`);
+  assert.ok(/still waiting/i.test(text(first)) && /champions/i.test(text(first)), 'the ticker says who is waiting and who is champion');
+  assert.ok(html.includes('data-week-games'), 'the games strip is on the page, hidden until the feed answers');
+});

@@ -329,6 +329,7 @@ In Netlify, open the project, then **Project configuration > Environment variabl
 | `STRIPE_WEBHOOK_SECRET` | From Stripe: **Developers > Webhooks > Add endpoint**, address `https://thisisouryear.team/.netlify/functions/stripe-webhook`, events `checkout.session.completed`, `checkout.session.async_payment_succeeded` and `charge.refunded`. Records paid orders on the site |
 | `ADMIN_TOKEN` | The admin password. 16 characters or more. Without it the admin screen is off |
 | `BUILD_HOOK_URL` | From Netlify: **Build & deploy > Build hooks > Add build hook**. Lets the site rebuild itself every morning so counters stay right |
+| `GAMES_FEED` | The address of a public scoreboard feed. A small function on the server reads it and passes city slugs, scores and kickoff times to the pages, for this week's games on the homepage and the "Next up" line on each city page. Kept out of the repository because its path names the league. Blank keeps those parts hidden |
 | `CAMPAIGNS_LIVE` | Must be exactly `true` before any campaign email can go out |
 | `EMAIL_PROVIDER` | `resend` is the only service the site knows. Needed for order emails |
 | `RESEND_API_KEY` | From resend.com. Needed for order emails |

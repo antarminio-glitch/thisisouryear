@@ -1,0 +1,114 @@
+---
+// The wait, city by city: one scrolling line under the hero saying how long
+// every city has been waiting, longest first. Worked out when the site is
+// built from src/data/history.json (the site rebuilds itself daily, see
+// BUILD_HOOK_URL). Every city links to its own page.
+import teams from '../data/teams.json';
+import history from '../data/history.json';
+import store from '../data/store.json';
+import { counterFor, todayIn } from '../lib/counter.js';
+import { placeName } from '../lib/cities.js';
+
+const today = todayIn(store.timezone);
+const order = { never_won: 0, previous_winner: 1, recent_winner: 2, defending_champion: 3, unknown: 4 };
+const items = teams
+  .map((t) => {
+    const c = counterFor(t.slug, placeName(t), history, today);
+    return { slug: t.slug, name: placeName(t), shirt: t.shirt, state: c.state, years: c.years, short: c.short };
+  })
+  .sort((a, b) => (order[a.state] ?? 9) - (order[b.state] ?? 9) || (b.years ?? 0) - (a.years ?? 0) || a.name.localeCompare(b.name));
+---
+
+<aside class="ticker" aria-label="How long every city has been waiting">
+  <p class="sr-only">The wait, city by city, longest first.</p>
+  <div class="ticker-track">
+    <ul class="ticker-list">
+      {items.map((i) => (
+        <li>
+          <a href={`/${i.slug}/`}>
+            <span class="dot" style={`background:${i.shirt}`} aria-hidden="true" />
+            <b>{i.name}</b> <span class="wait-short">{i.short}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <ul class="ticker-list" aria-hidden="true">
+      {items.map((i) => (
+        <li>
+          <a href={`/${i.slug}/`} tabindex="-1">
+            <span class="dot" style={`background:${i.shirt}`} />
+            <b>{i.name}</b> <span class="wait-short">{i.short}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</aside>
+
+<style>
+  .ticker {
+    overflow: hidden;
+    background: #0b0d0f;
+    color: #ffffff;
+    border-bottom: 1px solid #ffffff18;
+  }
+  .ticker-track {
+    display: flex;
+    width: max-content;
+    animation: ticker 120s linear infinite;
+  }
+  .ticker:hover .ticker-track,
+  .ticker:focus-within .ticker-track {
+    animation-play-state: paused;
+  }
+  .ticker-list {
+    display: flex;
+    gap: 30px;
+    margin: 0;
+    padding: 9px 15px;
+    list-style: none;
+    white-space: nowrap;
+  }
+  .ticker a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: inherit;
+    text-decoration: none;
+    font-size: 0.9375rem;
+  }
+  .ticker a:hover,
+  .ticker a:focus-visible {
+    text-decoration: underline;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #ffffff55;
+  }
+  .wait-short {
+    color: #ffd02e;
+    font: 400 0.875rem / 1 var(--display);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  @keyframes ticker {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-track {
+      width: auto;
+      animation: none;
+    }
+    .ticker-list {
+      flex-wrap: wrap;
+      gap: 10px 24px;
+    }
+    .ticker-list[aria-hidden] {
+      display: none;
+    }
+  }
+</style>

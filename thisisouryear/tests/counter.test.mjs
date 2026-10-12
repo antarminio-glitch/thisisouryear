@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { data } from './fixtures.mjs';
-import { counterFor, fullYearsBetween, todayIn } from '../src/lib/counter.js';
+import { counterFor, daysBetween, fullYearsBetween, todayIn } from '../src/lib/counter.js';
 
 const { history } = data;
 const dallas = (asOf) => counterFor('dallas', 'Dallas', history, asOf);
@@ -113,4 +113,39 @@ test('full years between dates', () => {
 test('today is worked out in the site timezone', () => {
   // 03:30 UTC on the 11th is still the 10th in New York.
   assert.equal(todayIn('America/New_York', new Date('2026-10-11T03:30:00Z')), '2026-10-10');
+});
+
+test('the banner at the top of the city page: the years big, the days in the line, and a short tag for the ticker', () => {
+  const c = dallas('2026-10-10');
+  assert.equal(c.banner.big, '30 years');
+  assert.equal(c.days, 11213);
+  assert.equal(c.banner.line, "since Dallas last won the big game, on January 28, 1996. That's 11,213 days. This is our year.");
+  assert.equal(c.short, '30 years');
+
+  const buffalo = counterFor('buffalo', 'Buffalo', history, '2026-10-10');
+  assert.equal(buffalo.banner.big, 'Still waiting.');
+  assert.equal(buffalo.banner.line, 'Buffalo has never won the big game. This is the year that changes.');
+  assert.equal(buffalo.short, 'still waiting');
+
+  const seattle = counterFor('seattle', 'Seattle', history, '2026-10-10');
+  assert.equal(seattle.banner.big, 'Champions.');
+  assert.match(seattle.banner.line, /^Won it on February 8, 2026\. \d+ days without a loss that mattered\. Run it back\.$/);
+  assert.equal(seattle.short, 'champions');
+
+  // A city with a "subject" says that instead of its name, and keeps its note.
+  const vegas = counterFor('las-vegas', 'Las Vegas', history, '2026-10-10');
+  assert.match(vegas.banner.line, /^since the team in these colors last won the big game, on January 22, 1984\./);
+  assert.match(vegas.banner.line, /before the move to Las Vegas\.$/);
+
+  // Nothing verified, nothing specific.
+  const nowhere = counterFor('nowhere', 'Nowhere', history, '2026-10-10');
+  assert.deepEqual(nowhere.banner, { big: 'Still believing.', line: 'Still our year.' });
+  assert.equal(nowhere.short, 'believing');
+});
+
+test('daysBetween counts whole days, leap days included, and refuses a bad or backwards range', () => {
+  assert.equal(daysBetween('1996-01-28', '2026-01-28'), 10958);
+  assert.equal(daysBetween('2026-01-28', '2026-01-28'), 0);
+  assert.equal(daysBetween('2026-01-29', '2026-01-28'), null);
+  assert.equal(daysBetween('nope', '2026-01-28'), null);
 });
