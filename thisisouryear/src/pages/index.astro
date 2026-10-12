@@ -5,6 +5,9 @@ import Picker from '../components/Picker.astro';
 import CityGrid from '../components/CityGrid.astro';
 import ShopData from '../components/ShopData.astro';
 import ModelShot from '../components/ModelShot.astro';
+import Shirt from '../components/Shirt.astro';
+import { shirtVars } from '../lib/cities.js';
+import { styleString } from '../lib/colors.js';
 import teams from '../data/teams.json';
 import models from '../data/model-photos.json';
 import photos from '../data/garment-photos.json';
@@ -31,6 +34,8 @@ const kidsSizes = kidsProduct ? sizesOf(kidsProduct) : [];
 const sizeLine = kidsSizes.length
   ? `Adults ${adultSizes[0]} through ${adultSizes.at(-1)}, kids ${kidsSizes[0]} through ${kidsSizes.at(-1)}.`
   : `${adultSizes[0]} through ${adultSizes.at(-1)}.`;
+// A taste of the colorways before the full wall of 32: six cities whose colors read well side by side.
+const featured = ['dallas', 'green-bay', 'buffalo', 'kansas-city', 'baltimore', 'miami'].map((slug) => teams.find((t) => t.slug === slug)).filter(Boolean);
 const teeRange = shop.priceRange('adult-tee');
 const teePrice = teeRange ? dollars(teeRange.lowCents) : null;
 const ways = [
@@ -60,7 +65,7 @@ const ways = [
       </p>
       <div class="hero-actions">
         <a class="btn" href="#find">Find my colors</a>
-        <a class="hero-secondary" href="#ways">Shopping for someone else?</a>
+        <a class="hero-secondary" href="#ways">Make it someone else's problem</a>
       </div>
 
     </div>
@@ -91,6 +96,19 @@ const ways = [
 
   <section class="cities" id="cities" aria-labelledby="cities-h">
     <div class="wrap">
+      <h2 id="featured-h">{teams.length} cities. One design.</h2>
+      <ul class="featured" aria-labelledby="featured-h">
+        {
+          featured.map((t) => (
+            <li>
+              <a href={`/${t.slug}/`} style={styleString(shirtVars(t))}>
+                <span class="tile"><Shirt team={t} decorative /></span>
+                <span class="city">{t.name}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
       <details>
         <summary id="cities-h">Browse all {teams.length} cities <span>See every colorway</span></summary>
         <CityGrid id="cities" />
@@ -100,7 +118,7 @@ const ways = [
 
   <section class="worn" aria-labelledby="worn-h">
     <div class="wrap">
-      <h2 id="worn-h">Made for wearing your hopes out loud</h2>
+      <h2 id="worn-h">How it looks on</h2>
       {
         wearShots.length > 0 && (
           <div class="hero-models">
@@ -410,6 +428,16 @@ const ways = [
   .way-title { font-size: 1.5rem; line-height: 1.2; }
   .way-line { color: var(--soft); font-size: 1.0625rem; font-weight: 400; margin-block: 10px 18px; }
   .way-go { margin-top: auto; text-decoration: underline; font-size: 1rem; }
+  .cities h2 { margin-bottom: 18px; }
+  .featured { list-style: none; margin: 0 0 22px; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .featured a { display: block; text-decoration: none; color: var(--on-bg); }
+  .featured .tile { display: block; padding: 6px; border-radius: 6px; background: #fff; }
+  .featured .tile :global(.shirt) { display: block; width: 100%; height: auto; }
+  .featured .city { display: block; margin-top: 6px; font-weight: 600; font-size: 0.9375rem; }
+  .featured a:hover .city { text-decoration: underline; }
+  @media (min-width: 720px) {
+    .featured { grid-template-columns: repeat(6, 1fr); }
+  }
   .cities summary { cursor: pointer; padding: 18px 0; font-size: 1.5rem; font-weight: 600; border-block: 1px solid var(--rule); }
   .cities summary span { display: block; color: var(--soft); font-size: 1rem; font-weight: 400; }
   .cities details[open] summary { margin-bottom: 24px; }
