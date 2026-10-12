@@ -26,7 +26,7 @@ export function initPicker(root) {
   // ---- reading and writing the page address
   function fromUrl() {
     const q = new URLSearchParams(window.location.search);
-    const next = { ...DEFAULTS, slug: locked ? state.slug : '' };
+    const next = { ...DEFAULTS, slug: locked ? state.slug : (cityBySlug(root.dataset.defaultCity)?.slug ?? '') };
     if (!locked && cityBySlug(q.get('city'))) next.slug = q.get('city');
     if (['tee', 'hoodie'].includes(q.get('style'))) next.style = q.get('style');
     if (['adult', 'kids'].includes(q.get('fit'))) next.audience = q.get('fit');
@@ -98,6 +98,8 @@ export function initPicker(root) {
     if (hidden) hidden.value = state.slug;
     hide($('[data-added]'));
     show($('[data-msg]'), '');
+
+    root.dispatchEvent(new CustomEvent('picker:change', { bubbles: true, detail: { ...state } }));
 
     // Reflect the state in the form controls (needed after back/forward).
     const check = (name, value) => root.querySelectorAll(`input[name="${group}-${name}"]`).forEach((r) => (r.checked = r.value === value));
