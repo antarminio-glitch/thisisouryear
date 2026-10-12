@@ -151,17 +151,12 @@ const scramble = (s) => createHash('sha256').update(`tioy:${s}`).digest('hex').s
 const TEXT_FILE = /\.(astro|js|mjs|ts|json|css|md|toml|txt|html|xml|svg|example)$|^\.gitignore$|^\.env/;
 const SKIP_DIRS = new Set(['node_modules', '.git', '.astro', '.netlify']);
 
-// The owner requested editorial history and season references on the homepage.
-// Product names and every other page retain the original naming restriction.
-const EDITORIAL_NAMES = new Set(["d0394642b27a0eee0ed3", "501e417cc5e476cfb588", "7ebaf33eb68751629d5f", "f1f2fad40f6afe943119"]);
-const editorialFile = (rel) => rel === 'src/pages/index.astro' || rel === 'dist/index.html';
-
-function bannedIn(content, editorial = false) {
+function bannedIn(content) {
   const tokens = content.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
   const hits = [];
   for (let i = 0; i < tokens.length; i++) {
     for (let n = 1; n <= 3 && i + n <= tokens.length; n++) {
-      if (BANNED.has(scramble(tokens.slice(i, i + n).join(' '))) && !(editorial && EDITORIAL_NAMES.has(scramble(tokens.slice(i, i + n).join(' '))))) hits.push(tokens.slice(Math.max(0, i - 3), i + n + 3).join(' '));
+      if (BANNED.has(scramble(tokens.slice(i, i + n).join(' ')))) hits.push(tokens.slice(Math.max(0, i - 3), i + n + 3).join(' '));
     }
   }
   return hits;
@@ -184,7 +179,7 @@ test('no team, league or league-event names anywhere in the project or the built
     for (const hit of bannedIn(entry.name)) problems.push(`${rel} (file name): ...${hit}...`);
     if (entry.dir || entry.name === 'package-lock.json' || !TEXT_FILE.test(entry.name)) continue;
     scanned++;
-    for (const hit of bannedIn(fs.readFileSync(entry.full, 'utf8'), editorialFile(rel))) problems.push(`${rel}: ...${hit}...`);
+    for (const hit of bannedIn(fs.readFileSync(entry.full, 'utf8'))) problems.push(`${rel}: ...${hit}...`);
   }
   assert.ok(scanned > 100, `Only ${scanned} files were scanned, so something is off with this check.`);
   assert.deepEqual(problems.slice(0, 20), [], 'Found a name the site is not allowed to use. Say the city and the colors instead.');
@@ -210,16 +205,4 @@ test('the homepage sizes line covers adults and kids', () => {
   const kids = catalog.products.find((p) => p.id === 'kids-tee');
   if (kids?.sellable) assert.ok(t.includes(`Adults ${adult[0]} through ${adult.at(-1)}, kids ${kids.variants[0].size} through ${kids.variants.at(-1).size}.`), 'adult and kids sizes');
   else assert.ok(t.includes(`${adult[0]} through ${adult.at(-1)}.`), 'adult sizes');
-});
-
-test('home shows the uploaded Dallas preview before scripts and retains an editable city picker', () => {
-  const html = page('');
-  const picker = html.match(/<section[^>]*data-picker[\s\S]*?<\/section>/)?.[0] ?? '';
-  assert.ok(picker.includes('data-default-city="dallas"'));
-  assert.ok(picker.includes('data-lock="false"'));
-  assert.ok(picker.includes('src="/images/dallas-reference.jpg"'));
-  assert.ok(!picker.includes('stage-empty'));
-  assert.ok(fs.statSync(path.join(dist, 'images/dallas-reference.jpg')).size > 10000);
-  assert.ok(html.includes('data-history-panel'));
-  assert.ok(text(html).includes('2026. This is OUR year.'));
 });

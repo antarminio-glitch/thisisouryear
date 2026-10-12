@@ -24,11 +24,6 @@ export function drawGarment(holder, { style, audience, designId, slug = '' }, la
     holder.innerHTML = emptyStageHtml();
     return;
   }
-  const city = cities.find((c) => c.slug === slug);
-  if (city?.image && style === 'tee' && audience === 'adult' && designId === 'this-is-our-year') {
-    holder.innerHTML = `<img class="shirt shirt-photo" src="${escapeHtml(city.image)}" alt="${escapeHtml(label)}"${label ? '' : ' aria-hidden="true"'} />`;
-    return;
-  }
   const photo = photoFor(data.photos, productIdFor(data.catalog.products, style, audience), slug);
   holder.innerHTML = garmentSvg({ style, audience, lines: designById(designId).lines, label, decorative: !label, photo });
 }
