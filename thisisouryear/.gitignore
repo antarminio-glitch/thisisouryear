@@ -17,3 +17,6 @@ Store_Color_Map.json
 
 # Downloads kept by "npm run photos" so a re-run is quick.
 .cache/
+
+# Print-ready lettering, rebuilt any time with "npm run artwork".
+artwork/
