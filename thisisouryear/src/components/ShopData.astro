@@ -10,8 +10,10 @@ import { teams, colorNames } from '../lib/cities.js';
 import { photosForBrowser } from '../lib/photos.js';
 import photos from '../data/garment-photos.json';
 import specs from '../data/specs.json';
+import { playerSpotlights } from '../lib/player-spotlight-data.js';
 
 const data = {
+  playerSpotlights,
   version: palettes.version,
   cities: [...teams]
     .sort((a, b) => a.name.localeCompare(b.name))

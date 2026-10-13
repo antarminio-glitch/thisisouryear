@@ -1000,6 +1000,23 @@ tbody th {
 .checkout-reassurance { margin-bottom: 16px; }
 .picker-share { margin-top: 16px; }
 .order-city-change { cursor: pointer; padding: 12px 0; margin-bottom: 12px; text-decoration: underline; }
+.player-spotlight {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--edge);
+  border-left: 4px solid var(--on-bg);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--on-bg);
+}
+.player-spotlight[hidden] { display: none; }
+.spotlight-kicker { font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.player-spotlight h3 { font: 400 clamp(1.25rem, 3vw, 1.75rem)/1.2 var(--display); margin: 8px 0 4px; }
+.spotlight-position { font-weight: 600; margin-bottom: 10px; }
+.spotlight-note { margin-top: 10px; font-weight: 600; }
+.spotlight-source, .spotlight-disclosure { font-size: 0.8125rem; margin-top: 10px; }
+.spotlight-draft { font-size: 0.75rem; margin-bottom: 10px; color: var(--soft); }
+.city-player { display: block; margin-top: 4px; font-size: 0.875rem; font-weight: 600; }
 .order-link-fallback { display: block; width: 100%; margin-top: 8px; }
 .order-link-fallback[hidden], .quick-checkout[hidden] { display: none; }
 .quick-checkout { display: none; }

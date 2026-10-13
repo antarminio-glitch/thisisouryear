@@ -1,0 +1,296 @@
+{
+  "enabled": false,
+  "rightsStatus": "unconfirmed",
+  "selection": "recognizable-star",
+  "verifiedAt": "2026-10-13",
+  "entries": {
+    "arizona": {
+      "name": "Trey McBride",
+      "position": "Tight end",
+      "blurb": "A familiar receiving target at the heart of Arizona’s attack.",
+      "sourceUrl": "https://www.azcardinals.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "atlanta": {
+      "name": "Bijan Robinson",
+      "position": "Running back",
+      "blurb": "A recognizable playmaker for Atlanta’s next chapter.",
+      "sourceUrl": "https://www.atlantafalcons.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "baltimore": {
+      "name": "Lamar Jackson",
+      "position": "Quarterback",
+      "blurb": "The quarterback at the center of Baltimore’s belief.",
+      "sourceUrl": "https://www.baltimoreravens.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "buffalo": {
+      "name": "Josh Allen",
+      "position": "Quarterback",
+      "blurb": "A familiar face for Buffalo’s big-game hopes.",
+      "sourceUrl": "https://www.buffalobills.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "carolina": {
+      "name": "Bryce Young",
+      "position": "Quarterback",
+      "blurb": "A quarterback spotlight for Carolina’s next chapter.",
+      "sourceUrl": "https://www.panthers.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "chicago": {
+      "name": "Caleb Williams",
+      "position": "Quarterback",
+      "blurb": "The quarterback at the center of Chicago’s next chapter.",
+      "sourceUrl": "https://www.chicagobears.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "cincinnati": {
+      "name": "Joe Burrow",
+      "position": "Quarterback",
+      "blurb": "A familiar quarterback for Cincinnati’s biggest hopes.",
+      "sourceUrl": "https://www.bengals.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "cleveland": {
+      "name": "Denzel Ward",
+      "position": "Cornerback",
+      "blurb": "A long-standing defensive face for Cleveland.",
+      "sourceUrl": "https://www.clevelandbrowns.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "dallas": {
+      "name": "CeeDee Lamb",
+      "position": "Wide receiver",
+      "blurb": "A familiar receiving star for Dallas fans.",
+      "sourceUrl": "https://www.dallascowboys.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "denver": {
+      "name": "Bo Nix",
+      "position": "Quarterback",
+      "blurb": "The quarterback at the center of Denver’s next chapter.",
+      "sourceUrl": "https://www.denverbroncos.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "detroit": {
+      "name": "Amon-Ra St. Brown",
+      "position": "Wide receiver",
+      "blurb": "A familiar receiving star for Detroit’s belief.",
+      "sourceUrl": "https://www.detroitlions.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "green-bay": {
+      "name": "Jordan Love",
+      "position": "Quarterback",
+      "blurb": "The quarterback carrying Green Bay’s next chapter.",
+      "sourceUrl": "https://www.packers.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "houston": {
+      "name": "C.J. Stroud",
+      "position": "Quarterback",
+      "blurb": "A quarterback spotlight for Houston’s big ambitions.",
+      "sourceUrl": "https://www.houstontexans.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "indianapolis": {
+      "name": "Jonathan Taylor",
+      "position": "Running back",
+      "blurb": "A familiar running star for Indianapolis fans.",
+      "sourceUrl": "https://www.colts.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "jacksonville": {
+      "name": "Trevor Lawrence",
+      "position": "Quarterback",
+      "blurb": "An established quarterback face for Jacksonville.",
+      "sourceUrl": "https://www.jaguars.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "kansas-city": {
+      "name": "Patrick Mahomes",
+      "position": "Quarterback",
+      "blurb": "A familiar quarterback for Kansas City’s biggest moments.",
+      "sourceUrl": "https://www.chiefs.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "las-vegas": {
+      "name": "Brock Bowers",
+      "position": "Tight end",
+      "blurb": "A recognizable receiving target for Las Vegas fans.",
+      "sourceUrl": "https://www.raiders.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "los-angeles-powder": {
+      "name": "Justin Herbert",
+      "position": "Quarterback",
+      "blurb": "An established quarterback paired with powder-blue city colors.",
+      "sourceUrl": "https://www.chargers.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "los-angeles-royal": {
+      "name": "Puka Nacua",
+      "position": "Wide receiver",
+      "blurb": "A recognizable receiving star paired with royal-blue city colors.",
+      "sourceUrl": "https://www.therams.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "miami": {
+      "name": "De’Von Achane",
+      "position": "Running back",
+      "blurb": "A recognizable Miami star, even while sidelined.",
+      "sourceUrl": "https://www.miamidolphins.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": "On injured reserve as of October 13, 2026."
+    },
+    "minnesota": {
+      "name": "Justin Jefferson",
+      "position": "Wide receiver",
+      "blurb": "A familiar receiving star for Minnesota fans.",
+      "sourceUrl": "https://www.vikings.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "new-england": {
+      "name": "Drake Maye",
+      "position": "Quarterback",
+      "blurb": "The quarterback at the center of New England’s next chapter.",
+      "sourceUrl": "https://www.patriots.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "new-orleans": {
+      "name": "Chris Olave",
+      "position": "Wide receiver",
+      "blurb": "A familiar receiving target for New Orleans fans.",
+      "sourceUrl": "https://www.neworleanssaints.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "new-york-blue": {
+      "name": "Malik Nabers",
+      "position": "Wide receiver",
+      "blurb": "A recognizable receiving star paired with New York’s blue colors.",
+      "sourceUrl": "https://www.giants.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "new-york-green": {
+      "name": "Garrett Wilson",
+      "position": "Wide receiver",
+      "blurb": "A familiar receiving star paired with New York’s green colors.",
+      "sourceUrl": "https://www.newyorkjets.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "philadelphia": {
+      "name": "Saquon Barkley",
+      "position": "Running back",
+      "blurb": "A familiar running star for Philadelphia’s belief.",
+      "sourceUrl": "https://www.philadelphiaeagles.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "pittsburgh": {
+      "name": "T.J. Watt",
+      "position": "Linebacker",
+      "blurb": "A familiar defensive face for Pittsburgh fans.",
+      "sourceUrl": "https://www.steelers.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "san-francisco": {
+      "name": "Christian McCaffrey",
+      "position": "Running back",
+      "blurb": "An established running star for San Francisco fans.",
+      "sourceUrl": "https://www.49ers.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "seattle": {
+      "name": "Jaxon Smith-Njigba",
+      "position": "Wide receiver",
+      "blurb": "A recognizable receiving star for Seattle’s next chapter.",
+      "sourceUrl": "https://www.seahawks.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "tampa-bay": {
+      "name": "Baker Mayfield",
+      "position": "Quarterback",
+      "blurb": "A familiar quarterback for Tampa Bay’s belief.",
+      "sourceUrl": "https://www.buccaneers.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "tennessee": {
+      "name": "Cam Ward",
+      "position": "Quarterback",
+      "blurb": "The quarterback at the center of Tennessee’s next chapter.",
+      "sourceUrl": "https://www.tennesseetitans.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    },
+    "washington": {
+      "name": "Jayden Daniels",
+      "position": "Quarterback",
+      "blurb": "The quarterback at the center of Washington’s next chapter.",
+      "sourceUrl": "https://www.commanders.com/team/players-roster/",
+      "verifiedAt": "2026-10-13",
+      "reviewAfter": "2026-11-12",
+      "rosterNote": ""
+    }
+  }
+}

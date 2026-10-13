@@ -1,0 +1,17 @@
+---
+import { playerSpotlights, spotlightPreview } from '../lib/player-spotlight-data.js';
+const { team = null } = Astro.props;
+const player = team ? playerSpotlights[team.slug] : null;
+const available = Object.keys(playerSpotlights).length > 0;
+---
+
+{available && <aside class="player-spotlight" data-player-spotlight hidden={!player} aria-label="City star spotlight">
+  {spotlightPreview && <p class="spotlight-draft">Local preview · Not published</p>}
+  <p class="spotlight-kicker">City star spotlight</p>
+  <h3 data-player-name>{player?.name ?? ''}</h3>
+  <p class="spotlight-position" data-player-position>{player?.position ?? ''}</p>
+  <p data-player-blurb>{player?.blurb ?? ''}</p>
+  <p class="spotlight-note" data-player-note hidden={!player?.rosterNote}>{player?.rosterNote ?? ''}</p>
+  <p class="spotlight-source"><a data-player-source href={player?.sourceUrl}>Official roster</a> · <span data-player-date>{player ? `Checked ${player.verifiedAt}` : ''}</span></p>
+  <p class="spotlight-disclosure">Editorial selection. No player endorsement is claimed.</p>
+</aside>}

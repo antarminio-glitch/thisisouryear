@@ -3,6 +3,7 @@
 import Shirt from './Shirt.astro';
 import { teams, shirtVars, searchText } from '../lib/cities.js';
 import { styleString } from '../lib/colors.js';
+import { playerSpotlights } from '../lib/player-spotlight-data.js';
 
 const { id = 'cities', label = 'Find your city', only = null } = Astro.props;
 const cities = [...teams].sort((a, b) => a.name.localeCompare(b.name)).filter((t) => !only || only.includes(t.slug));
@@ -17,13 +18,14 @@ const cities = [...teams].sort((a, b) => a.name.localeCompare(b.name)).filter((t
   <ul class="grid" id={`${id}-grid`}>
     {
       cities.map((t) => (
-        <li data-search={searchText(t)} data-slug={t.slug}>
+        <li data-search={`${searchText(t)} ${playerSpotlights[t.slug]?.name?.toLowerCase() ?? ''}`} data-slug={t.slug}>
           <a href={`/${t.slug}/`} style={styleString(shirtVars(t))}>
             <span class="tile">
               <Shirt team={t} decorative />
             </span>
             <span class="city">{t.name}</span>
             <span class="colors">{t.colors}</span>
+            {playerSpotlights[t.slug] && <span class="city-player" data-city-player>{playerSpotlights[t.slug].name}</span>}
           </a>
         </li>
       ))

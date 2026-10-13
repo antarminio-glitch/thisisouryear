@@ -150,9 +150,13 @@ const BANNED = new Set(["0022c2b0154ad3230b64", "0891c16c29f2eecc4eab", "0c828f3
 const scramble = (s) => createHash('sha256').update(`tioy:${s}`).digest('hex').slice(0, 20);
 const TEXT_FILE = /\.(astro|js|mjs|ts|json|css|md|toml|txt|html|xml|svg|example)$|^\.gitignore$|^\.env/;
 const SKIP_DIRS = new Set(['node_modules', '.git', '.astro', '.netlify']);
+// The user requested sourced player spotlights. Permit only their exact
+// registered source URLs; visible link text and ordinary copy are still scanned.
+const spotlightSources = new Set(Object.values(read('player-spotlights.json').entries).map((p) => p.sourceUrl));
 
 function bannedIn(content) {
-  const tokens = content.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  const withoutSources = content.replace(/https:\/\/[^\s"'<>]+/g, (url) => spotlightSources.has(url) ? '' : url);
+  const tokens = withoutSources.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
   const hits = [];
   for (let i = 0; i < tokens.length; i++) {
     for (let n = 1; n <= 3 && i + n <= tokens.length; n++) {
@@ -183,6 +187,24 @@ test('no team, league or league-event names anywhere in the project or the built
   }
   assert.ok(scanned > 100, `Only ${scanned} files were scanned, so something is off with this check.`);
   assert.deepEqual(problems.slice(0, 20), [], 'Found a name the site is not allowed to use. Say the city and the colors instead.');
+});
+
+test('registered player source URLs do not exempt visible branded copy', () => {
+  const url = read('player-spotlights.json').entries['green-bay'].sourceUrl;
+  const word = new URL(url).hostname.split('.')[1];
+  assert.deepEqual(bannedIn(url), []);
+  assert.ok(bannedIn(`<a href="${url}">${word}</a>`).length > 0);
+});
+
+test('draft player identities are absent from the normal published site', () => {
+  const selections = read('player-spotlights.json');
+  if (selections.enabled && selections.rightsStatus === 'cleared') return;
+  for (const route of routes) {
+    const html = page(route);
+    assert.ok(!html.includes('data-player-spotlight'), `${route}: draft spotlight was published`);
+    assert.ok(!html.includes('data-city-player'), `${route}: draft player label was published`);
+    for (const entry of Object.values(selections.entries)) assert.ok(!html.includes(entry.name), `${route}: draft player identity leaked into HTML or browser data`);
+  }
 });
 
 test('the city page "About" block starts on the tee and has what it needs to follow the picker', () => {

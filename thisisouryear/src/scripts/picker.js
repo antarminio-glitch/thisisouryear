@@ -6,7 +6,8 @@
 //   - If an item can't be bought, you can still look at it, and it says why.
 //   - Your choices live in the page address, so the back button and shared
 //     links work.
-import { shop, cities, cityBySlug, paint, FUNCTIONS } from './shop-data.js';
+import { data, shop, cities, cityBySlug, paint, FUNCTIONS } from './shop-data.js';
+import { drawPlayerSpotlight } from './player-spotlights.js';
 import { addItems } from './cart.js';
 import { track } from './analytics.js';
 import { orderPath } from '../lib/order-links.js';
@@ -73,6 +74,7 @@ export function initPicker(root) {
 
     const label = city ? `${designById(state.designId).name} ${product.name.toLowerCase()} in ${city.name} colors, ${city.colors}` : '';
     drawGarment($('[data-garment]'), state, label);
+    drawPlayerSpotlight($('[data-player-spotlight]'), data.playerSpotlights, state.slug);
 
     const options = $('[data-garment-options]');
     if (options) options.hidden = !city;

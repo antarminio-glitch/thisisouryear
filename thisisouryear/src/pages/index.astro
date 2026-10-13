@@ -17,6 +17,7 @@ import { shop } from '../lib/shop.js';
 import { dollars, fromPriceCents } from '../lib/money.js';
 import { cityForBlank, rotatingPick } from '../lib/photos.js';
 import season from '../data/season-2026.json';
+import { playerSpotlights } from '../lib/player-spotlight-data.js';
 
 const price = dollars(fromPriceCents());
 const heroCity = teams.find((t) => t.slug === 'dallas');
@@ -126,6 +127,7 @@ const ways = [
               <a href={`/${t.slug}/`} style={styleString(shirtVars(t))}>
                 <span class="tile"><Shirt team={t} decorative /></span>
                 <span class="city">{t.name}</span>
+                {playerSpotlights[t.slug] && <span class="city-player">{playerSpotlights[t.slug].name}</span>}
               </a>
             </li>
           ))
