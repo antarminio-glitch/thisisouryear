@@ -964,3 +964,38 @@ tbody th {
   color: var(--soft);
   text-wrap: balance;
 }
+
+/* Every city exposes the same garment previews, including preview-only items. */
+.garment-caption {
+  margin: 8px 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: #394b52;
+}
+.garment-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+.garment-options[hidden] { display: none; }
+.garment-option {
+  min-width: 0;
+  padding: 6px;
+  border: 2px solid #aab5bc;
+  border-radius: 8px;
+  background: #fff;
+  color: #16252a;
+  font: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  cursor: pointer;
+}
+.garment-option[aria-pressed="true"] { border-color: #16252a; box-shadow: inset 0 0 0 1px #16252a; }
+.garment-option:focus-visible { outline: 3px solid var(--on-bg); outline-offset: 3px; }
+.garment-option-image, .garment-option small { display: block; }
+.garment-option small { margin-top: 4px; }
+.garment-option-image { margin-bottom: 6px; }
+@media (max-width: 380px) {
+  .garment-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

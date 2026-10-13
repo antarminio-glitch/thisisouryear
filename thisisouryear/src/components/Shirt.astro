@@ -14,11 +14,11 @@
 // A city with an "image" field in teams.json shows that picture instead of
 // either: use it for a photo of the finished, printed shirt.
 import { garmentSvg } from '../lib/garment.js';
-import { photoFor, productIdFor } from '../lib/photos.js';
+import { photoFor, productIdFor, photoCaption } from '../lib/photos.js';
 import catalog from '../data/catalog.json';
 import photos from '../data/garment-photos.json';
 
-const { team, label = '', decorative = false, style = 'tee', audience = 'adult', lines, class: className = '' } = Astro.props;
+const { team, label = '', decorative = false, style = 'tee', audience = 'adult', lines, class: className = '', caption = true } = Astro.props;
 const useOwnPhoto = team?.image && style === 'tee' && audience === 'adult';
 const photo = team ? photoFor(photos, productIdFor(catalog.products, style, audience), team.slug) : null;
 ---
@@ -29,6 +29,9 @@ const photo = team ? photoFor(photos, productIdFor(catalog.products, style, audi
   ) : useOwnPhoto ? (
     <img class:list={['shirt', 'shirt-photo', className]} src={team.image} alt={decorative ? '' : label} />
   ) : (
-    <Fragment set:html={garmentSvg({ style, audience, lines, label, decorative, className, photo })} />
+    <Fragment>
+      <Fragment set:html={garmentSvg({ style, audience, lines, label, decorative, className, photo })} />
+      {caption && <p class="garment-caption">{photoCaption(photo)}</p>}
+    </Fragment>
   )
 }

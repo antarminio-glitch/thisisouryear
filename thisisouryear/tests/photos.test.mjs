@@ -100,3 +100,20 @@ test('with a photo the garment is the photo plus lettering, without one it is th
   const kids = garmentSvg({ style: 'tee', audience: 'kids', photo, label: 'x' });
   assert.ok(!kids.includes('scale(0.86)'));
 });
+
+test('all four configured garments resolve identically on the server and browser for all 32 cities', () => {
+  const browser = photosForBrowser(photos);
+  assert.equal(data.teams.length, 32);
+  assert.equal(Object.keys(garments.garments).length, 4);
+  for (const [id, config] of Object.entries(garments.garments)) {
+    assert.ok(photos.garments[id], `${id}: the entire garment mapping is missing`);
+    for (const city of data.teams) {
+      const photo = photoFor(photos, id, city.slug);
+      assert.ok(photo, `${id}/${city.slug}: missing preview`);
+      assert.deepEqual(photoFor(browser, id, city.slug), photo);
+      assert.deepEqual(photo.print, config.print, `${id}/${city.slug}: wrong garment placement`);
+      const svg = garmentSvg({ photo });
+      assert.ok(svg.includes('preserveAspectRatio="xMidYMid meet"'), 'show the entire garment');
+    }
+  }
+});

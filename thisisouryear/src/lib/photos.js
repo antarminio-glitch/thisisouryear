@@ -136,6 +136,13 @@ export function photoFor(photos, productId, slug = '') {
   return { src: c.src, hex: c.hex, print: g.print, color: c.name, style: g.style };
 }
 
+// Label the actual photographed blank, rather than promising an exact city match.
+export function photoCaption(photo) {
+  return photo
+    ? `SanMar ${photo.style} · ${photo.color}. Approximate city color; garment colors vary by style.`
+    : 'Illustration only. A matching vendor photo is not available.';
+}
+
 // The vendor blank a city is printed on for a product: { style, code, name },
 // for example PC54 / TrueNavy / True Navy. Null when no photo was matched.
 export function blankFor(photos, productId, slug) {
