@@ -1,0 +1,14 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Picker from '../components/Picker.astro';
+import ShopData from '../components/ShopData.astro';
+---
+
+<Layout title="Order your city colors" description="Choose your city, garment and size, then check out securely.">
+  <ShopData />
+  <div class="wrap page">
+    <h1>Your city. Your colors.</h1>
+    <p class="lede">Choose your fit and size. See the price with shipping before checkout.</p>
+    <Picker id="order" heading="Make it yours" buyNow compactCity />
+  </div>
+</Layout>

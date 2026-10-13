@@ -11,8 +11,10 @@ import { shop } from '../lib/shop.js';
 import { dollars } from '../lib/shop-core.js';
 import { teams, shirtVars, searchText, colorNames } from '../lib/cities.js';
 import { styleString } from '../lib/colors.js';
+import store from '../data/store.json';
 
-const { city = null, lockCity = false, id = 'picker', buyNow = false, syncUrl = true, heading = null } = Astro.props;
+const { city = null, lockCity = false, id = 'picker', buyNow = false, syncUrl = true, heading = null, compactCity = false } = Astro.props;
+const CityChooserTag = compactCity ? 'details' : 'div';
 const cities = [...teams].sort((a, b) => a.name.localeCompare(b.name));
 const tee = shop.product('adult-tee');
 const range = shop.priceRange('adult-tee');
@@ -63,6 +65,8 @@ const extra = tee.variants.filter((v) => v.extraCents > 0);
 
     {
       !lockCity && (
+        <CityChooserTag data-city-details={compactCity ? true : undefined} open={compactCity}>
+        {compactCity && <summary class="order-city-change" data-city-change>Choose your city</summary>}
         <div class="field city-chooser">
           <label for={`${id}-search`}>Find your city</label>
           <input id={`${id}-search`} type="search" placeholder="Start typing a city" autocomplete="off" autocapitalize="off" spellcheck="false" data-city-search />
@@ -80,6 +84,7 @@ const extra = tee.variants.filter((v) => v.extraCents > 0);
           </div>
           <p class="hint" data-city-empty hidden>No city by that name. Try a nearby city or your state.</p>
         </div>
+        </CityChooserTag>
       )
     }
 
@@ -135,6 +140,9 @@ const extra = tee.variants.filter((v) => v.extraCents > 0);
     <p class="price"><span data-price>{startPrice}</span></p>
     <p class="avail" data-availability role="status" hidden></p>
 
+    <p class="order-total" data-order-total hidden></p>
+    <p class="hint checkout-reassurance">{dollars(store.shippingCents)} shipping per order · US shipping. <a href="/size-chart/">Size guide</a> · <a href="/shipping-returns/">Shipping timing &amp; returns</a>.</p>
+
     <div class="actions">
       <button class="btn" type="button" data-add disabled={!city}>Add to cart</button>
       {
@@ -146,9 +154,20 @@ const extra = tee.variants.filter((v) => v.extraCents > 0);
         )
       }
     </div>
+    {buyNow && <p class="hint">Pay securely on Stripe. Any applicable tax is shown at checkout.</p>}
+    <div class="picker-share" hidden data-share-wrap>
+      <button class="linkish" type="button" data-copy-order>Copy ordering link</button>
+      <p class="hint" data-share-status role="status" hidden></p>
+      <input class="order-link-fallback" data-order-link readonly aria-label="Ordering link to copy" hidden />
+    </div>
+    <p class="hint" data-extra-item hidden><a data-another href="/order/">Add another shirt in these colors</a> · <a data-matching href="/matching-sets/">Match with a kid</a></p>
     <p class="form-msg" data-msg role="alert" hidden></p>
     <p class="added" data-added role="status" hidden><span data-added-text></span> <a href="/cart/">Go to cart</a></p>
   </form>
+  {buyNow && <div class="quick-checkout" data-quick-checkout hidden>
+    <span><strong data-quick-total></strong><small>One item + shipping, before tax</small></span>
+    <button class="btn" type="button" data-quick-buy>Check out</button>
+  </div>}
 </section>
 
 <script>

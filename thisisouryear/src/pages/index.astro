@@ -19,6 +19,7 @@ import { cityForBlank, rotatingPick } from '../lib/photos.js';
 import season from '../data/season-2026.json';
 
 const price = dollars(fromPriceCents());
+const heroCity = teams.find((t) => t.slug === 'dallas');
 
 // Two on-model shots lower on the page, one tee and one hoodie, each worn in the
 // colors of a city printed on that blank. They rotate with the daily rebuild.
@@ -53,7 +54,8 @@ const ways = [
   <ShopData />
 
   <section class="hero">
-    <div class="wrap">
+    <div class="wrap hero-grid">
+      <div>
       <p class="campaign" data-campaign role="status" hidden></p>
       <p class="hero-kicker">{teams.length} cities · {teePrice ? `Tees from ${teePrice}` : 'Your city’s colors'}</p>
       <h1>
@@ -67,10 +69,16 @@ const ways = [
         <span>Pick your city. Wear your unreasonable optimism.</span>
       </p>
       <div class="hero-actions">
-        <a class="btn" href="#find">Find my colors</a>
+        <a class="btn" href="#find">Pick your city</a>
         <a class="hero-secondary" href="#ways">Make it someone else's problem</a>
       </div>
-
+      </div>
+      <figure class="hero-product" style={styleString(shirtVars(heroCity))}>
+        <a href="/order/?city=dallas" aria-label="Order the tee in Dallas colors">
+          <Shirt team={heroCity} label="This Is Our Year tee in Dallas colors" caption={false} />
+        </a>
+        <figcaption>Shown in Dallas colors. Choose from all {teams.length} cities.<br />Digital mockup on a SanMar blank.</figcaption>
+      </figure>
     </div>
   </section>
 
@@ -82,16 +90,16 @@ const ways = [
     </div>
   </aside>
 
-  <WaitTicker />
-  <ThisWeek />
-
   <section class="find" id="find">
     <div class="wrap">
       <p class="find-intro">Your city. Your colors. Your shirt.</p>
-      <Picker id="home" heading="Find my colors" />
+      <Picker id="home" heading="Find my colors" buyNow />
       <p class="browse-link"><a href="#cities">Want to browse every colorway?</a></p>
     </div>
   </section>
+
+  <WaitTicker />
+  <ThisWeek />
 
   <section class="ways" id="ways" aria-labelledby="ways-h">
     <div class="wrap">
@@ -210,6 +218,16 @@ const ways = [
 </script>
 
 <style>
+  .hero-grid { display: grid; align-items: center; gap: 24px; }
+  .hero-product { margin: 0 auto; max-width: 340px; }
+  .hero-product a { display: block; padding: 12px; border-radius: 8px; background: #fff; }
+  .hero-product figcaption { color: var(--soft); font-size: 0.875rem; margin-top: 8px; }
+  @media (min-width: 860px) {
+    .hero-grid { grid-template-columns: 1.3fr 0.7fr; }
+  }
+  @media (max-width: 859px) {
+    .hero-product { max-width: 210px; }
+  }
   .hero {
     padding-block: 28px 32px;
     text-align: center;

@@ -9,6 +9,8 @@
 import { shop, cities, cityBySlug, paint, FUNCTIONS } from './shop-data.js';
 import { addItems } from './cart.js';
 import { track } from './analytics.js';
+import { orderPath } from '../lib/order-links.js';
+import { dollars } from '../lib/shop-core.js';
 import { drawGarment, renderSizes, priceLabel, sizeNote, unavailableText, legendText, designById, productFor, show, postJson, hide } from './ui.js';
 
 const DEFAULTS = { style: 'tee', audience: 'adult', designId: 'this-is-our-year', size: '' };
@@ -22,6 +24,7 @@ export function initPicker(root) {
   const group = root.dataset.group;
 
   const state = { slug: root.dataset.city || '', ...DEFAULTS };
+  let checkoutInFlight = false;
 
   // ---- reading and writing the page address
   function fromUrl() {
@@ -38,6 +41,10 @@ export function initPicker(root) {
   function toUrl(push) {
     if (!syncUrl) return;
     const q = new URLSearchParams();
+    const current = new URLSearchParams(window.location.search);
+    for (const key of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'gclid']) {
+      if (current.has(key)) q.set(key, current.get(key));
+    }
     if (!locked && state.slug) q.set('city', state.slug);
     if (state.style !== DEFAULTS.style) q.set('style', state.style);
     if (state.audience !== DEFAULTS.audience) q.set('fit', state.audience);
@@ -88,6 +95,11 @@ export function initPicker(root) {
     show($('[data-size-note]'), sizeNote(product));
 
     show($('[data-summary]'), describe());
+    const cityDetails = $('[data-city-details]');
+    if (cityDetails) {
+      cityDetails.open = !city;
+      show($('[data-city-change]'), city ? `${city.name} colors · Change city` : 'Choose your city');
+    }
     show($('[data-legend]'), legendText(city));
     const price = priceLabel(product, state.size);
     root.querySelectorAll('[data-price]').forEach((el) => (el.textContent = price));
@@ -102,7 +114,31 @@ export function initPicker(root) {
     for (const b of [add, buy]) {
       if (!b) continue;
       // Stay clickable while only a size is missing, so the click can say so.
-      b.disabled = !canPickSize;
+      b.disabled = !canPickSize || checkoutInFlight;
+    }
+    const variant = product.variants.find((v) => v.size === state.size);
+    const estimate = shop.isSellable(product) ? product.priceCents + (variant?.extraCents ?? 0) + shop.store.shippingCents : null;
+    show($('[data-order-total]'), city && estimate !== null ? `${state.size ? 'One item' : 'From'} ${dollars(estimate)} with shipping, before tax.` : '');
+    const quick = $('[data-quick-checkout]');
+    if (quick) quick.hidden = !city || !found.ok;
+    show($('[data-quick-total]'), estimate !== null ? dollars(estimate) : '');
+    const quickBuy = $('[data-quick-buy]');
+    if (quickBuy) quickBuy.disabled = !found.ok || checkoutInFlight;
+    const share = $('[data-share-wrap]');
+    if (share) share.hidden = !city;
+    show($('[data-share-status]'), '');
+    const fallback = $('[data-order-link]');
+    if (fallback) fallback.hidden = true;
+    const extra = $('[data-extra-item]');
+    if (extra) extra.hidden = true;
+    if (city) {
+      const another = $('[data-another]');
+      if (another) another.href = orderPath(state);
+      const matching = $('[data-matching]');
+      if (matching) {
+        matching.href = `/matching-sets/?${new URLSearchParams({ city: state.slug })}`;
+        matching.hidden = state.audience !== 'adult' || !shop.isSellable(shop.product('kids-tee'));
+      }
     }
     const hidden = $('input[name="slug"]');
     if (hidden) hidden.value = state.slug;
@@ -127,6 +163,7 @@ export function initPicker(root) {
     Object.assign(state, patch);
     const productChanged = before.style !== state.style || before.audience !== state.audience;
     render({ sizesChanged: productChanged });
+    if (patch.slug && $('[data-city-details]')) $('[data-city-change]')?.focus();
     toUrl(push);
     if (patch.slug && patch.slug !== before.slug) track('team_selected', { team_id: state.slug });
     else if (patch.size && patch.size !== before.size) track('size_selected', { size: state.size, product_style: state.style, audience: state.audience });
@@ -149,6 +186,21 @@ export function initPicker(root) {
   });
 
   // ---- choices
+  $('[data-copy-order]')?.addEventListener('click', async () => {
+    if (!state.slug) return;
+    const url = new URL(orderPath(state), location.origin).href;
+    try {
+      await navigator.clipboard.writeText(url);
+      show($('[data-share-status]'), 'Ordering link copied. Each buyer chooses their own size.');
+    } catch {
+      const input = $('[data-order-link]');
+      input.value = url;
+      input.hidden = false;
+      input.select();
+      show($('[data-share-status]'), 'Copy this link. Each buyer chooses their own size.');
+    }
+  });
+  $('[data-quick-buy]')?.addEventListener('click', () => $('[data-form]')?.requestSubmit());
   root.querySelectorAll('[data-preview-style]').forEach((button) => {
     button.addEventListener('click', () => change({ style: button.dataset.previewStyle, audience: button.dataset.previewFit }));
   });
@@ -185,6 +237,8 @@ export function initPicker(root) {
       added.hidden = false;
       added.querySelector('[data-added-text]').textContent = `Added: ${cityBySlug(item.slug).name} ${product.name.toLowerCase()}, size ${item.size}.`;
     }
+    const extra = $('[data-extra-item]');
+    if (extra) extra.hidden = false;
   });
 
   // "Buy now" goes straight to Stripe with this one item.
@@ -194,7 +248,11 @@ export function initPicker(root) {
     const buy = $('[data-buy]');
     const { item, error } = currentItem();
     if (error) return show($('[data-msg]'), error);
+    if (checkoutInFlight) return;
+    checkoutInFlight = true;
     buy.disabled = true;
+    const quickBuy = $('[data-quick-buy]');
+    if (quickBuy) quickBuy.disabled = true;
     buy.setAttribute('aria-busy', 'true');
     show($('[data-msg]'), '');
     const plainTee = item.productId === 'adult-tee' && item.designId === DEFAULTS.designId;
@@ -205,14 +263,16 @@ export function initPicker(root) {
       if (!res.ok || !res.body.url) throw new Error(res.body.error || 'Checkout did not open');
       window.location.assign(res.body.url);
     } catch {
+      checkoutInFlight = false;
+      render();
       show($('[data-msg]'), "Checkout didn't open, so nothing was charged. Give it a minute and try again.");
-      buy.disabled = false;
       buy.setAttribute('aria-busy', 'false');
     }
   });
 
   // Coming back from Stripe with the back button: wake the button up.
   window.addEventListener('pageshow', () => {
+    checkoutInFlight = false;
     const buy = $('[data-buy]');
     if (buy) buy.setAttribute('aria-busy', 'false');
     render();
