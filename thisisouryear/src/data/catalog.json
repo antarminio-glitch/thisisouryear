@@ -10,16 +10,6 @@
       ],
       "status": "live",
       "artworkVersion": "reference-v1"
-    },
-    {
-      "id": "wait-til-next-year",
-      "name": "Wait 'Til Next Year",
-      "lines": [
-        "WAIT 'TIL",
-        "NEXT YEAR"
-      ],
-      "status": "concept",
-      "artworkVersion": null
     }
   ],
   "products": [

@@ -24,8 +24,9 @@ export const realShop = () => createShop(data);
 
 export function fixtureCatalog() {
   const catalog = structuredClone(data.catalog);
-  catalog.designs.find((d) => d.id === 'wait-til-next-year').status = 'live';
-  catalog.designs.find((d) => d.id === 'wait-til-next-year').artworkVersion = 'TEST-ONLY';
+  // The site sells one slogan. This second design exists only in tests, so the
+  // multi-design and campaign code keeps its coverage.
+  catalog.designs.push({ id: 'wait-til-next-year', name: "Wait 'Til Next Year", lines: ["WAIT 'TIL", 'NEXT YEAR'], status: 'live', artworkVersion: 'TEST-ONLY' });
   const fill = (id, priceCents, sizes) => {
     const p = catalog.products.find((x) => x.id === id);
     Object.assign(p, {
