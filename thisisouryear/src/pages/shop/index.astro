@@ -33,7 +33,7 @@ const rows = catalog.products.map((p) => {
     <h1>Shop</h1>
 
     <form class="filters" data-filters aria-label="Filters">
-      <div class="field">
+      <div class="field" hidden={catalog.designs.length < 2}>
         <label for="f-design">Design</label>
         <select id="f-design" data-f="design">
           {catalog.designs.map((d) => <option value={d.id}>{d.name}{d.status !== 'live' ? ' (preview)' : ''}</option>)}

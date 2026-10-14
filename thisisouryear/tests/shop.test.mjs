@@ -40,13 +40,14 @@ test('unsupported size, unknown city, unknown item and unknown design all say so
   assert.equal(shop.availability(tee({ designId: 'nope' })).code, 'unknown_design');
 });
 
-test('the kids hoodie and the follow-up design are concept only in the real catalog', () => {
+test('the kids hoodie is concept only, and the real catalog sells one slogan', () => {
   const shop = realShop();
   assert.equal(shop.availability(tee({ productId: 'kids-hoodie', size: 'M' })).code, 'product_unavailable');
   assert.equal(shop.availability(tee({ productId: 'adult-hoodie' })).ok, true);
   assert.equal(shop.availability(tee({ productId: 'kids-tee', size: 'M' })).ok, true);
   assert.equal(shop.availability(tee({ productId: 'kids-tee', size: 'YM' })).code, 'size_unavailable');
-  assert.equal(shop.availability(tee({ designId: 'wait-til-next-year' })).code, 'design_unavailable');
+  assert.equal(shop.availability(tee({ designId: 'wait-til-next-year' })).code, 'unknown_design');
+  assert.deepEqual(shop.catalog.designs.map((d) => d.id), ['this-is-our-year']);
 });
 
 test('out of stock is reported, not skipped', () => {

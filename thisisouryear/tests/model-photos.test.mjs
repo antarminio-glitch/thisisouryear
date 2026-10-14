@@ -72,7 +72,7 @@ test('a city gets the model photo of its own blank, or nothing, and a missing fi
   // An entry whose file vanished still renders a figure; the page never fails to build.
   const svg = modelPhotoSvg({ photo: { src: '/images/models/gone.webp', hex: '#123456', productId: 'adult-tee' }, print: garments.garments['adult-tee'].modelPrint, label: 'x' });
   assert.ok(svg.includes('shirt-model'));
-  assert.ok(svg.includes('rotate(-2'));
+  assert.ok(svg.includes('rotate(0 '), 'the print sits straight and centered on the chest');
   assert.ok(svg.includes('--shirt:#123456'));
 });
 
