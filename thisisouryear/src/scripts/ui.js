@@ -2,7 +2,7 @@
 import { garmentSvg } from '../lib/garment.js';
 import { dollars } from '../lib/shop-core.js';
 import { data, shop, cities } from './shop-data.js';
-import { photoFor, productIdFor, photoCaption } from '../lib/photos.js';
+import { photoFor, productIdFor } from '../lib/photos.js';
 
 export { dollars };
 
@@ -18,7 +18,7 @@ export const productFor = (style, audience) => shop.findProduct(style, audience)
 // blank is shown; a city with no photo gets the drawing. With no city chosen
 // there is no shirt at all, only the prompt to pick one: a blank garment in
 // no city's colors would not mean anything.
-export function drawGarment(holder, { style, audience, designId, slug = '', caption = true }, label = '') {
+export function drawGarment(holder, { style, audience, designId, slug = '' }, label = '') {
   if (!holder) return;
   if (!slug) {
     holder.innerHTML = emptyStageHtml();
@@ -26,12 +26,6 @@ export function drawGarment(holder, { style, audience, designId, slug = '', capt
   }
   const photo = photoFor(data.photos, productIdFor(data.catalog.products, style, audience), slug);
   holder.innerHTML = garmentSvg({ style, audience, lines: designById(designId).lines, label, decorative: !label, photo });
-  if (caption) {
-    const note = document.createElement('p');
-    note.className = 'garment-caption';
-    note.textContent = photoCaption(photo);
-    holder.append(note);
-  }
 }
 
 const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -53,7 +47,7 @@ export function renderSizes(container, product, name, selected = '') {
   return keep;
 }
 
-// "$19.99", "$19.99 to $21.99", or a plain statement that it isn't for sale.
+// "$24.99", "$24.99 to $26.99", or a plain statement that it isn't for sale.
 export function priceLabel(product, size) {
   if (!product || !shop.isSellable(product)) return 'Not for sale yet';
   const v = product.variants.find((x) => x.size === size);

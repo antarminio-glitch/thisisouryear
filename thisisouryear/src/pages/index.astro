@@ -142,7 +142,6 @@ const ways = [
           </div>
         )
       }
-      <p class="concept">Model mockups: the design is placed digitally on a photo of the blank garment.</p>
       <p class="worn-link"><a href="#find">Find yours in your city’s colors →</a></p>
     </div>
   </section>
@@ -482,11 +481,9 @@ const ways = [
   .worn { padding-top: 48px; }
   .worn h2 { font-size: clamp(1.375rem, 5.4vw, 2rem); }
   .worn :global(.hero-models) { max-width: 560px; margin: 22px 0 0; }
-  .worn .concept { max-width: 560px; }
   .worn-link { margin-top: 18px; }
   @media (max-width: 859px) {
     .find :global(.stage.is-neutral .stage-empty) { aspect-ratio: auto; min-height: 100px; padding: 20px; }
     .find :global(.stage.is-neutral .stage-empty p) { max-width: none; }
-    .find :global(.picker-stage:has(.is-neutral) .concept) { display: none; }
   }
 </style>

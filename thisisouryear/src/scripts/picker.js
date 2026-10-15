@@ -74,7 +74,7 @@ export function initPicker(root) {
       button.setAttribute('aria-pressed', String(selected));
       const image = button.querySelector('[data-option-image]');
       if (city) paint(image, city);
-      drawGarment(image, { style: button.dataset.previewStyle, audience: button.dataset.previewFit, designId: state.designId, slug: state.slug, caption: false });
+      drawGarment(image, { style: button.dataset.previewStyle, audience: button.dataset.previewFit, designId: state.designId, slug: state.slug });
     });
 
     if (sizesChanged) state.size = renderSizes($('[data-sizes]'), product, `${group}-size`, state.size);
