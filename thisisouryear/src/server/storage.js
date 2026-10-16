@@ -13,7 +13,7 @@
 //   list(prefix)             the keys that start with prefix
 //   setBinary / getBinary    the same, for files such as photos
 
-export const STORES = ['orders', 'quotes', 'fans', 'fan-photos', 'season', 'campaigns', 'deliveries', 'suppressions', 'audit'];
+export const STORES = ['orders', 'quotes', 'fans', 'fan-photos', 'season', 'campaigns', 'deliveries', 'suppressions', 'audit', 'fulfillment'];
 
 export function memoryStorage() {
   const data = new Map(STORES.map((name) => [name, new Map()]));

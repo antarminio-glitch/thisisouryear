@@ -18,13 +18,15 @@ import { orderRef, printColors, orderEmailSettings } from './order-email.js';
 import { emailSender } from './email.js';
 import { blankFor } from '../lib/photos.js';
 import { cleanText } from '../lib/shop-core.js';
+import { inPrintify } from './printify.js';
 
 const byDate = (a, b) => String(a.createdAt).localeCompare(String(b.createdAt));
 
 // Orders waiting to be printed: paid (or partly refunded, with a note), not
-// in a run yet. Fully refunded orders and test orders never print.
+// in a run yet, and not sent to Printify. Fully refunded orders and test
+// orders never print.
 export function waitingOrders(orders) {
-  return orders.filter((o) => ['paid', 'partially_refunded'].includes(o.status) && !o.printRun).sort(byDate);
+  return orders.filter((o) => ['paid', 'partially_refunded'].includes(o.status) && !o.printRun && !inPrintify(o)).sort(byDate);
 }
 
 const COUNTRY = { US: 'United States' };
