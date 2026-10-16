@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Confirm from '../components/Confirm.astro';
 import product from '../data/store.json';
 import { dollars, fromPriceCents } from '../lib/money.js';
 
@@ -12,15 +11,11 @@ const email = product.contactEmail;
     <div class="prose">
       <h1>Terms</h1>
       <p class="lede">Plain-English rules for using this site and buying a shirt.</p>
-      <p>
-        <Confirm /> This is starter text. Have someone qualified look it over before launch, and fill in who operates
-        the shop.
-      </p>
-      <p>Last updated October 10, 2026. <Confirm /></p>
+      <p>Last updated October 16, 2026.</p>
 
       <h2>Who we are</h2>
       <p>
-        This Is Our Year is an independent apparel brand based in New York, NY. <Confirm /> It is not affiliated with,
+        This Is Our Year is an independent apparel brand based in New York, NY. It is not affiliated with,
         licensed by, or endorsed by any professional football league or team. Our shirts use city names and colors.
         They don't use any league or team names, logos, or other marks.
       </p>
@@ -68,14 +63,14 @@ const email = product.contactEmail;
       <p>
         The site and our products are provided as is. To the extent the law allows, our liability for any order is
         limited to what you paid for it. Nothing here limits rights you have that can't be waived under the law where
-        you live. These terms are governed by the laws of the State of New York. <Confirm />
+        you live. These terms are governed by the laws of the State of New York.
       </p>
 
       <h2>Changes</h2>
       <p>If these terms change, the new version goes on this page with a new date at the top.</p>
 
       <h2>Questions</h2>
-      <p>Email <a href={`mailto:${email}`}>{email}</a>. <Confirm /></p>
+      <p>Email <a href={`mailto:${email}`}>{email}</a>.</p>
     </div>
   </div>
 </Layout>

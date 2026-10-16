@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Confirm from '../components/Confirm.astro';
 import product from '../data/store.json';
 
 const email = product.contactEmail;
@@ -11,11 +10,7 @@ const email = product.contactEmail;
     <div class="prose">
       <h1>Privacy</h1>
       <p class="lede">The short version: we collect what we need to get a shirt to your door, and nothing else.</p>
-      <p>
-        <Confirm /> This is starter text. Read it against how the shop actually runs and have someone qualified look it
-        over before launch.
-      </p>
-      <p>Last updated October 10, 2026. <Confirm /></p>
+      <p>Last updated October 16, 2026.</p>
 
       <h2>What we collect</h2>
       <ul>
@@ -45,7 +40,7 @@ const email = product.contactEmail;
           type to keep the site running and secure.
         </li>
       </ul>
-      <p>This site doesn't use advertising trackers or analytics cookies. <Confirm /></p>
+      <p>This site doesn't use advertising trackers or analytics cookies.</p>
 
       <h2>How we use it</h2>
       <ul>
@@ -70,13 +65,13 @@ const email = product.contactEmail;
           <strong>Netlify</strong> hosts this website and stores our order records, quote requests and fan photos.
         </li>
         <li>
-          <strong>Resend</strong> sends our order emails to the print partner. <Confirm />
+          <strong>Resend</strong> sends our order emails to the print partner.
         </li>
         <li><strong>The shipping carrier</strong> gets your name and address to deliver the package.</li>
       </ul>
 
       <h2>How long we keep it</h2>
-      <p>We keep order records for as long as we need them for taxes, accounting, and handling returns. <Confirm /></p>
+      <p>We keep order records for as long as we need them for taxes, accounting, and handling returns.</p>
 
       <p>
         A fan photo stays up until you take it down or we do. Take it down yourself on the
@@ -87,7 +82,7 @@ const email = product.contactEmail;
       <p>
         Want to see, correct, or delete the information we have about you? Email
         <a href={`mailto:${email}`}>{email}</a>
-        <Confirm /> and we'll take care of it, except for records the law requires us to keep.
+        and we'll take care of it, except for records the law requires us to keep.
       </p>
 
       <h2>Kids</h2>
