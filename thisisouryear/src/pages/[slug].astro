@@ -5,10 +5,16 @@ import Layout from '../layouts/Layout.astro';
 import Picker from '../components/Picker.astro';
 import ShopData from '../components/ShopData.astro';
 import Confirm from '../components/Confirm.astro';
+import ModelShot from '../components/ModelShot.astro';
+import ThisWeek from '../components/ThisWeek.astro';
 import teams from '../data/teams.json';
+import models from '../data/model-photos.json';
+import photos from '../data/garment-photos.json';
+import { modelPhotoForCity } from '../lib/photos.js';
 import store from '../data/store.json';
 import history from '../data/history.json';
 import stories from '../data/stories.json';
+import season from '../data/season-2026.json';
 import palettes from '../data/palettes.json';
 import { shop } from '../lib/shop.js';
 import { dollars } from '../lib/shop-core.js';
@@ -17,6 +23,7 @@ import { placeName } from '../lib/cities.js';
 import { counterFor, todayIn } from '../lib/counter.js';
 import { cardPath, cardAlt } from '../lib/og.js';
 import { productJsonLd, sellableStyles } from '../lib/seo.js';
+import specs from '../data/specs.json';
 
 export function getStaticPaths() {
   return teams.map((team) => ({ params: { slug: team.slug }, props: { team } }));
@@ -24,8 +31,20 @@ export function getStaticPaths() {
 
 const { team } = Astro.props;
 const theme = themeFor(team);
+
+// What the tee is, from the maker's spec sheet. The block starts on the tee
+// and follows the picker in the browser (see the script at the bottom).
+const tee = specs.products['adult-tee'];
+
+// One small on-model thumbnail, only when a blank this city is printed on
+// has a model shot. Most cities have none, and then nothing extra shows.
+const modelShot = modelPhotoForCity(models, photos, team.slug);
+const modelGarment = modelShot ? (shop.product(modelShot.productId)?.name ?? 'Shirt') : '';
 const place = placeName(team);
 const story = stories[team.slug];
+// The 2026 season layer: a slogan for every city, verified history for some.
+const seasonCity = season.cities[team.slug] ?? {};
+const seasonHistory = seasonCity.history?.verified === true && Array.isArray(seasonCity.history.facts) && seasonCity.history.facts.length > 0 ? seasonCity.history : null;
 
 // The counter is worked out when the site is built, then re-checked in the
 // browser with today's date, so it's right even if the build is a day old.
@@ -60,12 +79,35 @@ const counterData = {
 
 <Layout title={title} description={description} theme={styleString(theme)} themeColor={team.shirt} image={card} imageAlt={cardDescription} structuredData={structuredData}>
   <ShopData />
+
+  <aside class="wait" aria-label="How long it's been" data-wait>
+    <div class="wrap">
+      <p class="wait-kicker">{season.banner.kicker} · {place}</p>
+      <p class="wait-big" data-wait-big>{counter.banner.big}</p>
+      <p class="wait-line" data-wait-line>{counter.banner.line}</p>
+      <ThisWeek city={team.slug} />
+    </div>
+  </aside>
+
   <div class="wrap city">
     <Picker city={team} lockCity buyNow id="city">
       <div slot="intro" class="intro">
         <h1>This is our year, {place}.</h1>
         <p class="colorway">{team.colors}</p>
+        <p class="season-tag"><span class="season-kicker">{season.banner.kicker}</span> {seasonCity.slogan ?? season.banner.line}</p>
       </div>
+      {
+        modelShot && (
+          <ModelShot
+            slot="stage-extra"
+            class="model-thumb"
+            photo={modelShot}
+            team={team}
+            label={`${modelGarment} in ${team.name} colors, on a model`}
+            caption={`On a model: the ${modelGarment.toLowerCase()} in ${modelShot.name}`}
+          />
+        )
+      }
     </Picker>
   </div>
 
@@ -75,6 +117,20 @@ const counterData = {
       <p>{story.story}</p>
       <p class="occasion">{story.occasion}</p>
     </section>
+
+    {
+      seasonHistory && (
+        <section class="history" aria-labelledby="history-h">
+          <h2 id="history-h">How {place} got here</h2>
+          <ul>
+            {seasonHistory.facts.map((fact) => (
+              <li>{fact}</li>
+            ))}
+          </ul>
+          <p class="hint">Checked {seasonHistory.verifiedOn}. {seasonHistory.source}</p>
+        </section>
+      )
+    }
 
     <section class="drought" aria-labelledby="drought-h" data-counter={JSON.stringify(counterData)}>
       <h2 id="drought-h" class="sr-only">How long it's been</h2>
@@ -111,16 +167,20 @@ const counterData = {
       </ul>
     </section>
 
-    <section class="details-block" aria-labelledby="details-h">
-      <h2 id="details-h">About the tee</h2>
+    <section class="details-block" aria-labelledby="details-h" data-about>
+      <h2 id="details-h">About the <span data-about-name>tee</span></h2>
       <dl class="details">
         <div>
           <dt>Fabric</dt>
-          <dd>100% cotton, midweight <Confirm /></dd>
+          <dd data-about-fabric>{tee.fabric}</dd>
         </div>
         <div>
           <dt>Fit</dt>
-          <dd>Unisex, true to size <Confirm /></dd>
+          <dd><span data-about-fit>{tee.fit}</span>. <a href="/size-chart/#adult-tee" data-about-chart>Size chart</a></dd>
+        </div>
+        <div>
+          <dt>Care</dt>
+          <dd data-about-care>{tee.care}</dd>
         </div>
         <div>
           <dt>Print</dt>
@@ -141,6 +201,33 @@ const counterData = {
 </Layout>
 
 <script>
+  // The "About" block follows whatever garment the picker shows: tee, hoodie
+  // or kids tee. The text comes from the same specs the size chart uses.
+  import { data } from '../scripts/shop-data.js';
+
+  const about = document.querySelector<HTMLElement>('[data-about]');
+  const specs = (data as { specs?: Record<string, { fabric: string; fit: string; care: string }> }).specs ?? {};
+  document.addEventListener('picker-change', (e) => {
+    const { product } = (e as CustomEvent).detail as { product: { id: string; name: string; sizeChart?: string } };
+    const spec = specs[product.id];
+    if (!about || !spec) return;
+    const set = (sel: string, text: string) => {
+      const el = about.querySelector(sel);
+      if (el) el.textContent = text;
+    };
+    set('[data-about-name]', product.name.toLowerCase());
+    set('[data-about-fabric]', spec.fabric);
+    set('[data-about-fit]', spec.fit);
+    set('[data-about-care]', spec.care);
+    const chart = about.querySelector<HTMLAnchorElement>('[data-about-chart]');
+    if (chart) {
+      chart.hidden = !product.sizeChart;
+      if (product.sizeChart) chart.href = product.sizeChart;
+    }
+  });
+</script>
+
+<script>
   import { counterFor, todayIn } from '../lib/counter.js';
   import { track } from '../scripts/analytics.js';
 
@@ -153,6 +240,10 @@ const counterData = {
       const text = box.querySelector('[data-counter-text]');
       const context = box.querySelector<HTMLElement>('[data-counter-context]');
       if (text && text.textContent !== now.text) text.textContent = now.text;
+      const big = document.querySelector('[data-wait-big]');
+      const line = document.querySelector('[data-wait-line]');
+      if (big && big.textContent !== now.banner.big) big.textContent = now.banner.big;
+      if (line && line.textContent !== now.banner.line) line.textContent = now.banner.line;
       if (context) {
         context.textContent = now.context;
         context.hidden = !now.context;
@@ -215,6 +306,31 @@ const counterData = {
   }
   .intro {
     margin-bottom: 18px;
+  }
+  .wait {
+    padding: 18px 0 20px;
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  .wait .wrap {
+    padding-block: 0;
+  }
+  .wait-kicker {
+    font: 400 0.875rem / 1.4 var(--display);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .wait-big {
+    margin-top: 4px;
+    font: 400 clamp(2.75rem, 13vw, 5.5rem) / 1 var(--display);
+    text-transform: uppercase;
+  }
+  .wait-line {
+    margin-top: 8px;
+    max-width: var(--read);
+    font-size: 1.125rem;
+    text-wrap: balance;
   }
   .colorway {
     margin-top: 8px;
@@ -321,5 +437,36 @@ const counterData = {
     .city {
       padding-block: 40px 16px;
     }
+  }
+</style>
+
+<style>
+  .season-tag {
+    margin: 8px 0 0;
+    color: var(--soft);
+  }
+  .season-tag .season-kicker {
+    display: inline-block;
+    margin-right: 8px;
+    padding: 2px 8px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    font: 400 0.8125rem / 1.5 var(--display);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--on-bg);
+  }
+  .history {
+    margin-top: 36px;
+  }
+  .history h2 {
+    font-size: clamp(1.375rem, 5.4vw, 2rem);
+    margin-bottom: 14px;
+  }
+  .history ul {
+    margin: 0 0 12px;
+    padding-left: 1.2em;
+    display: grid;
+    gap: 8px;
   }
 </style>

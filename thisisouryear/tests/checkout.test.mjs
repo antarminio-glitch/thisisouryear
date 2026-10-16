@@ -46,7 +46,7 @@ test('a plain form post works without JavaScript and redirects to Stripe', async
 
 test('bad input never reaches Stripe', async () => {
   const { stripe, handler } = setup();
-  for (const body of [{ slug: 'nowhere', size: 'L' }, { slug: 'dallas', size: '9XL' }, { slug: 'dallas' }, { slug: { a: 1 }, size: 'L' }, '{not json', { items: [] }, { items: [item({ productId: 'adult-hoodie' })] }]) {
+  for (const body of [{ slug: 'nowhere', size: 'L' }, { slug: 'dallas', size: '9XL' }, { slug: 'dallas' }, { slug: { a: 1 }, size: 'L' }, '{not json', { items: [] }, { items: [item({ productId: 'kids-hoodie' })] }]) {
     const res = await handler(post(body));
     assert.equal(res.status, 400, JSON.stringify(body));
   }
@@ -161,7 +161,7 @@ test('marketing consent is only requested when the store setting is on', async (
 
 test('the cart price check returns server prices and per-line problems', async () => {
   const quote = makeQuoteHandler({ shop: realShop() });
-  const res = await quote(post({ items: [item({ seenPriceCents: 1500 }), item({ productId: 'adult-hoodie' })] }));
+  const res = await quote(post({ items: [item({ seenPriceCents: 1500 }), item({ productId: 'kids-hoodie' })] }));
   const body = await res.json();
   assert.equal(body.ok, false);
   assert.equal(body.lines[0].ok, true);
@@ -236,7 +236,7 @@ function quoteSetup(shop = realShop(), failing = false) {
   const getStorage = failing ? async () => { throw new Error('storage down'); } : async () => storage;
   return { storage, handler: makeQuoteRequestHandler({ shop, getStorage, now: () => new Date('2026-10-10T12:00:00Z') }) };
 }
-const quoteBody = (over = {}) => ({ email: 'commish@example.com', slug: 'dallas', leagueName: 'Sunday Regrets', rows: [{ productId: 'adult-tee', size: 'L', quantity: 12 }, { productId: 'adult-hoodie', size: 'XL', quantity: 2 }], ...over });
+const quoteBody = (over = {}) => ({ email: 'commish@example.com', slug: 'dallas', leagueName: 'Sunday Regrets', rows: [{ productId: 'adult-tee', size: 'L', quantity: 12 }, { productId: 'kids-hoodie', size: 'L', quantity: 2 }], ...over });
 
 test('a bulk quote request is really saved, with what could be bought today', async () => {
   const { storage, handler } = quoteSetup();

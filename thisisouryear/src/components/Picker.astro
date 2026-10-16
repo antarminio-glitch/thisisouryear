@@ -41,7 +41,19 @@ const extra = tee.variants.filter((v) => v.extraCents > 0);
         <Shirt team={city} label={city ? `This Is Our Year tee in ${city.name} colors, ${city.colors}` : 'This Is Our Year tee'} decorative={!city} />
       </div>
     </div>
-    <p class="concept">Concept preview. It's a drawing, not a photo of the finished item, and screen colors are approximate.</p>
+    <p class="concept">Mockup. A photo of the blank garment with the design placed on it digitally. Print size and ink colors on the finished item may differ slightly.</p>
+    <div class="garment-options" data-garment-options hidden={!city} role="group" aria-label="Preview a garment">
+      {catalog.products.map((product) => (
+        <button type="button" class="garment-option" data-preview-style={product.style} data-preview-fit={product.audience} aria-pressed={String(product.id === 'adult-tee')}>
+          <span class="garment-option-image" data-option-image style={city ? styleString(shirtVars(city)) : ''}>
+            <Shirt team={city} style={product.style} audience={product.audience} decorative caption={false} />
+          </span>
+          <span>{product.audience === 'adult' ? `Adult ${product.name.toLowerCase()}` : product.name}</span>
+          {!shop.isSellable(product) && <small>Preview only</small>}
+        </button>
+      ))}
+    </div>
+    <slot name="stage-extra" />
   </div>
 
   <form class="picker-form" data-form method="post" action="/.netlify/functions/create-checkout">

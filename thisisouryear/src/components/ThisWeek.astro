@@ -1,0 +1,197 @@
+---
+// This week's games, in city names, filled in by the browser from the site's
+// own games function (netlify/functions/games.mjs), which reads the feed
+// named in the GAMES_FEED setting and passes on city slugs, scores and
+// kickoff times, nothing else. Nothing shows until that answers with games,
+// so with the setting blank the page simply has no strip.
+//
+// With a `city`, it is one line for that city's page ("Next up: at Tampa
+// Bay, Sun 8:15 PM."). Without one, it is the strip of every game.
+import teams from '../data/teams.json';
+import { placeName } from '../lib/cities.js';
+
+const { city } = Astro.props;
+const cities = JSON.stringify(Object.fromEntries(teams.map((t) => [t.slug, { name: placeName(t), shirt: t.shirt, ink: t.line1 }])));
+---
+
+{
+  city ? (
+    <p class="next-up" data-week data-city={city} data-cities={cities} role="status" hidden />
+  ) : (
+    <section class="week" data-week data-cities={cities} aria-labelledby="week-h" hidden>
+      <div class="wrap">
+        <h2 id="week-h">
+          <span class="week-label" data-week-label>This week</span>
+          <span class="week-sub">Every game is somebody's year. Pick a side.</span>
+        </h2>
+        <ul class="week-games" data-week-games />
+      </div>
+    </section>
+  )
+}
+
+<script>
+  import { gameFor, stripLabel, kickoffLabel, nextUpLine } from '../lib/games.js';
+
+  type City = { name: string; shirt: string; ink: string };
+  type Side = { slug: string; score: number | null };
+  type Game = { kickoff: string; state: 'pre' | 'in' | 'post'; home: Side; away: Side };
+
+  const boxes = [...document.querySelectorAll<HTMLElement>('[data-week]')];
+
+  if (boxes.length) {
+    fetch('/.netlify/functions/games', { credentials: 'omit' })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((data: { games?: Game[] }) => {
+        const games = Array.isArray(data?.games) ? data.games : [];
+        if (!games.length) return;
+        for (const box of boxes) fill(box, games);
+      })
+      .catch(() => {
+        /* no feed, no strip */
+      });
+  }
+
+  function fill(box: HTMLElement, games: Game[]) {
+    let cities: Record<string, City> = {};
+    try {
+      cities = JSON.parse(box.dataset.cities ?? '{}');
+    } catch {
+      return;
+    }
+    const names = Object.fromEntries(Object.entries(cities).map(([slug, c]) => [slug, c.name]));
+
+    if (box.dataset.city) {
+      box.textContent = nextUpLine(gameFor(games, box.dataset.city), box.dataset.city, names);
+      box.hidden = false;
+      return;
+    }
+
+    const label = box.querySelector('[data-week-label]');
+    if (label) label.textContent = stripLabel(games);
+    const list = box.querySelector('[data-week-games]');
+    if (!list) return;
+    list.replaceChildren(...games.map((g) => item(g, cities)));
+    box.hidden = false;
+  }
+
+  function side(s: Side, cities: Record<string, City>, state: Game['state'], won: boolean) {
+    const a = document.createElement('a');
+    const c = cities[s.slug];
+    a.className = 'side' + (won ? ' won' : '');
+    a.href = `/${s.slug}/`;
+    if (c) a.style.cssText = `--shirt:${c.shirt};--ink:${c.ink}`;
+    const name = document.createElement('span');
+    name.textContent = c?.name ?? s.slug;
+    a.append(name);
+    if (state !== 'pre' && s.score !== null) {
+      const score = document.createElement('b');
+      score.textContent = String(s.score);
+      a.append(score);
+    }
+    return a;
+  }
+
+  function item(g: Game, cities: Record<string, City>) {
+    const li = document.createElement('li');
+    li.className = `game game-${g.state}`;
+    const done = g.state === 'post' && g.home.score !== null && g.away.score !== null;
+    li.append(side(g.away, cities, g.state, done && g.away.score! > g.home.score!));
+    const at = document.createElement('span');
+    at.className = 'at';
+    at.textContent = 'at';
+    li.append(at);
+    li.append(side(g.home, cities, g.state, done && g.home.score! > g.away.score!));
+    const when = document.createElement('span');
+    when.className = 'when';
+    when.textContent = g.state === 'pre' ? kickoffLabel(g.kickoff) : g.state === 'in' ? 'Live' : 'Final';
+    li.append(when);
+    return li;
+  }
+</script>
+
+<style>
+  .week {
+    padding: 26px 0 8px;
+  }
+  .week[hidden] {
+    display: none;
+  }
+  .week h2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 14px;
+    margin-bottom: 14px;
+    font-size: clamp(1.25rem, 5vw, 1.75rem);
+  }
+  .week-sub {
+    font: 400 1rem / 1.5 var(--body, inherit);
+    color: var(--soft);
+  }
+  .week-games {
+    display: flex;
+    gap: 10px;
+    margin: 0 -16px;
+    padding: 0 16px 14px;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+  }
+  .week-games :global(.game) {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: 6px 8px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--panel);
+    scroll-snap-align: start;
+  }
+  .week-games :global(.side) {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--shirt, var(--on-bg));
+    color: var(--ink, var(--bg));
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 0 0 1px #ffffff2e inset;
+    white-space: nowrap;
+  }
+  .week-games :global(.side:hover),
+  .week-games :global(.side:focus-visible) {
+    text-decoration: underline;
+  }
+  .week-games :global(.side b) {
+    font: 400 1.125rem / 1 var(--display);
+  }
+  .week-games :global(.game-post .side:not(.won)) {
+    opacity: 0.7;
+  }
+  .week-games :global(.at) {
+    color: var(--soft);
+    font-size: 0.875rem;
+  }
+  .week-games :global(.when) {
+    grid-column: 1 / -1;
+    font-size: 0.875rem;
+    color: var(--soft);
+  }
+  .week-games :global(.game-in .when) {
+    color: #ffd02e;
+    font-weight: 700;
+  }
+  .next-up {
+    margin-top: 12px;
+    font-weight: 700;
+  }
+  .next-up[hidden] {
+    display: none;
+  }
+</style>

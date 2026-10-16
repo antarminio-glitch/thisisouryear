@@ -1,3 +1,4 @@
+import { varsityArtwork } from './varsity-artwork.js';
 // Draws the share card for a city: a 1200 x 630 picture used when a page is
 // shared, and offered as a download on the page.
 //
@@ -8,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import * as fontkit from 'fontkit';
-import { themeFor } from './colors.js';
+import { themeFor, borderFor } from './colors.js';
 import { DEFAULT_LINES } from './garment.js';
 
 const fontDir = path.join(process.cwd(), 'public', 'fonts');
@@ -61,7 +62,7 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 // file name, so when the counter ticks over or a color changes the card gets
 // a new address and old copies can't linger in caches.
 export function cardKey(team, counterText, lines = DEFAULT_LINES, version = '') {
-  const input = JSON.stringify([team.slug, team.name, team.colors, team.shirt, team.line1, team.line2, team.outline, counterText, lines, version, 'card-v1']);
+  const input = JSON.stringify([team.slug, team.name, team.colors, team.shirt, team.line1, team.line2, team.outline, counterText, lines, version, 'card-reference-v2']);
   return createHash('sha1').update(input).digest('hex').slice(0, 8);
 }
 
@@ -79,26 +80,12 @@ export function cardSvg(team, counterText, lines = DEFAULT_LINES, siteHost = 'th
   const W = 1200;
   const H = 630;
 
-  // Lettering, sized so the wider line fills most of the card.
-  const track = 0.1;
-  const widest = Math.max(...lines.map((l) => measure(block, l, 1, track)));
-  const size = Math.min(150, 980 / (widest + 0.3));
-  const weight = 0.025 * size;
-  const gap = 0.045 * size;
-  const rim = 0.05 * size;
-  const top = 78 + size * 0.75;
-  const fills = [team.line1, team.line2];
-  const lettering = lines
-    .slice(0, 2)
-    .map((line, i) => {
-      const d = textPath(block, line, W / 2, top + i * size * 1.16, size, { anchor: 'middle', track });
-      return (
-        `<path d="${d}" fill="${team.outline}" stroke="${team.outline}" stroke-width="${((weight + gap + rim) * 2).toFixed(2)}" stroke-linejoin="round"/>` +
-        `<path d="${d}" fill="${team.shirt}" stroke="${team.shirt}" stroke-width="${((weight + gap) * 2).toFixed(2)}" stroke-linejoin="round"/>` +
-        `<path d="${d}" fill="${fills[i]}" stroke="${fills[i]}" stroke-width="${(weight * 2).toFixed(2)}" stroke-linejoin="round"/>`
-      );
-    })
-    .join('');
+  // The share image uses exactly the same path artwork as the shirt.
+  const size = 130;
+  const top = 175;
+  const palette = { line1: team.line1, line2: team.line2, shirt: team.shirt, outline: team.outline, border: borderFor(team.shirt) };
+  const lettering = varsityArtwork({ lines, x: W / 2, top: 50, width: 600, capHeight: 144, rowGap: 23 })
+    .replace(/var\(--(border|line1|line2|shirt|outline), (?:[^()]|\([^()]*\))*\)/g, (_, key) => palette[key]);
 
   // The counter line, wrapped to at most three lines.
   // Each sentence starts on its own line.

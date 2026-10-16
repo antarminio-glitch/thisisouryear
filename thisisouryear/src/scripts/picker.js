@@ -67,6 +67,16 @@ export function initPicker(root) {
     const label = city ? `${designById(state.designId).name} ${product.name.toLowerCase()} in ${city.name} colors, ${city.colors}` : '';
     drawGarment($('[data-garment]'), state, label);
 
+    const options = $('[data-garment-options]');
+    if (options) options.hidden = !city;
+    root.querySelectorAll('[data-preview-style]').forEach((button) => {
+      const selected = button.dataset.previewStyle === state.style && button.dataset.previewFit === state.audience;
+      button.setAttribute('aria-pressed', String(selected));
+      const image = button.querySelector('[data-option-image]');
+      if (city) paint(image, city);
+      drawGarment(image, { style: button.dataset.previewStyle, audience: button.dataset.previewFit, designId: state.designId, slug: state.slug, caption: false });
+    });
+
     if (sizesChanged) state.size = renderSizes($('[data-sizes]'), product, `${group}-size`, state.size);
     const sizesWrap = $('[data-size-field]');
     if (sizesWrap) sizesWrap.hidden = !shop.isSellable(product);
@@ -106,6 +116,10 @@ export function initPicker(root) {
     check('fit', state.audience);
     check('design', state.designId);
     check('size', state.size);
+
+    // Anything else on the page that follows the picker (the "About" block on
+    // city pages) listens for this.
+    root.dispatchEvent(new CustomEvent('picker-change', { bubbles: true, detail: { product, city, state: { ...state } } }));
   }
 
   function change(patch, { push = true } = {}) {
@@ -135,6 +149,9 @@ export function initPicker(root) {
   });
 
   // ---- choices
+  root.querySelectorAll('[data-preview-style]').forEach((button) => {
+    button.addEventListener('click', () => change({ style: button.dataset.previewStyle, audience: button.dataset.previewFit }));
+  });
   root.addEventListener('change', (e) => {
     const t = e.target;
     if (!(t instanceof HTMLInputElement) || t.type !== 'radio') return;

@@ -4,15 +4,15 @@ import { realShop, fixtureShop } from './fixtures.mjs';
 
 const tee = (over = {}) => ({ productId: 'adult-tee', designId: 'this-is-our-year', slug: 'dallas', size: 'L', quantity: 1, mode: 'standard', ...over });
 
-test('the adult tee is the only thing for sale in the real catalog', () => {
+test('the tee, the hoodie and the kids tee are for sale in the real catalog; the kids hoodie is not yet', () => {
   const shop = realShop();
-  assert.equal(shop.isSellable(shop.product('adult-tee')), true);
-  for (const id of ['adult-hoodie', 'kids-tee', 'kids-hoodie']) {
-    assert.equal(shop.isSellable(shop.product(id)), false, id);
-    assert.ok(shop.missingFor(shop.product(id)).includes('priceCents'), id);
-    assert.equal(shop.priceRange(id), null, id);
-  }
+  for (const id of ['adult-tee', 'adult-hoodie', 'kids-tee']) assert.equal(shop.isSellable(shop.product(id)), true, id);
+  assert.equal(shop.isSellable(shop.product('kids-hoodie')), false);
+  assert.ok(shop.missingFor(shop.product('kids-hoodie')).includes('priceCents'));
+  assert.equal(shop.priceRange('kids-hoodie'), null);
   assert.deepEqual(shop.priceRange('adult-tee'), { lowCents: 1999, highCents: 2199 });
+  assert.deepEqual(shop.priceRange('adult-hoodie'), { lowCents: 4999, highCents: 5199 });
+  assert.deepEqual(shop.priceRange('kids-tee'), { lowCents: 999, highCents: 999 });
 });
 
 test('prices come from the catalog: $19.99, and $2 more for 2XL and 3XL', () => {
@@ -40,11 +40,14 @@ test('unsupported size, unknown city, unknown item and unknown design all say so
   assert.equal(shop.availability(tee({ designId: 'nope' })).code, 'unknown_design');
 });
 
-test('hoodies, kids items and the follow-up design are concept only in the real catalog', () => {
+test('the kids hoodie is concept only, and the real catalog sells one slogan', () => {
   const shop = realShop();
-  assert.equal(shop.availability(tee({ productId: 'adult-hoodie' })).code, 'product_unavailable');
-  assert.equal(shop.availability(tee({ productId: 'kids-tee', size: 'YM' })).code, 'product_unavailable');
-  assert.equal(shop.availability(tee({ designId: 'wait-til-next-year' })).code, 'design_unavailable');
+  assert.equal(shop.availability(tee({ productId: 'kids-hoodie', size: 'M' })).code, 'product_unavailable');
+  assert.equal(shop.availability(tee({ productId: 'adult-hoodie' })).ok, true);
+  assert.equal(shop.availability(tee({ productId: 'kids-tee', size: 'M' })).ok, true);
+  assert.equal(shop.availability(tee({ productId: 'kids-tee', size: 'YM' })).code, 'size_unavailable');
+  assert.equal(shop.availability(tee({ designId: 'wait-til-next-year' })).code, 'unknown_design');
+  assert.deepEqual(shop.catalog.designs.map((d) => d.id), ['this-is-our-year']);
 });
 
 test('out of stock is reported, not skipped', () => {
@@ -159,14 +162,20 @@ test('a matching set never goes through as half a set without saying why', () =>
   assert.equal(shop.quote([tee({ mode: 'matching_set' })]).lines[0].code, 'bundle_required');
 });
 
-test('with the real catalog a matching set is held, because kids items are not for sale yet', () => {
-  const q = realShop().quote([
+test('with the real catalog a tee and kids tee set goes through, and a set with the kids hoodie is held', () => {
+  const good = realShop().quote([
     tee({ mode: 'matching_set', bundleId: 'B-5' }),
-    { productId: 'kids-tee', designId: 'this-is-our-year', slug: 'dallas', size: 'YM', quantity: 1, mode: 'matching_set', bundleId: 'B-5' },
+    { productId: 'kids-tee', designId: 'this-is-our-year', slug: 'dallas', size: 'M', quantity: 1, mode: 'matching_set', bundleId: 'B-5' },
   ]);
-  assert.equal(q.ok, false);
-  assert.equal(q.lines[1].code, 'product_unavailable');
-  assert.equal(q.lines[0].code, 'set_incomplete');
+  assert.equal(good.ok, true);
+  assert.equal(good.subtotalCents, 1999 + 999);
+  const held = realShop().quote([
+    tee({ mode: 'matching_set', bundleId: 'B-6' }),
+    { productId: 'kids-hoodie', designId: 'this-is-our-year', slug: 'dallas', size: 'M', quantity: 1, mode: 'matching_set', bundleId: 'B-6' },
+  ]);
+  assert.equal(held.ok, false);
+  assert.equal(held.lines[1].code, 'product_unavailable');
+  assert.equal(held.lines[0].code, 'set_incomplete');
 });
 
 test('a league order is mixed sizes in the winner\'s colors under one league id', () => {

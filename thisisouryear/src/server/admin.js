@@ -10,12 +10,13 @@ import { CAMPAIGNS, loadConfigs, applyConfigUpdate, emailBlockers, planEliminati
 import { emailSender, unsubscribeToken, readUnsubscribeToken } from './email.js';
 import { moderate } from './fans.js';
 import { orderEmailSettings, orderEmailContent, sendOrderEmail, sampleOrder, orderRef } from './order-email.js';
-import { printifySettings, scanCatalog, submitToPrintify, sendToProduction, sendTestOrder, KEY_CATALOG, KEY_OVERRIDES } from './printify.js';
+import { printifySettings, printifyProducts, printifySummary, scanCatalog, submitToPrintify, sendToProduction, sendTestOrder, KEY_CATALOG, KEY_OVERRIDES } from './printify.js';
+import { previewPrintRun, createPrintRun, listPrintRuns, runSheets, sheetText, emailPrintRun } from './print-runs.js';
 import { todayIn } from '../lib/counter.js';
 
 const QUOTE_STATUSES = ['new', 'answered', 'ordered', 'closed'];
 
-export function setupReport({ shop, palettes, history, env, storageKind, now, printifyMapping = null }) {
+export function setupReport({ shop, palettes, history, env, storageKind, now, printifyMapping = null, printifyConfig = null }) {
   const { store, catalog, teams } = shop;
   const present = (k) => typeof env[k] === 'string' && env[k].length > 0;
   const stripeMode = !present('STRIPE_SECRET_KEY') ? 'missing' : env.STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'live' : 'test';
@@ -43,8 +44,12 @@ export function setupReport({ shop, palettes, history, env, storageKind, now, pr
   if (!present('BUILD_HOOK_URL')) need('BUILD_HOOK_URL', 'The daily rebuild that keeps counters and share cards current does not run without it.');
   if (printify.on) {
     for (const m of printify.missing) need(m, 'FULFILLMENT is printify, but orders can\'t reach Printify without it.');
-    if (printify.tokenSet && !printifyMapping) need('Printify catalog', 'Not scanned yet. Open Orders in this screen and press "Scan Printify" before the first order.');
-    else if (printifyMapping && printifyMapping.citiesReady < shop.teams.length) need('Printify colors', `${shop.teams.length - printifyMapping.citiesReady} cities have no close blank color. Pick one for each in Orders.`);
+    const garments = printifyConfig ? printifySummary(printifyMapping, printifyConfig, shop) : [];
+    const unscanned = garments.filter((g) => !g.scanned);
+    if (printify.tokenSet && unscanned.length) need('Printify catalog', `Not scanned yet for ${unscanned.map((g) => g.name).join(', ')}. Open Orders in this screen and press "Scan Printify" before the first order.`);
+    for (const g of garments.filter((x) => x.scanned && x.citiesReady < shop.teams.length)) need(`Printify colors: ${g.name}`, `${shop.teams.length - g.citiesReady} cities have no close blank color. Pick one for each in Orders.`);
+    const notCovered = shop.catalog.products.filter((p) => p.sellable && !printifyConfig?.products?.[p.id]);
+    for (const p of notCovered) need(`Printify: ${p.name}`, 'For sale, but Printify isn\'t set up for it, so its orders can\'t be sent there. Add it to src/data/printify.json or stop selling it.');
     if (!printify.autoSend) need('PRINTIFY_AUTO_SEND', 'Off, so each order waits in Printify for your OK. Set it to true once the first orders look right.');
     if (!orderEmail.ready) for (const m of orderEmail.missing) need(m.split(' ')[0], 'Your heads-up email for each order doesn\'t go out without it.');
   } else if (!orderEmail.ready) for (const m of orderEmail.missing) need(m.split(' ')[0], 'Order emails to the vendor do not go out without it. Paid orders are still in Stripe.');
@@ -89,13 +94,15 @@ export function setupReport({ shop, palettes, history, env, storageKind, now, pr
     email: { ready: blockers.length === 0, blockers },
     orderEmail: { ready: orderEmail.ready, to: orderEmail.to, cc: orderEmail.cc, vendorSet: orderEmail.vendorSet, missing: orderEmail.missing },
     fulfillment: printify.on ? 'printify' : 'email',
-    printify: { on: printify.on, tokenSet: printify.tokenSet, autoSend: printify.autoSend, scanned: Boolean(printifyMapping), provider: printifyMapping?.providerTitle ?? null, citiesReady: printifyMapping?.citiesReady ?? 0, scannedAt: printifyMapping?.scannedAt ?? null },
+    printify: { on: printify.on, tokenSet: printify.tokenSet, autoSend: printify.autoSend, garments: printifyConfig ? printifySummary(printifyMapping, printifyConfig, shop) : [], scannedAt: printifyMapping?.scannedAt ?? null },
     bulkTiers: shop.bulkTiers,
     missing,
   };
 }
 
-export function makeAdminHandler({ shop, palettes, history, env, getStorage, printifyConfig = null, fetchImpl = fetch, now = () => new Date() }) {
+// `photos` is garment-photos.json: it says which vendor blank each city is
+// printed on, which the print run sheets need.
+export function makeAdminHandler({ shop, palettes, history, env, getStorage, photos = null, printifyConfig = null, fetchImpl = fetch, now = () => new Date() }) {
   const slugs = shop.teams.map((t) => t.slug);
 
   return async (req) => {
@@ -123,7 +130,7 @@ export function makeAdminHandler({ shop, palettes, history, env, getStorage, pri
       case 'status': {
         const [orders, quotes, fans, printifyMapping] = await Promise.all([readAll(storage.store('orders'), 'order/'), readAll(storage.store('quotes'), 'quote/'), readAll(storage.store('fans'), 'sub/'), storage.store('fulfillment').get(KEY_CATALOG)]);
         return json({
-          ...setupReport({ shop, palettes, history, env, storageKind: storage.kind, now: now(), printifyMapping }),
+          ...setupReport({ shop, palettes, history, env, storageKind: storage.kind, now: now(), printifyMapping, printifyConfig }),
           counts: {
             orders: orders.length,
             paidOrders: orders.filter((o) => o.status === 'paid').length,
@@ -270,36 +277,52 @@ export function makeAdminHandler({ shop, palettes, history, env, getStorage, pri
         const ful = storage.store('fulfillment');
         const [mapping, overrides] = await Promise.all([ful.get(KEY_CATALOG), ful.get(KEY_OVERRIDES)]);
         const p = printifySettings(env);
-        return json({ on: p.on, tokenSet: p.tokenSet, autoSend: p.autoSend, missing: p.missing, mapping, overrides: overrides ?? {}, cities: shop.teams.map((t) => ({ slug: t.slug, name: t.name, colors: t.colors, shirt: t.shirt })) });
+        return json({
+          on: p.on,
+          tokenSet: p.tokenSet,
+          autoSend: p.autoSend,
+          missing: p.missing,
+          garments: printifySummary(mapping, printifyConfig, shop),
+          mapping,
+          overrides: overrides ?? {},
+          cities: shop.teams.map((t) => ({ slug: t.slug, name: t.name, colors: t.colors, shirt: t.shirt })),
+        });
       }
       case 'printify.scan': {
-        const result = await scanCatalog({ env, config: printifyConfig, teams: shop.teams, storage, fetchImpl, now });
+        // One garment per call, so each stays inside Netlify's time limit.
+        const productId = v.product ?? printifyProducts(printifyConfig, shop)[0];
+        const result = await scanCatalog({ env, config: printifyConfig, shop, photos, storage, productId, fetchImpl, now });
         if (result.error) return json({ error: result.error }, 400);
-        await audit('printify.scan', { provider: result.mapping.providerTitle, citiesReady: result.mapping.citiesReady });
-        return json({ mapping: result.mapping });
+        const pm = result.mapping.products[productId];
+        await audit('printify.scan', { product: productId, provider: pm.providerTitle, citiesReady: pm.citiesReady });
+        return json({ mapping: result.mapping, product: productId });
       }
       case 'printify.colors': {
+        const productId = v.product;
+        if (!printifyProducts(printifyConfig, shop).includes(productId)) return json({ error: 'Say which garment these colors are for.' }, 400);
         if (!v.overrides || typeof v.overrides !== 'object') return json({ error: 'Send the colors to use.' }, 400);
         const ful = storage.store('fulfillment');
-        const current = (await ful.get(KEY_OVERRIDES)) ?? {};
+        const all = (await ful.get(KEY_OVERRIDES)) ?? {};
+        const current = { ...(all[productId] ?? {}) };
         for (const [slug, color] of Object.entries(v.overrides)) {
           if (!shop.city(slug)) continue;
           if (color) current[slug] = String(color).slice(0, 60);
           else delete current[slug];
         }
-        await ful.set(KEY_OVERRIDES, current);
+        await ful.set(KEY_OVERRIDES, { ...all, [productId]: current });
         // Re-map with the same printer, so the choices take effect now.
         const mapping = await ful.get(KEY_CATALOG);
-        const pinned = mapping ? { ...env, PRINTIFY_PROVIDER_ID: String(mapping.providerId) } : env;
-        const result = await scanCatalog({ env: pinned, config: printifyConfig, teams: shop.teams, storage, fetchImpl, now });
+        const pinProvider = mapping?.products?.[productId]?.providerId ?? null;
+        const result = await scanCatalog({ env, config: printifyConfig, shop, photos, storage, productId, pinProvider, fetchImpl, now });
         if (result.error) return json({ error: result.error }, 400);
-        await audit('printify.colors', { changed: Object.keys(v.overrides) });
-        return json({ mapping: result.mapping, overrides: current });
+        await audit('printify.colors', { product: productId, changed: Object.keys(v.overrides) });
+        return json({ mapping: result.mapping, overrides: current, product: productId });
       }
       case 'printify.test_order': {
-        const result = await sendTestOrder({ storage, shop, config: printifyConfig, env, siteUrl, fetchImpl, now, slug: shop.city(v.slug) ? v.slug : 'dallas' });
+        const productId = printifyProducts(printifyConfig, shop).includes(v.product) ? v.product : 'adult-tee';
+        const result = await sendTestOrder({ storage, shop, config: printifyConfig, env, siteUrl, fetchImpl, now, slug: shop.city(v.slug) ? v.slug : 'dallas', productId });
         if (result.error) return json({ error: result.error, payload: result.payload ?? null }, 400);
-        await audit('printify.test_order', { printifyOrderId: result.printifyOrderId });
+        await audit('printify.test_order', { printifyOrderId: result.printifyOrderId, product: productId });
         return json(result);
       }
       case 'orders.printify': {
@@ -309,6 +332,7 @@ export function makeAdminHandler({ shop, palettes, history, env, getStorage, pri
         if (['on_hold', 'in_production'].includes(result.status)) return json(result);
         if (result.status === 'already_sent') return json({ error: `This order is already in Printify (order ${result.printifyOrderId}). It won't be sent twice. Approve it with "Print it now" or in Printify.` }, 409);
         if (result.status === 'in_progress') return json({ error: 'This order is being sent right now. Check back in a minute.' }, 409);
+        if (result.status === 'in_print_run') return json({ error: `${result.error} It won't also go to Printify.` }, 409);
         return json({ error: result.error ?? `Not sent: ${result.status}.`, ...result }, result.status === 'missing' ? 404 : 400);
       }
       case 'orders.produce': {
@@ -317,6 +341,37 @@ export function makeAdminHandler({ shop, palettes, history, env, getStorage, pri
         await audit('orders.produce', { id: v.id, status: result.status });
         if (result.status === 'in_production' || result.status === 'already_sent') return json(result);
         return json({ error: result.error ?? 'Not sent to print.' }, 400);
+      }
+
+      // ---- print runs (the bulk order sheet)
+      case 'runs.list': {
+        const [runs, waiting] = await Promise.all([listPrintRuns(storage), previewPrintRun(storage, { shop, palettes, photos })]);
+        return json({ orderEmail: orderEmailSettings(env), waiting: { counts: waiting.counts, blanks: waiting.blanks }, runs });
+      }
+      case 'runs.preview': {
+        return json(await previewPrintRun(storage, { shop, palettes, photos }));
+      }
+      case 'runs.create': {
+        if (v.confirm !== 'PRINT') return json({ error: 'To start a print run, type PRINT.' }, 400);
+        const result = await createPrintRun(storage, { shop, palettes, photos, actor, note: typeof v.note === 'string' ? v.note : '', now: now() });
+        if (result.error) return json({ error: result.error }, 409);
+        await audit('runs.create', { id: result.run.id, orders: result.run.counts.orders, units: result.run.counts.units });
+        const { packing, ...run } = result.run;
+        return json({ run, ...runSheets(result.run) });
+      }
+      case 'runs.sheet': {
+        const run = await storage.store('orders').get(`run/${v.id}`);
+        if (!run) return json({ error: 'No such print run.' }, 404);
+        return json({ id: run.id, ...runSheets(run), text: sheetText(run, { timezone: shop.store.timezone }) });
+      }
+      case 'runs.email': {
+        if (v.confirm !== 'SEND') return json({ error: 'To email the run to the vendor, type SEND.' }, 400);
+        const result = await emailPrintRun({ runId: v.id, storage, shop, env, fetchImpl, now });
+        await audit('runs.email', { id: v.id, status: result.status });
+        if (result.status === 'missing') return json({ error: 'No such print run.' }, 404);
+        if (result.status === 'not_configured') return json({ error: `Order email isn't set up. Missing: ${result.missing.join(', ')}.` }, 409);
+        if (result.status === 'failed') return json({ error: `The email service refused it: ${result.error}` }, 502);
+        return json(result);
       }
 
       // ---- quotes

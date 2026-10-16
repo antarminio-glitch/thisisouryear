@@ -5,8 +5,15 @@ import catalog from '../../data/catalog.json';
 import { shop } from '../../lib/shop.js';
 import { dollars } from '../../lib/shop-core.js';
 import { teams } from '../../lib/cities.js';
+import ModelShot from '../../components/ModelShot.astro';
+import models from '../../data/model-photos.json';
+import photos from '../../data/garment-photos.json';
+import { stripPicks } from '../../lib/photos.js';
 
 const cities = [...teams].sort((a, b) => a.name.localeCompare(b.name));
+// A few on-model shots, one per garment, each worn in the colors of a city
+// printed on that blank. They rotate with the daily rebuild.
+const strip = stripPicks(models, photos, teams, catalog.products.map((p) => p.id), 4).map((s) => ({ ...s, garment: shop.product(s.productId)?.name ?? '' }));
 // What's really for sale, straight from the catalog.
 const rows = catalog.products.map((p) => {
   const range = shop.priceRange(p.id);
@@ -26,7 +33,7 @@ const rows = catalog.products.map((p) => {
     <h1>Shop</h1>
 
     <form class="filters" data-filters aria-label="Filters">
-      <div class="field">
+      <div class="field" hidden={catalog.designs.length < 2}>
         <label for="f-design">Design</label>
         <select id="f-design" data-f="design">
           {catalog.designs.map((d) => <option value={d.id}>{d.name}{d.status !== 'live' ? ' (preview)' : ''}</option>)}
@@ -59,7 +66,23 @@ const rows = catalog.products.map((p) => {
 
     <p class="count" data-count role="status" aria-live="polite"></p>
     <ul class="results" data-results></ul>
-    <p class="concept" data-concept hidden>Concept previews. They're drawings, not photos of finished items, and screen colors are approximate.</p>
+    <p class="concept" data-concept hidden>Mockups. Photos of the blank garments with the design placed on them digitally. Print size and ink colors on the finished items may differ slightly.</p>
+
+    {
+      strip.length > 0 && (
+        <section class="model-strip" aria-labelledby="models-h">
+          <h2 id="models-h">How it looks on</h2>
+          <ul>
+            {strip.map((s) => (
+              <li>
+                <ModelShot photo={s.photo} team={s.team} label={`${s.garment} in ${s.team.name} colors, on a model`} caption={`${s.team.name} ${s.garment.toLowerCase()}`} />
+              </li>
+            ))}
+          </ul>
+          <p class="concept">The design placed on SanMar's photos of the blanks. Print size and ink colors on the finished item may differ slightly.</p>
+        </section>
+      )
+    }
 
     <section class="stock" aria-labelledby="stock-h">
       <h2 id="stock-h">What's for sale right now</h2>
@@ -136,7 +159,7 @@ const rows = catalog.products.map((p) => {
       tile.className = 'tile stage';
       paint(tile, c);
       const g = document.createElement('span');
-      drawGarment(g, { style: p.style, audience: p.audience, designId });
+      drawGarment(g, { style: p.style, audience: p.audience, designId, slug: c.slug });
       tile.append(g);
       const name = document.createElement('span');
       name.className = 'city';

@@ -7,6 +7,8 @@
     "dev": "astro dev",
     "dev:checkout": "npx netlify-cli dev",
     "check": "node scripts/check-data.mjs",
+    "photos": "node scripts/fetch-garment-photos.mjs",
+    "photos:models": "node scripts/fetch-garment-photos.mjs --models",
     "build": "node scripts/check-data.mjs && astro build",
     "test": "node --test \"tests/*.test.mjs\"",
     "preview": "astro preview",

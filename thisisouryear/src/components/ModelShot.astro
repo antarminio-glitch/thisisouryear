@@ -1,0 +1,17 @@
+---
+// One on-model photo from SanMar with the lettering in a city's colors.
+// Used only in hero spots: the home page, the shop and gift strips, and a
+// small thumbnail on city pages. The flat-front photo stays the product image.
+import { modelPhotoSvg } from '../lib/garment.js';
+import { shirtVars } from '../lib/cities.js';
+import { styleString } from '../lib/colors.js';
+import garments from '../data/garments.json';
+
+const { photo, team = null, lines, label = '', caption = '', decorative = false, class: className = '' } = Astro.props;
+const print = garments.garments[photo.productId]?.modelPrint ?? null;
+---
+
+<figure class:list={['model-shot', className]} style={team ? styleString(shirtVars(team)) : ''}>
+  <Fragment set:html={modelPhotoSvg({ photo, print, lines, label, decorative })} />
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>

@@ -60,6 +60,7 @@ Saved things (orders, quotes, fan photos, season facts) are kept in a local stor
 | `npm run dev` | Pages only, with live reload |
 | `npm run dev:checkout` | Pages plus the server functions, like the live site |
 | `npm run check` | Checks the data files against each other |
+| `npm run photos` | Fetches the real blank-garment photos from SanMar. See "Real product photos" |
 | `npm run build` | Checks the data, then builds the site into `dist/` |
 | `npm test` | Unit tests: catalog rules, cart, checkout, counters, campaigns, fan photos, admin |
 | `npm run test:site` | Checks the built site: all 32 pages, titles, sitemap, search-engine data, and the naming rule |
@@ -86,7 +87,8 @@ Open `src/data/teams.json`. Each city is one entry:
 | `outline` | The outer outline on both lines |
 | `apply` | Which color from the reference palette each surface uses. `null` means "a custom color I chose" |
 | `aka` | Optional. Nearby places the search box should also match, like `["Texas","DFW"]` |
-| `image` | Optional. A real product photo that replaces the drawn tee |
+| `blank` | Optional. Which of the vendor's blank colors to photograph this city on, if you don't like the automatic pick. See "Real product photos" below |
+| `image` | Optional. Your own photo of the finished, printed tee. Replaces the vendor photo and the drawing |
 
 Colors are hex codes. Change the code, save, done. The page background, text color, and button color for that city all work themselves out from these four colors.
 
@@ -102,7 +104,61 @@ node scripts/import-colors.mjs <path to the color reference .json> <path to Stor
 
 The import copies hex values exactly. It never converts or guesses. Optional rows (metallics, uniform variants, unconfirmed candidates) are kept in the file but never used as a default color.
 
-**Add a city:** copy an entry, change the values, give it a palette in the map file and run the import. **Remove a city:** delete its entry and its palette.
+**Add a city:** copy an entry, change the values, give it a palette in the map file and run the import. Then run `npm run photos` so it gets a photo. **Remove a city:** delete its entry and its palette.
+
+---
+
+## Real product photos
+
+Every garment on the site is a real photo of the blank from SanMar, the supplier the print vendor buys from, with the lettering placed on the chest. No drawings, nothing generated.
+
+```
+npm run photos
+```
+
+That one command does all of it. For each garment in `src/data/garments.json` it looks the style number up on sanmar.com, reads every color that blank comes in, measures the real fabric color from each one's photo, picks the closest blank to each city's shirt color, downloads the front photo of every blank it needs, trims and squares it, and writes `src/data/garment-photos.json`. The photos land in `public/images/garments/`. Both are committed, so the live build never talks to SanMar.
+
+It prints what it chose, one line per city:
+
+```
+dallas               #0C2340  ->  True Navy              TrueNavy     distance 4.1
+```
+
+The distance is how far the city's color is from the fabric. Under 5 is the same color to most eyes; over 15 gets a note suggesting you choose by hand.
+
+**To choose a blank by hand**, add `blank` to the city in `teams.json` with the color code from that list (the code, like `TrueRoyal`, not the name):
+
+```json
+{"slug":"new-york-blue", ..., "blank":"TrueRoyal"}
+```
+
+That applies to every garment. To pick per garment, use an object keyed by the product id or the style number: `"blank":{"adult-tee":"TrueRoyal","PC78H":"Royal"}`. Two cities ship with a hand pick: New York (Blue) and Indianapolis, whose blues sit between navy and royal and would otherwise land on a purple or a navy.
+
+**To change which blanks are used**, edit `src/data/garments.json`: one entry per product, with the SanMar style number, a label, and where the print sits on that garment's photo (`print`, in the drawing's 600 by 600 space). Heathers, camo, neons and fashion colors like pinks are never picked automatically; `skipColors` is that list. A blank can still be named by hand in `blank`.
+
+Other commands:
+
+| Command | What it does |
+| --- | --- |
+| `npm run photos -- --dry-run` | Shows the picks without downloading the big photos or writing anything |
+| `npm run photos -- --force` | Fetches everything again, for example after SanMar reshoots a color |
+| `npm run photos -- --only adult-hoodie` | One garment |
+
+Pages and small images are kept in `.cache/` (ignored by git) so re-runs are quick.
+
+A city with no photo for a garment falls back to the drawing, and `npm test` tells you which. SanMar allows its customers to use this photography to sell SanMar products. Don't use the photos for anything else, and keep the source links that `garment-photos.json` records.
+
+**Which color is matched.** The blank is chosen against the shirt's Pantone reference, turned into a screen color by `src/lib/pantone.js`: the city's own `pantone` field in `teams.json` if it has one, otherwise the Pantone of the palette color its `apply.shirt` points at. A city with no Pantone we know (the black cities, Cleveland and Houston today) is matched on the hex it shows instead, and the run says so. To fix one, add `"pantone":"289 C"` to the city in `teams.json` and run the photos again.
+
+### On-model photos
+
+A handful of SanMar's on-model shots, for hero spots only: two on the home page, a short "how it looks on" strip on the shop and gift pages, and one small thumbnail on a city page when a blank that city is printed on has one. The flat-front photo stays the product image everywhere else, and the share cards never use them.
+
+```
+npm run photos:models
+```
+
+The list is `src/data/hero-photos.json`: style number plus SanMar color code, eight pairs to start. Each is saved to `public/images/models/` at 600 by 900 with its studio background kept, and `src/data/model-photos.json` is written. Both are committed. The lettering's place on a model shot is `modelPrint` in `garments.json`, one per style (`x`, `top`, `width`, `capHeight`, `rowGap`, `rotate`), so every color of a style uses the same placement. Run `npm run photos` first so the styles' SanMar codes are known.
 
 ---
 
@@ -117,7 +173,8 @@ The import copies hex values exactly. It never converts or guesses. Optional row
   ],
   "products": [
     { "id": "adult-tee", "name": "Tee", "style": "tee", "audience": "adult", "sellable": true, "priceCents": 1999, "designs": ["this-is-our-year"], "fulfillment": { "provider": "manual", "providerProductId": null }, "sizeChart": "/size-chart/#adult-tee", "variants": [{ "size": "S", "extraCents": 0, "inStock": true, "providerVariantId": null }, ...] },
-    { "id": "adult-hoodie", "name": "Hoodie", "style": "hoodie", "audience": "adult", "sellable": false, "priceCents": null, "designs": [], "variants": [], ... }
+    { "id": "adult-hoodie", "name": "Hoodie", "style": "hoodie", "audience": "adult", "sellable": true, "priceCents": 4999, "designs": ["this-is-our-year"], "fulfillment": { "provider": "manual", "providerProductId": null }, "sizeChart": "/size-chart/#adult-hoodie", "variants": [...] },
+    { "id": "kids-hoodie", "name": "Kids hoodie", "style": "hoodie", "audience": "kids", "sellable": false, "priceCents": null, "designs": [], "variants": [], ... }
   ],
   "bulk": { "quoteRequests": true, "tiers": [] },
   "sets": { "discountCents": 0 }
@@ -126,7 +183,7 @@ The import copies hex values exactly. It never converts or guesses. Optional row
 
 Money is in cents, so `1999` is $19.99.
 
-Right now only the adult tee is for sale. The hoodie, kids tee and kids hoodie are **preview only**: shoppers can see them in any city's colors, but can't add them to the cart, and no price is shown or published anywhere. The "Wait 'Til Next Year" design is a **concept**: it can be previewed and never bought.
+Right now the tee ($19.99), the hoodie ($49.99) and the kids tee ($9.99) are for sale. The kids hoodie is **preview only**: shoppers can see it in any city's colors, but can't add it to the cart, and no price is shown or published anywhere. The "Wait 'Til Next Year" design is a **concept**: it can be previewed and never bought.
 
 To put a product on sale, fill in all of these, then set `sellable` to `true`:
 
@@ -220,14 +277,15 @@ All of this hangs on `STRIPE_WEBHOOK_SECRET`. With it, every paid order is recor
 
 ### Or Printify, until you buy in bulk
 
-Set `FULFILLMENT` to `printify` and every paid order goes to Printify instead, which prints and ships it straight to the customer. Printify charges your card for each shirt. Set `FULFILLMENT` back to empty and orders go to the vendor by email again. Nothing else changes.
+Set `FULFILLMENT` to `printify` and every paid order goes to Printify instead, which prints and ships it straight to the customer. Printify charges your card for each item. Set `FULFILLMENT` back to empty and orders go to the vendor by email again. Nothing else changes.
 
 How it works:
 
-- **The shirt** is the Bella+Canvas 3001 (`src/data/printify.json`). One printer makes all of them, picked by the scan below
-- **The artwork** is built with the site: one transparent PNG per city at `/print/<city>-<design>-<code>.png`, 3,300 pixels wide, with the outline and every color exact. The code changes whenever the colors or lettering change, so Printify never reuses an old file. Printify downloads it when the order is created, so the site must be online at `SITE_URL`
-- **The blank color** for each city is the closest one the printer stocks. `src/data/printify.json` has rough screen colors for Bella+Canvas blanks, used only for that match. Solid blanks beat heathers in a close call. Change any city's blank in the admin screen
+- **The garments**: `src/data/printify.json` lists, for the tee, the hoodie and the kids tee, which Printify garments to look for, best first. First choice is the same SanMar blank the site shows (PC54, PC78H, PC54Y). If Printify doesn't carry it, the next one on the list (Bella+Canvas 3001, Gildan 18500, Gildan 5000B, and so on)
+- **The artwork** is built with the site, from the same letter shapes as every mockup: one transparent PNG per city at `/print/<city>-<design>-<code>.png`, 12 inches across at 300 dpi. The code changes whenever the colors or lettering change, so Printify never reuses an old file. Printify downloads it when the order is created, so the site must be online at `SITE_URL`
+- **The blank color** for each city: when Printify has the very garment the site shows, it's the same blank, by name. Otherwise it's the closest color Printify has, with solid colors beating heathers in a close call. Change any city's blank, per garment, in the admin screen
 - **Each order** is sent once, even when Stripe repeats itself. It goes in on hold, so you can check it in Printify first. Once a few look right, set `PRINTIFY_AUTO_SEND` to `true` and they print right away. If Printify is down, Stripe is told and tries again. If Printify refuses an order (a bad address, say), you get an email saying why, and the admin screen has a button to send it once it's fixed. An order already in Printify is never sent twice
+- **Print runs** skip anything sent to Printify, and an order already in a print run is never sent to Printify, so nothing is printed twice. An order Printify refused stays in the print run list, in case you'd rather have the vendor do it
 - **You get a heads-up email** for every order, at `ORDER_EMAIL_CC`. The vendor address is ignored in this mode
 
 To set it up:
@@ -236,11 +294,11 @@ To set it up:
 2. Add a store and choose **API** (or "custom integration") as the sales channel
 3. Click your profile icon, then **Connections**, then **Generate** a token with every scope. Save it in Netlify as `PRINTIFY_API_TOKEN`
 4. In Netlify, set `FULFILLMENT` to `printify` and trigger a deploy
-5. In the admin screen, open **Orders** and press **Scan Printify**. Check the blank color list, change any you don't like, and press **Save colors**
-6. Press **Send a test order**. Open it in Printify, check the mockup, then delete it
+5. In the admin screen, open **Orders** and press **Scan Printify**. It goes through each garment. Check the blank color list for each, change any you don't like, and press **Save colors**
+6. Press **Send a test order** for each garment. Open it in Printify, check the mockup, then delete it
 7. When the first real orders look right, set `PRINTIFY_AUTO_SEND` to `true`
 
-Money: Printify's base price for this shirt is about $11, plus their shipping (about $4.50 for the first shirt, about $2.25 for each one after). The site charges one flat shipping price per order, so big bulk orders earn less per shirt. Check the numbers in Printify before a big league order.
+Money: check each garment's base price and shipping in Printify before going live. As a guide, a basic tee is about $11 plus about $4.50 shipping for the first item and about $2.25 for each one after, and hoodies cost more. The site charges one flat shipping price per order, so big bulk orders earn less per item.
 
 ---
 
@@ -250,12 +308,25 @@ Open `/admin/` and enter the password you saved in Netlify as `ADMIN_TOKEN`. Six
 
 - **Setup**: reads the real settings and says exactly what isn't set up yet, by name. Start here
 - **Orders**: every paid order, whether the vendor email went out, a preview of it, a test email to check the setup, and a resend button. With Printify on, also the printer, a blank color for each city, a test order, and buttons to approve an order on hold or send one that didn't go
+- **Print runs**: the bulk order sheet. Everything paid and not yet printed, grouped by blank and size, as two downloadable sheets. Starting a run stamps those orders so the next run only has new ones. See "Print runs" below
 - **Season**: enter the round the season is in and each city's status, with where you checked it. Recording a loss changes nothing. A city only becomes "eliminated" when you say why (mathematically, or lost a playoff game) and cite a source. The bandwagon only shows survivors when the round is confirmed, recent, and all 32 cities have a confirmed status
 - **Campaigns**: all five start switched off. Turning one on takes typing `ACTIVATE` and its name. Window campaigns (schedule release, Week 1) need real dates for that season. The elimination follow-up has a dry run that shows who would get the email and the exact words, and sends nothing
 - **Quotes**: league quote requests, to answer by email and mark as answered or ordered
 - **Fan photos**: approve, reject, remove, and a repost queue. Nothing shows on the site until you approve it. Reposting is only offered when the fan ticked the second box. The site never posts to social media by itself
 
 Everything the admin screen changes is written to an audit log.
+
+### Print runs: the bulk order sheet
+
+Shirts are cheaper printed in batches, so orders are gathered into print runs. Open the admin screen's **Print runs** tab:
+
+1. The top shows what is waiting: every paid order that hasn't been in a run, totalled by garment, vendor blank and size. **Download blanks sheet** is the shopping list for SanMar (style, color, size, quantity). **Download packing list** is one row per shirt: the design, the exact ink colors with Pantone references, any gift or league notes, and the ship-to address.
+2. When you're ready to print, type `PRINT` and press **Start a print run**. The run gets a reference like `R-7F3K9Q2M`, both sheets are saved with it exactly as they were, and every order in it is stamped so it never appears in a later run.
+3. Each run can be downloaded again any time, and **Email to the vendor** sends the run as a plain-text sheet to the same addresses as the order emails (type `SEND`).
+
+Which blank a city is printed on comes from `src/data/garment-photos.json`, the same file the product photos use. Fully refunded orders never print. A partly refunded order is included with a note to check it in Stripe first.
+
+The per-order vendor emails still go out as each order is paid. If you only ever print from runs, tell the vendor to work from the run sheets and treat the single-order emails as notices.
 
 ---
 
@@ -283,6 +354,7 @@ In Netlify, open the project, then **Project configuration > Environment variabl
 | `STRIPE_WEBHOOK_SECRET` | From Stripe: **Developers > Webhooks > Add endpoint**, address `https://thisisouryear.team/.netlify/functions/stripe-webhook`, events `checkout.session.completed`, `checkout.session.async_payment_succeeded` and `charge.refunded`. Records paid orders on the site |
 | `ADMIN_TOKEN` | The admin password. 16 characters or more. Without it the admin screen is off |
 | `BUILD_HOOK_URL` | From Netlify: **Build & deploy > Build hooks > Add build hook**. Lets the site rebuild itself every morning so counters stay right |
+| `GAMES_FEED` | The address of a public scoreboard feed. A small function on the server reads it and passes city slugs, scores and kickoff times to the pages, for this week's games on the homepage and the "Next up" line on each city page. Kept out of the repository because its path names the league. Blank keeps those parts hidden |
 | `CAMPAIGNS_LIVE` | Must be exactly `true` before any campaign email can go out |
 | `EMAIL_PROVIDER` | `resend` is the only service the site knows. Needed for order emails |
 | `RESEND_API_KEY` | From resend.com. Needed for order emails |
@@ -295,7 +367,7 @@ In Netlify, open the project, then **Project configuration > Environment variabl
 | `PRINTIFY_API_TOKEN` | From Printify: profile icon, **Connections**, **Generate**. Needed when `FULFILLMENT` is `printify` |
 | `PRINTIFY_AUTO_SEND` | `true` prints each order right away. Anything else leaves it on hold in Printify for your OK |
 | `PRINTIFY_SHOP_ID` | Only if your Printify account has more than one store. The scan tells you the number |
-| `PRINTIFY_PROVIDER_ID` | Only to force one printer. Leave it out and the scan picks the best one |
+| `PRINTIFY_PROVIDER_ID` | Only to force one printer for every garment. Leave it out and the scan picks the best one for each |
 
 After adding a variable, go to **Deploys** and choose **Trigger deploy**.
 
@@ -321,8 +393,8 @@ In Netlify, open **Domain management**, choose **Add a domain**, and enter `this
 
 Anything still waiting on you or the print vendor is marked with a yellow `[CONFIRM]` tag on the site. To find them all, search this folder for `Confirm />`. Fix the text next to each one, then delete the `<Confirm />` tag.
 
-- **City pages** (`src/pages/[slug].astro`): fabric, fit, print method, delivery time, shipping price
-- **Size chart** (`src/pages/size-chart.astro`): the measurements are typical numbers for a standard tee, not your vendor's
+- **City pages** (`src/pages/[slug].astro`): print method, delivery time, shipping price. Fabric, fit and care now come from the maker's spec sheet (`src/data/specs.json`)
+- **Size chart**: done. Every measurement is the maker's own, from `src/data/specs.json`. If the vendor switches blanks, update that file
 - **Shipping and returns**: shipping price, delivery time, the returns policy, the cancellation policy
 - **Privacy** and **Terms**: starter text. Have someone qualified read both. Terms also needs who operates the shop and which state's law applies
 - **Contact email**: `hello@thisisouryear.team` is a placeholder. Set up that mailbox or change it in `store.json`
@@ -335,15 +407,15 @@ Anything still waiting on you or the print vendor is marked with a yellow `[CONF
 ```
 src/data/              the data files above
 src/pages/             one file per page. [slug].astro makes all 32 city pages
-src/components/        the picker, the garment drawing, the city grid
-src/lib/               shared rules: catalog and cart rules, counters, colors, share cards, search-engine data
+src/components/        the picker, the garment preview, the city grid
+src/lib/               shared rules: catalog and cart rules, counters, colors, photos, share cards, search-engine data
 src/scripts/           what runs in the browser: picker, cart, admin screen
 src/server/            what runs on Netlify: checkout, webhook, quotes, season, campaigns, email, fan photos, admin
 src/styles/global.css  site-wide look
 netlify/functions/     thin wrappers that Netlify runs. The logic is in src/server/
-scripts/               the data check and the color import
+scripts/               the data check, the color import and the photo fetch
 tests/                 unit tests, and tests/site/ for the built site
-public/                fonts, icon, and the image used when the site is shared
+public/                fonts, icon, the garment photos, and the image used when the site is shared
 netlify.toml           tells Netlify how to build and serve the site
 .env.example           every environment variable, blank
 ```
@@ -352,7 +424,7 @@ netlify.toml           tells Netlify how to build and serve the site
 
 - Any print service besides Printify, and the Printify connection hasn't been exercised against the real service yet. Send a test order first
 - Following Printify's tracking back into the site. Printify emails the customer their tracking, and the admin screen shows what was sent, not what happened after
-- Real product photos
+- Photos of the finished, printed shirts. The site shows the vendor's blanks with the design placed on them digitally
 - An email service other than Resend, and the Resend adapter hasn't been exercised against the real service
 - Anything that posts to social media. The repost queue is a to-do list for a person
 - Rate limiting on the public forms. Netlify's own limits apply

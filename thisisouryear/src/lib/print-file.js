@@ -2,63 +2,49 @@
 // background, in one city's colors. This is what a print-on-demand service
 // (Printify) prints on the shirt.
 //
-// It's built when the site is built, at /print/<file>.png, from the same
-// letter shapes as the share cards, so it matches what shoppers see.
-//
-// The gap between the letters and the outer outline is cut out, not printed
-// in the shirt's color. That way the real shirt shows through and there's no
-// mismatched ring of ink around the letters.
+// It's built when the site is built, at /print/<file>.png, from the site's
+// own letter shapes (varsity-artwork.js) and the same four inks every mockup
+// uses, so what's printed is what shoppers saw.
 import { createHash } from 'node:crypto';
-import { loadFonts, measure, textPath } from './og.js';
+import { varsityArtwork } from './varsity-artwork.js';
+import { borderFor } from './colors.js';
 
-// Bump this when the drawing below changes, so every file gets a new address
-// and the print service fetches the new one.
-export const PRINT_VERSION = 1;
-// Pixels across for the widest line, at 300 dots per inch about 11 inches.
-const LETTER_WIDTH = 3300;
+// Bump this when the drawing below changes in a way the SVG text doesn't show
+// (the size, say), so every file gets a new address.
+export const PRINT_VERSION = 2;
+// The homepage hero layout, drawn on a 600 by 260 canvas.
+const LAYOUT = { x: 300, top: 8, width: 420, capHeight: 101, rowGap: 13 };
+const CANVAS = { w: 600, h: 260 };
+// About 12 inches across at 300 dots per inch.
+export const PRINT_WIDTH = 3600;
 
-const sameColor = (a, b) => String(a).toUpperCase() === String(b).toUpperCase();
+const inks = (team) => ({ '--shirt': team.shirt, '--line1': team.line1, '--line2': team.line2, '--outline': team.outline, '--border': borderFor(team.shirt) });
 
+// Swaps every var(--name, fallback) for the city's real color, innermost
+// first, so the file has plain colors a print shop can read.
+function bake(svg, vars) {
+  const one = /var\(--([a-z0-9-]+)(?:\s*,\s*([^()]*))?\)/g;
+  let out = svg;
+  for (let i = 0; i < 5 && /var\(--/.test(out); i++) out = out.replace(one, (m, name, fallback) => vars[`--${name}`] ?? (fallback ?? '#000000').trim());
+  return out;
+}
+
+export function printSvg(team, design, scale = 1) {
+  const inner = bake(varsityArtwork({ ...LAYOUT, lines: design.lines }), inks(team));
+  const size = scale === 1 ? '' : ` width="${Math.round(CANVAS.w * scale)}" height="${Math.round(CANVAS.h * scale)}"`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS.w} ${CANVAS.h}"${size}>${inner}</svg>`;
+}
+
+// The file name changes whenever the drawing or a color does, so Printify
+// never reuses an old file.
 export function printFileName(team, design) {
-  const key = [PRINT_VERSION, team.slug, team.shirt, team.line1, team.line2, team.outline, design.id, design.lines.join('|')].join(';');
-  const hash = createHash('sha256').update(key).digest('hex').slice(0, 8);
+  const hash = createHash('sha256').update(`${PRINT_VERSION};${PRINT_WIDTH};${printSvg(team, design)}`).digest('hex').slice(0, 8);
   return `${team.slug}-${design.id}-${hash}.png`;
 }
 
-export function printSvg(team, design) {
-  const { block } = loadFonts();
-  const lines = design.lines.slice(0, 2);
-  const track = 0.1;
-  const widest = Math.max(...lines.map((l) => measure(block, l, 1, track)));
-  const size = LETTER_WIDTH / widest;
-  const weight = 0.025 * size;
-  const gap = 0.045 * size;
-  const rim = 0.05 * size;
-  const pad = Math.ceil((weight + gap + rim) * 2);
-  const W = Math.ceil(LETTER_WIDTH + pad * 2);
-  const top = pad + size * 0.78;
-  const H = Math.ceil(top + size * 1.16 + size * 0.1 + pad);
-  const fills = [team.line1, team.line2];
-  const paths = lines.map((line, i) => textPath(block, line, W / 2, top + i * size * 1.16, size, { anchor: 'middle', track }));
-  const stroke = (d, width, color) => `<path d="${d}" fill="${color}" stroke="${color}" stroke-width="${width.toFixed(2)}" stroke-linejoin="round"/>`;
-  // The outer outline, with the gap cut out of it.
-  const cut = paths.map((d) => stroke(d, (weight + gap) * 2, '#000')).join('');
-  return (
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">` +
-    `<defs><mask id="gap" maskUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="#fff"/>${cut}</mask></defs>` +
-    `<g mask="url(#gap)">${paths.map((d) => stroke(d, (weight + gap + rim) * 2, team.outline)).join('')}</g>` +
-    // A line drawn in the shirt's own color is left unprinted, so the shirt
-    // itself shows through and the letters read as outlines.
-    paths.map((d, i) => (sameColor(fills[i], team.shirt) ? '' : stroke(d, weight * 2, fills[i]))).join('') +
-    `</svg>`
-  );
-}
-
-// The finished PNG, trimmed to the lettering.
+// The finished PNG, trimmed tight to the lettering.
 export async function printPng(team, design) {
   const { default: sharp } = await import('sharp');
-  return sharp(Buffer.from(printSvg(team, design)), { density: 72 })
-    .trim({ threshold: 0 })
-    .png({ compressionLevel: 9 })
-    .toBuffer();
+  const svg = printSvg(team, design, PRINT_WIDTH / LAYOUT.width);
+  return sharp(Buffer.from(svg), { density: 72 }).trim({ threshold: 0 }).png({ compressionLevel: 9 }).withMetadata({ density: 300 }).toBuffer();
 }

@@ -141,7 +141,7 @@ root.querySelector('[data-signout]').addEventListener('click', () => {
   showGate('');
 });
 
-const VIEWS = { setup, orders, season, campaigns, quotes, fans };
+const VIEWS = { setup, orders, runs, season, campaigns, quotes, fans };
 function open(name, preloaded) {
   if (!VIEWS[name]) name = 'setup';
   for (const t of tabs) t.setAttribute('aria-current', t.dataset.tab === name ? 'page' : 'false');
@@ -173,7 +173,7 @@ async function setup(preloaded) {
     ['Saving things (orders, quotes, photos)', s.storage === 'unavailable' ? 'Not available' : 'Working'],
     ['Site address', s.siteUrl ?? 'Not set'],
     ['How orders get made', s.fulfillment === 'printify'
-      ? `Printify. ${!s.printify.tokenSet ? 'Token missing.' : !s.printify.scanned ? 'Catalog not scanned yet.' : `${s.printify.provider}, ${s.printify.citiesReady} of ${s.colors.cities} cities ready.`} ${s.printify.autoSend ? 'Orders print right away.' : 'Orders wait for your OK.'}`
+      ? `Printify. ${!s.printify.tokenSet ? 'Token missing.' : s.printify.garments.map((g) => (g.scanned ? `${g.name}: ${g.provider}, ${g.citiesReady} of ${s.colors.cities} cities ready.` : `${g.name}: not scanned yet.`)).join(' ')} ${s.printify.autoSend ? 'Orders print right away.' : 'Orders wait for your OK.'}`
       : 'Emailed to your vendor.'],
     [s.fulfillment === 'printify' ? 'Heads-up email to you' : 'Order email to the vendor', s.orderEmail.ready ? `On. Goes to ${s.orderEmail.to.join(', ')}${s.orderEmail.cc.length ? `, copy to ${s.orderEmail.cc.join(', ')}` : ''}.` : `Off. Missing: ${s.orderEmail.missing.join(', ')}.`],
     ['Marketing email', s.email.ready ? 'Ready' : 'Off'],
@@ -469,95 +469,142 @@ function printifyWords(p) {
   return [base, p.printifyOrderId ? `Printify order ${p.printifyOrderId}` : '', p.error && p.status !== 'in_production' && p.status !== 'on_hold' ? p.error : ''].filter(Boolean).join('. ');
 }
 
-// The Printify box at the top of Orders: which printer, a color for each
-// city, a test order, and a rescan.
+// The Printify box at the top of Orders: which printer makes each garment,
+// a blank color for each city, a test order, and a rescan.
+let printifyGarment = '';
+const HOW = { same: 'Same blank as the site', manual: 'Your pick', preferred: 'Starting pick', closest: 'Closest color' };
 async function printifyPanel(redraw) {
   const res = await call('printify.status');
   if (!res.ok) return note(problem(res), 'bad');
-  const { mapping, overrides, autoSend, missing, cities: list } = res.body;
+  const { mapping, overrides, autoSend, missing, garments, cities: list } = res.body;
   const out = h('div', { class: 'preview-out' });
   const box = h('section', { class: 'card' }, h('h3', { text: 'Printify' }));
+  const allReady = garments.length && garments.every((g) => g.scanned && g.citiesReady === list.length);
 
   if (missing.length) box.append(note(`Add ${missing.join(', ')} in Netlify, then come back and scan.`, 'bad'));
   box.append(
-    note(
-      mapping
-        ? `Printer: ${mapping.providerTitle}, on the ${mapping.blueprintTitle}. ${mapping.citiesReady} of ${list.length} cities have a close blank color. Scanned ${when(mapping.scannedAt)}.${mapping.partial ? ' Not every printer was checked in time. Scan again to finish.' : ''}`
-        : 'Not scanned yet. Scan once before the first order, so each city gets a printer and a blank shirt color.',
-      mapping && mapping.citiesReady === list.length ? '' : 'bad',
-    ),
+    ...[
+    garments.some((g) => g.scanned)
+      ? h(
+          'dl',
+          { class: 'facts' },
+          garments.map((g) =>
+            h(
+              'div',
+              {},
+              h('dt', { text: g.name }),
+              h('dd', { text: g.scanned ? `${g.blueprint} from ${g.provider}. ${g.citiesReady} of ${list.length} cities ready.${g.partial ? ' Not every printer was checked in time. Scan again to finish.' : ''}` : 'Not scanned yet.' }),
+            ),
+          ),
+        )
+      : note('Not scanned yet. Scan once before the first order, so each garment gets a printer and each city a blank color.', 'bad'),
+    mapping?.scannedAt ? h('p', { class: 'hint', text: `Last scanned ${when(mapping.scannedAt)}.` }) : null,
+    allReady ? null : garments.some((g) => g.scanned) ? note('Some cities still need a blank color. Pick them below.', 'bad') : null,
     note(autoSend ? 'New orders go straight to print.' : 'New orders wait in Printify for your OK. Approve each one below, or in Printify. Set PRINTIFY_AUTO_SEND to true in Netlify to skip this.'),
+    ].filter(Boolean),
   );
 
   const scan = button('Scan Printify', null, false);
   scan.addEventListener(
     'click',
     busy(scan, async () => {
-      out.replaceChildren(note('Scanning. This takes a few seconds.'));
-      const r = await call('printify.scan');
-      if (!r.ok) return out.replaceChildren(note(problem(r), 'bad'));
-      redraw(`Scanned. ${r.body.mapping.providerTitle} can do ${r.body.mapping.citiesReady} of ${list.length} cities.`);
+      const done = [];
+      for (const g of garments) {
+        out.replaceChildren(note(`Scanning for the ${g.name.toLowerCase()}. This takes a few seconds.`));
+        const r = await call('printify.scan', { product: g.id });
+        if (!r.ok) return out.replaceChildren(note(`${g.name}: ${problem(r)}`, 'bad'));
+        const pm = r.body.mapping.products[g.id];
+        done.push(`${g.name}: ${pm.providerTitle}, ${pm.citiesReady} of ${list.length} cities`);
+      }
+      redraw(`Scanned. ${done.join('. ')}.`);
     }),
   );
+  box.append(h('div', { class: 'btns' }, scan), out);
+  const scanned = garments.filter((g) => g.scanned);
+  if (!scanned.length) return box;
+
+  // A test order.
   const testCity = citySelect('dallas');
+  const testGarment = select(scanned.map((g) => [g.id, g.name]), scanned[0].id);
   const test = button('Send a test order', null);
+  const testOut = h('div');
   test.addEventListener(
     'click',
     busy(test, async () => {
-      const r = await call('printify.test_order', { slug: testCity.value || 'dallas' });
-      out.replaceChildren(
+      const r = await call('printify.test_order', { slug: testCity.value || 'dallas', product: testGarment.value });
+      testOut.replaceChildren(
         r.ok
           ? note(`Test order ${r.body.printifyOrderId} is in Printify, on hold. Open it there to check the mockup, then delete it. It is never printed unless you send it.`)
           : note(problem(r), 'bad'),
       );
     }),
   );
-  box.append(h('div', { class: 'btns' }, scan), out);
-  if (!mapping) return box;
-
-  box.append(
-    h('details', {}, h('summary', { text: 'Try a test order' }), field('City', testCity, 'Creates one large tee for a sample address, on hold. Nothing is charged or printed.'), test),
-  );
-
-  // A blank color for each city.
-  const picks = new Map();
-  const rows = list.map((c) => {
-    const m = mapping.cities[c.slug] ?? {};
-    const choice = select([['', `Closest match${m.manual ? '' : m.color ? ` (${m.color})` : ''}`], ...mapping.colorsAvailable.map((name) => [name, name])], overrides[c.slug] ?? '');
-    choice.setAttribute('aria-label', `Blank color for ${c.name}`);
-    picks.set(c.slug, choice);
-    const state = !m.ok ? (m.missingSizes?.length ? `Missing ${m.missingSizes.join(', ')}` : 'No close color. Pick one.') : m.manual ? 'Your pick' : 'Close';
-    return h(
-      'tr',
-      {},
-      h('th', { scope: 'row' }, h('span', { class: 'named' }, h('span', { class: 'swatch', style: `background:${c.shirt}` }), h('span', { text: c.name }))),
-      h('td', {}, h('span', { class: 'named' }, m.approxHex ? h('span', { class: 'swatch', style: `background:${m.approxHex}` }) : null, h('span', { text: m.color ?? 'None' }))),
-      h('td', {}, choice),
-      h('td', { text: state }),
-    );
-  });
-  const save = button('Save colors', null, false);
-  const saved = h('div');
-  save.addEventListener(
-    'click',
-    busy(save, async () => {
-      const next = {};
-      for (const [slug, s] of picks) if ((overrides[slug] ?? '') !== s.value) next[slug] = s.value;
-      if (!Object.keys(next).length) return saved.replaceChildren(note('Nothing changed.'));
-      const r = await call('printify.colors', { overrides: next });
-      if (!r.ok) return saved.replaceChildren(note(problem(r), 'bad'));
-      redraw('Colors saved. New orders use them now.');
-    }),
-  );
   box.append(
     h(
       'details',
-      { open: mapping.citiesReady < list.length },
-      h('summary', { text: 'Blank color for each city' }),
-      h('p', { class: 'sub', text: 'The left swatch is the city\'s shirt color. The middle one is roughly what the blank looks like on a screen. Check real blanks in Printify before you trust a close call.' }),
-      h('div', { class: 'table-scroll' }, h('table', { class: 'wide blanks' }, h('thead', {}, h('tr', {}, h('th', { text: 'City' }), h('th', { text: 'Blank' }), h('th', { text: 'Change to' }), h('th', { text: 'Status' }))), h('tbody', {}, rows))),
+      {},
+      h('summary', { text: 'Try a test order' }),
+      h('div', { class: 'cols' }, field('City', testCity), field('Garment', testGarment)),
+      h('p', { class: 'hint', text: 'Creates one, in a middle size, for a sample address, on hold. Nothing is charged or printed.' }),
+      test,
+      testOut,
+    ),
+  );
+
+  // A blank color for each city, one garment at a time.
+  if (!scanned.some((g) => g.id === printifyGarment)) printifyGarment = (scanned.find((g) => g.citiesReady < list.length) ?? scanned[0]).id;
+  const which = select(scanned.map((g) => [g.id, g.name]), printifyGarment);
+  const table = h('div');
+  const drawTable = () => {
+    const id = which.value;
+    printifyGarment = id;
+    const pm = mapping.products[id];
+    const mine = overrides[id] ?? {};
+    const picks = new Map();
+    const rows = list.map((c) => {
+      const m = pm.cities[c.slug] ?? {};
+      const choice = select([['', m.how === 'manual' ? 'Closest match' : `Closest match${m.color ? ` (${m.color})` : ''}`], ...pm.colorsAvailable.map((name) => [name, name])], mine[c.slug] ?? '');
+      choice.setAttribute('aria-label', `Blank color for ${c.name}`);
+      picks.set(c.slug, choice);
+      const state = !m.ok ? (m.missingSizes?.length && m.color ? `Missing ${m.missingSizes.join(', ')}` : 'No close color. Pick one.') : (HOW[m.how] ?? 'Close');
+      return h(
+        'tr',
+        {},
+        h('th', { scope: 'row' }, h('span', { class: 'named' }, h('span', { class: 'swatch', style: `background:${m.targetHex ?? c.shirt}` }), h('span', { text: m.target ? `${c.name} (${m.target})` : c.name }))),
+        h('td', {}, h('span', { class: 'named' }, m.approxHex ? h('span', { class: 'swatch', style: `background:${m.approxHex}` }) : null, h('span', { text: m.color ?? 'None' }))),
+        h('td', {}, choice),
+        h('td', { text: state }),
+      );
+    });
+    const save = button('Save colors', null, false);
+    const saved = h('div');
+    save.addEventListener(
+      'click',
+      busy(save, async () => {
+        const next = {};
+        for (const [slug, s] of picks) if ((mine[slug] ?? '') !== s.value) next[slug] = s.value;
+        if (!Object.keys(next).length) return saved.replaceChildren(note('Nothing changed.'));
+        const r = await call('printify.colors', { product: id, overrides: next });
+        if (!r.ok) return saved.replaceChildren(note(problem(r), 'bad'));
+        redraw('Colors saved. New orders use them now.');
+      }),
+    );
+    table.replaceChildren(
+      h('div', { class: 'table-scroll' }, h('table', { class: 'wide blanks' }, h('thead', {}, h('tr', {}, h('th', { text: 'City (blank on the site)' }), h('th', { text: 'Printify blank' }), h('th', { text: 'Change to' }), h('th', { text: 'Status' }))), h('tbody', {}, rows))),
       h('div', { class: 'btns' }, save),
       saved,
+    );
+  };
+  which.addEventListener('change', drawTable);
+  drawTable();
+  box.append(
+    h(
+      'details',
+      { open: !allReady },
+      h('summary', { text: 'Blank color for each city' }),
+      h('p', { class: 'sub', text: 'The left swatch is the blank shoppers see on the site. The middle one is roughly what Printify\'s blank looks like on a screen. Check real blanks in Printify before you trust a close call.' }),
+      h('div', { class: 'row' }, field('Garment', which)),
+      table,
     ),
   );
   return box;
@@ -689,6 +736,138 @@ async function orders() {
       out,
       h('h3', { text: `Recent orders (${list.length})` }),
       list.length ? rows : note('No paid orders recorded yet. They show up here once the Stripe webhook is set up and someone buys.'),
+    );
+  };
+  draw();
+}
+
+// ---------- print runs: the bulk order sheet ----------
+// Hands the browser a file to save, built from text the server sent.
+function download(name, text, type = 'text/csv') {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = h('a', { href: url, download: name });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+const blanksTable = (blanks) =>
+  h(
+    'table',
+    { class: 'wide' },
+    h('thead', {}, h('tr', {}, ['Garment', 'Blank', 'Size', 'Quantity'].map((t) => h('th', { scope: 'col', text: t })))),
+    h(
+      'tbody',
+      {},
+      blanks.map((b) => h('tr', {}, h('td', { text: b.garment }), h('td', { text: [b.style, b.blank].filter(Boolean).join(' ') }), h('td', { text: b.size }), h('td', { text: String(b.quantity) }))),
+    ),
+  );
+
+async function runs() {
+  const draw = async (message = '', kind = '') => {
+    const res = await call('runs.list');
+    if (!res.ok) return failed(res);
+    const { waiting, runs: list, orderEmail } = res.body;
+    const units = (n) => `${n} ${n === 1 ? 'shirt' : 'shirts'}`;
+
+    // What's waiting
+    const sheets = (id, csvs, when) => {
+      const stamp = when.replace(/[^0-9]/g, '').slice(0, 12);
+      return h('div', { class: 'btns' }, button('Download blanks sheet', () => download(`${id}-blanks-${stamp}.csv`, csvs.blanksCsv)), button('Download packing list', () => download(`${id}-packing-${stamp}.csv`, csvs.packingCsv)));
+    };
+    const previewBtns = h('div', { class: 'btns' });
+    const dl = (which) => {
+      const b = button(which === 'blanks' ? 'Download blanks sheet' : 'Download packing list', null);
+      b.addEventListener(
+        'click',
+        busy(b, async () => {
+          const r = await call('runs.preview');
+          if (!r.ok) return draw(problem(r), 'bad');
+          const stamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 12);
+          download(`waiting-${which}-${stamp}.csv`, which === 'blanks' ? r.body.blanksCsv : r.body.packingCsv);
+        }),
+      );
+      return b;
+    };
+    previewBtns.append(dl('blanks'), dl('packing'));
+
+    // Starting a run
+    const noteInput = h('input', { type: 'text', maxLength: 300, placeholder: 'Optional, for example: October batch' });
+    const confirm = h('input', { type: 'text', autocomplete: 'off', spellcheck: false, placeholder: 'PRINT' });
+    const start = button('Start a print run', null, false);
+    start.addEventListener(
+      'click',
+      busy(start, async () => {
+        const r = await call('runs.create', { note: noteInput.value.trim(), confirm: confirm.value.trim() });
+        if (!r.ok) return draw(problem(r), 'bad');
+        draw(`Print run ${r.body.run.id} started: ${units(r.body.run.counts.units)} across ${r.body.run.counts.orders} ${r.body.run.counts.orders === 1 ? 'order' : 'orders'}. Download its sheets below.`);
+      }),
+    );
+
+    // Past runs
+    const cards = list.map((r) => {
+      const holder = h('div');
+      const get = button('Download the sheets', null);
+      get.addEventListener(
+        'click',
+        busy(get, async () => {
+          const s = await call('runs.sheet', { id: r.id });
+          if (!s.ok) return holder.replaceChildren(note(problem(s), 'bad'));
+          holder.replaceChildren(sheets(r.id, s.body, r.createdAt), h('details', {}, h('summary', { text: 'The sheet as plain text' }), h('pre', { text: s.body.text })));
+        }),
+      );
+      const sendConfirm = h('input', { type: 'text', autocomplete: 'off', spellcheck: false, placeholder: 'SEND' });
+      const send = button('Email this run to the vendor', null);
+      send.addEventListener(
+        'click',
+        busy(send, async () => {
+          const e = await call('runs.email', { id: r.id, confirm: sendConfirm.value.trim() });
+          draw(e.ok ? `${r.id} emailed to ${e.body.to.join(', ')}.` : problem(e), e.ok ? '' : 'bad');
+        }),
+      );
+      const emailWords = { sent: `Sent ${when(r.vendorEmail?.at)} to ${(r.vendorEmail?.to ?? []).join(', ')}`, failed: `Failed: ${r.vendorEmail?.error ?? ''}` }[r.vendorEmail?.status] ?? 'Not sent';
+      return h(
+        'section',
+        { class: 'card' },
+        h('h3', {}, r.id, ' ', h('span', { class: 'tag', text: units(r.counts.units) })),
+        h(
+          'dl',
+          { class: 'facts' },
+          [
+            ['Started', `${when(r.createdAt)} by ${r.actor}`],
+            ['Orders', String(r.counts.orders)],
+            ['Note', r.note || 'None'],
+            ['Emailed to the vendor', emailWords],
+          ].map(([k, v]) => h('div', {}, h('dt', { text: k }), h('dd', { text: v }))),
+        ),
+        h('div', { class: 'table-scroll' }, blanksTable(r.blanks)),
+        h('div', { class: 'btns' }, get),
+        holder,
+        h('details', {}, h('summary', { text: 'Email this run to the vendor' }), field('Type SEND to confirm', sendConfirm, orderEmail.ready ? `Goes to ${orderEmail.to.join(', ')} as a plain-text sheet.` : `Order email isn't set up. Missing: ${orderEmail.missing.join(', ')}.`), send),
+      );
+    });
+
+    fill(
+      h('h2', { text: 'Print runs' }),
+      h('p', { class: 'sub', text: 'Shirts are printed in batches. A run gathers every paid order that has not been printed yet into a blanks sheet (what to buy from SanMar) and a packing list (what to print and where it ships), then stamps those orders so they never print twice.' }),
+      message ? note(message, kind) : null,
+      h('h3', { text: 'Waiting to print' }),
+      waiting.counts.orders
+        ? [note(`${units(waiting.counts.units)} across ${waiting.counts.orders} ${waiting.counts.orders === 1 ? 'order' : 'orders'} are waiting.`), h('div', { class: 'table-scroll' }, blanksTable(waiting.blanks)), previewBtns]
+        : note('Nothing is waiting. Every paid order is in a run already.'),
+      waiting.counts.orders
+        ? h(
+            'section',
+            { class: 'card' },
+            h('h3', { text: 'Start a print run' }),
+            h('p', { class: 'sub', text: 'Takes everything waiting above. The sheets are saved with the run, so you can download them again any time.' }),
+            field('Note', noteInput),
+            field('Type PRINT to confirm', confirm),
+            h('div', { class: 'btns' }, start),
+          )
+        : null,
+      h('h3', { text: `Past runs (${list.length})` }),
+      list.length ? cards : note('No print runs yet.'),
     );
   };
   draw();

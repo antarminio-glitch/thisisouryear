@@ -4,6 +4,11 @@
 // championship game, from the date in src/data/history.json. It only ever
 // shows a number when the fact is marked verified. When anything is missing,
 // stale or doesn't add up, it falls back to a line with no number in it.
+//
+// Every result carries the same four things: `text` (one sentence, used on
+// the share card), `context` (the date, in small print), `banner` (the big
+// number and the line under it at the top of the city page) and `short`
+// (two or three words for the ticker on the homepage).
 
 export const SITE_TIMEZONE = 'America/New_York';
 
@@ -36,6 +41,15 @@ export function fullYearsBetween(fromDate, asOfDate) {
   return years < 0 ? null : years;
 }
 
+// Whole days from one date to another, for people who are counting.
+export function daysBetween(fromDate, asOfDate) {
+  const a = parts(fromDate);
+  const b = parts(asOfDate);
+  if (!a || !b) return null;
+  const days = Math.round((Date.UTC(b.y, b.mo - 1, b.d) - Date.UTC(a.y, a.mo - 1, a.d)) / 86400000);
+  return days < 0 ? null : days;
+}
+
 export function longDate(dateString) {
   const p = parts(dateString);
   if (!p) return '';
@@ -43,7 +57,18 @@ export function longDate(dateString) {
   return `${month} ${p.d}, ${p.y}`;
 }
 
-const UNKNOWN = { state: 'unknown', years: null, text: 'Still believing. Still our year.', context: '' };
+const capital = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const number = (n) => n.toLocaleString('en-US');
+
+const UNKNOWN = {
+  state: 'unknown',
+  years: null,
+  days: null,
+  text: 'Still believing. Still our year.',
+  context: '',
+  banner: { big: 'Still believing.', line: 'Still our year.' },
+  short: 'believing',
+};
 
 // Works out what a city's counter should say on a given day.
 //   history   the contents of src/data/history.json
@@ -51,19 +76,30 @@ const UNKNOWN = { state: 'unknown', years: null, text: 'Still believing. Still o
 export function counterFor(slug, cityName, history, asOfDate) {
   const record = history?.cities?.[slug];
   const today = parts(asOfDate);
-  if (!record || !today || record.verified !== true) return { ...UNKNOWN };
+  if (!record || !today || record.verified !== true) return structuredClone(UNKNOWN);
 
   // After the refresh date a new champion has been crowned, so every number
   // here could be wrong until someone updates the file. Say nothing specific.
-  if (parts(history.refreshBy) && asOfDate >= history.refreshBy) return { ...UNKNOWN };
+  if (parts(history.refreshBy) && asOfDate >= history.refreshBy) return structuredClone(UNKNOWN);
+
+  const subject = record.subject || cityName;
 
   if (record.state === 'never_won') {
-    return { state: 'never_won', years: null, text: 'Still chasing that first big-game win. This is our year.', context: '' };
+    return {
+      state: 'never_won',
+      years: null,
+      days: null,
+      text: 'Still chasing that first big-game win. This is our year.',
+      context: '',
+      banner: { big: 'Still waiting.', line: `${capital(subject)} has never won the big game. This is the year that changes.` },
+      short: 'still waiting',
+    };
   }
-  if (record.state !== 'previous_winner') return { ...UNKNOWN };
+  if (record.state !== 'previous_winner') return structuredClone(UNKNOWN);
 
   const years = fullYearsBetween(record.lastWinDate, asOfDate);
-  if (years === null) return { ...UNKNOWN };
+  const days = daysBetween(record.lastWinDate, asOfDate);
+  if (years === null || days === null) return structuredClone(UNKNOWN);
 
   // The defending champion comes from the latest finished season on record,
   // not from a hardcoded city.
@@ -73,19 +109,36 @@ export function counterFor(slug, cityName, history, asOfDate) {
     return {
       state: 'defending_champion',
       years,
+      days,
       text: "Let's run it back.",
       context: `Champions of the ${latest.season} season. Won it on ${longDate(latest.gameDate)}.`,
+      banner: { big: 'Champions.', line: `Won it on ${longDate(latest.gameDate)}. ${number(days)} days without a loss that mattered. Run it back.` },
+      short: 'champions',
     };
   }
   if (years < 1) {
-    return { state: 'recent_winner', years, text: 'Still celebrating. Ready for another.', context: `Last won on ${longDate(record.lastWinDate)}.` };
+    return {
+      state: 'recent_winner',
+      years,
+      days,
+      text: 'Still celebrating. Ready for another.',
+      context: `Last won on ${longDate(record.lastWinDate)}.`,
+      banner: { big: 'Still celebrating.', line: `Won it on ${longDate(record.lastWinDate)}. Ready for another.` },
+      short: 'still celebrating',
+    };
   }
 
-  const subject = record.subject || cityName;
+  const yearsWord = `${years} ${years === 1 ? 'year' : 'years'}`;
   return {
     state: 'previous_winner',
     years,
+    days,
     text: `It's been ${years} ${years === 1 ? 'year' : 'years'} since ${subject} last won the big game. This is our year.`,
     context: [`Last won on ${longDate(record.lastWinDate)}.`, record.note].filter(Boolean).join(' '),
+    banner: {
+      big: yearsWord,
+      line: [`since ${subject} last won the big game, on ${longDate(record.lastWinDate)}. That's ${number(days)} days. This is our year.`, record.note].filter(Boolean).join(' '),
+    },
+    short: yearsWord,
   };
 }

@@ -1,65 +1,91 @@
 ---
+// Real measurements from the maker's spec sheets (src/data/specs.json), for
+// every garment that is for sale. Garments not for sale yet are listed so
+// nobody wonders, but get no chart until they can be bought.
 import Layout from '../layouts/Layout.astro';
-import Confirm from '../components/Confirm.astro';
+import catalog from '../data/catalog.json';
+import specs from '../data/specs.json';
 import { shop } from '../lib/shop.js';
 
-const sizes = shop.product('adult-tee').variants.map((v) => v.size);
+const products = catalog.products.map((p) => ({ product: p, spec: specs.products[p.id] ?? null, sellable: shop.isSellable(p) }));
+const forSale = products.filter((x) => x.sellable);
+const notYet = products.filter((x) => !x.sellable);
 
-// Measurements in inches, laid flat. These are typical numbers for a standard
-// unisex tee. Replace them with the real ones from the print vendor.
-const chart = {
-  S: { width: 18, length: 28 },
-  M: { width: 20, length: 29 },
-  L: { width: 22, length: 30 },
-  XL: { width: 24, length: 31 },
-  '2XL': { width: 26, length: 32 },
-  '3XL': { width: 28, length: 33 },
-};
+const inches = (n) => (n == null ? 'Not listed' : `${String(n).replace(/\.0+$/, '')} in`);
+const sizesOf = (p) => p.variants.map((v) => v.size);
+const describe = forSale.map((x) => `${x.product.name.toLowerCase()} ${sizesOf(x.product)[0]} to ${sizesOf(x.product).at(-1)}`).join(', ');
 ---
 
-<Layout title="Size chart" description={`Measurements for the This Is Our Year tee, ${sizes[0]} through ${sizes.at(-1)}.`}>
+<Layout title="Size chart" description={`Real measurements from the maker for every This Is Our Year garment: ${describe}.`}>
   <div class="wrap page">
     <div class="prose">
       <h1>Size chart</h1>
-      <p class="lede">Unisex fit, true to size. Between sizes? Go up if you like room, down if you like it snug.</p>
-
-      <h2 id="adult-tee">Adult tee</h2>
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Size</th>
-              <th scope="col">Chest width</th>
-              <th scope="col">Length</th>
-            </tr>
-          </thead>
-          <tbody>
-            {
-              sizes.map((size) => (
-                <tr>
-                  <th scope="row">{size}</th>
-                  <td>{chart[size] ? `${chart[size].width} in` : 'Ask us'}</td>
-                  <td>{chart[size] ? `${chart[size].length} in` : 'Ask us'}</td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
-      </div>
-      <p>
-        <Confirm /> These are typical numbers for a standard unisex tee. Swap in the real measurements from the print
-        vendor before launch.
+      <p class="lede">
+        These are the maker's own numbers, measured flat, not estimates. Between sizes? Go up if you like room, down if you
+        like it snug.
       </p>
 
-      <h2>Hoodies and kids sizes</h2>
-      <p>
-        Not for sale yet, so there's no chart yet. When they go on sale, their measurements go here first.
-      </p>
+      {
+        forSale.map(({ product, spec }) => (
+          <section aria-labelledby={`${product.id}-h`}>
+            <h2 id={product.id}>{product.name}</h2>
+            {spec ? (
+              <>
+                <p>
+                  {spec.fabric}. {spec.fit}. {spec.features.join('. ')}.
+                </p>
+                <div class="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Size</th>
+                        {product.audience === 'kids' && <th scope="col">Ages</th>}
+                        <th scope="col">Chest width, flat</th>
+                        <th scope="col">Length</th>
+                        <th scope="col">Fits a chest of</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sizesOf(product).map((size) => {
+                        const m = spec.measurements[size];
+                        return (
+                          <tr>
+                            <th scope="row">{size}</th>
+                            {product.audience === 'kids' && <td>{m?.ages ?? ''}</td>}
+                            <td>{m ? inches(m.chest) : 'Ask us'}</td>
+                            <td>{m ? inches(m.length) : 'Ask us'}</td>
+                            <td>{m?.fitsChest ? `${m.fitsChest} in` : ''}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <p class="hint">
+                  Care: {spec.care} Maker's style {spec.style}. <a href={spec.specSheet} rel="noopener noreferrer" target="_blank">The maker's spec sheet</a> lists every size they make.
+                </p>
+              </>
+            ) : (
+              <p>Measurements are on the way. Email us if you need them before then.</p>
+            )}
+          </section>
+        ))
+      }
+
+      {
+        notYet.length > 0 && (
+          <section aria-labelledby="not-yet-h">
+            <h2 id="not-yet-h">Not for sale yet</h2>
+            <p>{notYet.map((x) => x.product.name).join(', ')}. The chart goes up here the day it goes on sale.</p>
+          </section>
+        )
+      }
 
       <h2>How to measure</h2>
       <p>
-        Grab a tee that fits you well and lay it flat. Chest width is straight across, one inch below the armpits.
-        Length is from the top of the shoulder by the collar down to the bottom hem.
+        Grab a shirt that fits you well and lay it flat. Chest width is straight across, one inch below the armpits. Length
+        is from the top of the shoulder by the collar down to the bottom hem. "Fits a chest of" is your own chest, measured
+        under the arms around the fullest part with the tape level.
       </p>
 
       <p class="actions"><a class="btn" href="/teams/">Pick your city</a></p>

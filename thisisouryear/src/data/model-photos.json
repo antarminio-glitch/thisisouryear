@@ -1,0 +1,103 @@
+{
+  "vendor": "SanMar",
+  "vendorSite": "https://www.sanmar.com",
+  "fetched": "2026-10-11",
+  "photos": {
+    "PC54:TrueRoyal": {
+      "style": "PC54",
+      "productId": "adult-tee",
+      "color": "TrueRoyal",
+      "name": "True Royal",
+      "src": "/images/models/pc54-trueroyal-model.webp",
+      "hex": "#174382",
+      "width": 600,
+      "height": 900,
+      "sourcePage": "https://www.sanmar.com/p/3985_TrueRoyal",
+      "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h4b/h56/30606106591262/1200W_3985_TrueRoyal-0-PC54TrueRoyalModelFront3/1200W-3985-TrueRoyal-0-PC54TrueRoyalModelFront3.jpg"
+    },
+    "PC54:Red": {
+      "style": "PC54",
+      "productId": "adult-tee",
+      "color": "Red",
+      "name": "Red",
+      "src": "/images/models/pc54-red-model.webp",
+      "hex": "#A81726",
+      "width": 600,
+      "height": 900,
+      "sourcePage": "https://www.sanmar.com/p/3985_Red",
+      "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h55/hbf/30603762303006/1200W_3985_Red-0-PC54RedModelFront3/1200W-3985-Red-0-PC54RedModelFront3.jpg"
+    },
+    "PC54:JetBlack": {
+      "style": "PC54",
+      "productId": "adult-tee",
+      "color": "JetBlack",
+      "name": "Jet Black",
+      "src": "/images/models/pc54-jetblack-model.webp",
+      "hex": "#191B1A",
+      "width": 600,
+      "height": 900,
+      "sourcePage": "https://www.sanmar.com/p/3985_JetBlack",
+      "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h6c/ha5/30603046191134/1200W_3985_JetBlack-0-PC54JetBlackModelFront3/1200W-3985-JetBlack-0-PC54JetBlackModelFront3.jpg"
+    },
+    "PC54:DarkGreen": {
+      "style": "PC54",
+      "productId": "adult-tee",
+      "color": "DarkGreen",
+      "name": "Dark Green",
+      "src": "/images/models/pc54-darkgreen-model.webp",
+      "hex": "#223931",
+      "width": 600,
+      "height": 900,
+      "sourcePage": "https://www.sanmar.com/p/3985_DarkGreen",
+      "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h8c/h2a/30603028037662/1200W_3985_DarkGreen-0-PC54DarkGreenModelFront3/1200W-3985-DarkGreen-0-PC54DarkGreenModelFront3.jpg"
+    },
+    "PC78H:TrueRoyal": {
+      "style": "PC78H",
+      "productId": "adult-hoodie",
+      "color": "TrueRoyal",
+      "name": "True Royal",
+      "src": "/images/models/pc78h-trueroyal-model.webp",
+      "hex": "#18427F",
+      "width": 600,
+      "height": 900,
+      "sourcePage": "https://www.sanmar.com/p/4180_TrueRoyal",
+      "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h5d/h41/30581615755294/1200W_4180_TrueRoyal-0-PC78HTrueRoyalModelFront3/1200W-4180-TrueRoyal-0-PC78HTrueRoyalModelFront3.jpg"
+    },
+    "PC78H:JetBlack": {
+      "style": "PC78H",
+      "productId": "adult-hoodie",
+      "color": "JetBlack",
+      "name": "Jet Black",
+      "src": "/images/models/pc78h-jetblack-model.webp",
+      "hex": "#191B1A",
+      "width": 600,
+      "height": 900,
+      "sourcePage": "https://www.sanmar.com/p/4180_JetBlack",
+      "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h5e/h16/30580656046110/1200W_4180_JetBlack-0-PC78HJetBlackModelFront3/1200W-4180-JetBlack-0-PC78HJetBlackModelFront3.jpg"
+    },
+    "PC54Y:Red": {
+      "style": "PC54Y",
+      "productId": "kids-tee",
+      "color": "Red",
+      "name": "Red",
+      "src": "/images/models/pc54y-red-model.webp",
+      "hex": "#AB1E2A",
+      "width": 600,
+      "height": 900,
+      "sourcePage": "https://www.sanmar.com/p/3986_Red",
+      "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/hc7/h41/30611233177630/1200W_3986_Red-0-PC54YRedModelFront4/1200W-3986-Red-0-PC54YRedModelFront4.jpg"
+    },
+    "PC78YH:DarkGreen": {
+      "style": "PC78YH",
+      "productId": "kids-hoodie",
+      "color": "DarkGreen",
+      "name": "Dark Green",
+      "src": "/images/models/pc78yh-darkgreen-model.webp",
+      "hex": "#254039",
+      "width": 600,
+      "height": 900,
+      "sourcePage": "https://www.sanmar.com/p/80574_DarkGreen",
+      "sourceImage": "https://cdnp.sanmar.com/medias/sys_master/images/h4d/h70/31688738799646/1200W_80574_DarkGreen-0-PC78YHDarkGreenModelFront/1200W-80574-DarkGreen-0-PC78YHDarkGreenModelFront.jpg"
+    }
+  }
+}

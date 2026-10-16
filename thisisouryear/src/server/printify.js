@@ -3,16 +3,18 @@
 //
 // Turned on with FULFILLMENT=printify in Netlify, plus PRINTIFY_API_TOKEN.
 // Before the first order, the owner scans Printify's catalog from the admin
-// screen. That picks a printer and, for each city, the blank shirt color
-// closest to the city's garment color, and saves the result.
+// screen. For each garment on sale (src/data/printify.json says which
+// Printify garments to look for), that picks a printer and, for each city,
+// the blank closest to the one shoppers see on the site, and saves the result.
 //
 // Each order is created in Printify "on hold" unless PRINTIFY_AUTO_SEND is
 // "true". On hold means nothing is printed or charged until the owner approves
-// it in Printify, which is the safe way to check the first few.
+// it, which is the safe way to check the first few.
 //
 // Printify charges the card on the owner's Printify account when an order goes
 // into production. Nothing here handles money.
 import { printFileName } from '../lib/print-file.js';
+import { deltaE2000 } from '../lib/photos.js';
 import { orderRef } from './order-email.js';
 
 const API = 'https://api.printify.com/v1';
@@ -74,157 +76,196 @@ export function printifyClient(env, fetchImpl = fetch) {
   };
 }
 
-// ---- matching blank shirt colors to each city
-
-function hexToLab(hex) {
-  const n = parseInt(String(hex).replace('#', ''), 16);
-  const lin = (c) => {
-    const v = c / 255;
-    return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
-  };
-  const [r, g, b] = [lin((n >> 16) & 255), lin((n >> 8) & 255), lin(n & 255)];
-  const x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047;
-  const y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  const z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883;
-  const f = (t) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
-  return [116 * f(y) - 16, 500 * (f(x) - f(y)), 200 * (f(y) - f(z))];
+// The garments Printify is set up for, in the order the admin screen shows
+// them: those in printify.json that are also for sale.
+export function printifyProducts(config, shop) {
+  return Object.keys(config.products).filter((id) => shop.catalog.products.some((p) => p.id === id && p.sellable));
 }
 
-// How far apart two colors look (CIEDE2000, which judges blues and purples
-// better than plain distance). Under about 5 is close; over about 20 is a
-// different color.
+// ---- matching blank colors to each city
+
+// How far apart two colors look (CIEDE2000). Under about 5 is close; over
+// about 20 is a different color.
 export function colorDistance(a, b) {
-  const [L1, a1, b1] = hexToLab(a);
-  const [L2, a2, b2] = hexToLab(b);
-  const rad = Math.PI / 180;
-  const C1 = Math.hypot(a1, b1);
-  const C2 = Math.hypot(a2, b2);
-  const Cm7 = ((C1 + C2) / 2) ** 7;
-  const G = 0.5 * (1 - Math.sqrt(Cm7 / (Cm7 + 25 ** 7)));
-  const a1p = (1 + G) * a1;
-  const a2p = (1 + G) * a2;
-  const C1p = Math.hypot(a1p, b1);
-  const C2p = Math.hypot(a2p, b2);
-  const hue = (x, y) => (x === 0 && y === 0 ? 0 : (Math.atan2(y, x) / rad + 360) % 360);
-  const h1p = hue(a1p, b1);
-  const h2p = hue(a2p, b2);
-  const dL = L2 - L1;
-  const dC = C2p - C1p;
-  let dh = 0;
-  if (C1p * C2p !== 0) {
-    dh = h2p - h1p;
-    if (dh > 180) dh -= 360;
-    else if (dh < -180) dh += 360;
-  }
-  const dH = 2 * Math.sqrt(C1p * C2p) * Math.sin((dh / 2) * rad);
-  const Lm = (L1 + L2) / 2;
-  const Cm = (C1p + C2p) / 2;
-  let hm = h1p + h2p;
-  if (C1p * C2p !== 0) {
-    if (Math.abs(h1p - h2p) > 180) hm += h1p + h2p < 360 ? 360 : -360;
-    hm /= 2;
-  }
-  const T = 1 - 0.17 * Math.cos((hm - 30) * rad) + 0.24 * Math.cos(2 * hm * rad) + 0.32 * Math.cos((3 * hm + 6) * rad) - 0.2 * Math.cos((4 * hm - 63) * rad);
-  const SL = 1 + (0.015 * (Lm - 50) ** 2) / Math.sqrt(20 + (Lm - 50) ** 2);
-  const SC = 1 + 0.045 * Cm;
-  const SH = 1 + 0.015 * Cm * T;
-  const Cm7p = Cm ** 7;
-  const RT = -2 * Math.sqrt(Cm7p / (Cm7p + 25 ** 7)) * Math.sin(60 * Math.exp(-(((hm - 275) / 25) ** 2)) * rad);
-  const d = Math.sqrt((dL / SL) ** 2 + (dC / SC) ** 2 + (dH / SH) ** 2 + RT * (dC / SC) * (dH / SH));
-  return Math.round(d * 10) / 10;
+  return Math.round(deltaE2000(a, b) * 10) / 10;
+}
+
+const norm = (s) => String(s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const SIZE_ALIASES = { XXL: '2XL', XXXL: '3XL', '2X': '2XL', '3X': '3XL', XXS: '2XS' };
+function normSize(s) {
+  const t = String(s ?? '').toUpperCase().replace(/YOUTH|KIDS|\(.*?\)/g, '').replace(/\s+/g, '').replace(/^Y(?=X|S|M|L)/, '');
+  return SIZE_ALIASES[t] ?? t;
 }
 
 // Printify names variants like "Black / L" (or the other way round), and
 // usually gives the parts separately too.
-function splitVariant(v, sizes) {
+function splitVariant(v) {
   if (v.options?.color && v.options?.size) return { color: String(v.options.color), size: String(v.options.size) };
   const parts = String(v.title ?? '').split(' / ').map((s) => s.trim());
-  const size = parts.find((p) => sizes.includes(p));
+  const size = parts.find((p) => /^(Y(OUTH)?\s*)?(\d?X{0,3}[SML]|\d?XL|X{1,3}L|XS)$/i.test(p));
   const color = parts.find((p) => p !== size);
   return { color: color ?? '', size: size ?? '' };
 }
 
-// Works out, for one printer, which blank and which size variant each city
-// gets. `overrides` are colors the owner picked by hand.
-export function mapProvider({ variants, teams, config, overrides = {} }) {
-  const wantedSizes = Object.values(config.sizes);
+// Screen colors for blank names: the rough ones in printify.json, plus the
+// measured ones for every SanMar blank the site shows.
+export function blankHexes(config, photos) {
+  const out = new Map();
+  for (const g of Object.values(photos?.garments ?? {})) for (const c of Object.values(g.colors ?? {})) if (c.hex) out.set(norm(c.name), c.hex);
+  for (const [name, hex] of Object.entries(config.colors ?? {})) out.set(norm(name), hex);
+  return out;
+}
+
+// What each city should look like for one garment: the SanMar blank the site
+// shows for it, or the city's shirt color when there's none.
+export function targetsFor(productId, teams, photos) {
+  const g = photos?.garments?.[productId];
+  return Object.fromEntries(
+    teams.map((t) => {
+      const code = g?.cities?.[t.slug]?.color;
+      const c = code ? g.colors?.[code] : null;
+      return [t.slug, c?.hex ? { name: c.name, hex: c.hex } : { name: null, hex: t.shirt }];
+    }),
+  );
+}
+
+// Works out, for one printer and one garment, which blank and which size
+// variant each city gets. `overrides` are colors the owner picked by hand.
+// `sameGarment` is true when Printify's garment is the very one the site
+// shows, so a color with the same name is the same blank.
+export function mapProvider({ variants, teams, sizes, targets, hexes, config, overrides = {}, preferred = {}, sameGarment = false }) {
   const byColor = new Map();
   let placeholder = null;
   for (const v of variants) {
-    const { color, size } = splitVariant(v, wantedSizes);
+    const { color, size } = splitVariant(v);
     if (!color || !size) continue;
     if (!byColor.has(color)) byColor.set(color, {});
-    byColor.get(color)[size] = v.id;
+    byColor.get(color)[normSize(size)] = v.id;
     const front = (v.placeholders ?? []).find((p) => p.position === 'front');
     if (front && !placeholder) placeholder = { width: front.width, height: front.height };
   }
-  const known = [...byColor.keys()].filter((c) => config.colors[c]);
+  const colors = [...byColor.keys()];
+  const hexOf = (name) => hexes.get(norm(name)) ?? null;
+  const known = colors.filter((c) => hexOf(c));
   const cities = {};
   for (const team of teams) {
-    const pick = overrides[team.slug] ?? config.overrides?.[team.slug];
+    const target = targets[team.slug] ?? { name: null, hex: team.shirt };
+    const pick = overrides[team.slug] ?? preferred[team.slug];
+    const same = sameGarment && target.name ? colors.find((c) => norm(c) === norm(target.name)) : null;
     let color = null;
     let distance = null;
-    let manual = false;
-    const preferred = config.preferred?.[team.slug];
+    let how = 'closest';
     if (pick && byColor.has(pick)) {
       color = pick;
-      manual = true;
-      distance = config.colors[pick] ? colorDistance(team.shirt, config.colors[pick]) : null;
-    } else if (preferred && byColor.has(preferred) && config.colors[preferred]) {
-      color = preferred;
-      distance = colorDistance(team.shirt, config.colors[preferred]);
+      how = overrides[team.slug] ? 'manual' : 'preferred';
+    } else if (same) {
+      // The very blank the site shows, by name.
+      color = same;
+      how = 'same';
     } else {
       // Solid blanks win close calls: heathers print mottled.
       let best = null;
       for (const c of known) {
-        const d = colorDistance(team.shirt, config.colors[c]);
+        const d = colorDistance(target.hex, hexOf(c));
         const score = d + (/heather/i.test(c) ? (config.heatherPenalty ?? 0) : 0);
-        if (best === null || score < best) [best, color, distance] = [score, c, d];
+        if (best === null || score < best) [best, color] = [score, c];
       }
     }
-    const sizes = color ? byColor.get(color) : {};
+    if (color && hexOf(color)) distance = colorDistance(target.hex, hexOf(color));
     const variantIds = {};
     const missingSizes = [];
-    for (const [ours, theirs] of Object.entries(config.sizes)) {
-      if (sizes[theirs]) variantIds[ours] = sizes[theirs];
-      else missingSizes.push(ours);
+    for (const s of sizes) {
+      const id = color ? byColor.get(color)[normSize(s)] : null;
+      if (id) variantIds[s] = id;
+      else missingSizes.push(s);
     }
-    const ok = Boolean(color) && missingSizes.length === 0 && (manual || distance <= config.closeEnough);
-    cities[team.slug] = { color, approxHex: color ? (config.colors[color] ?? null) : null, distance, manual, ok, variants: variantIds, missingSizes };
+    const close = how !== 'closest' || (distance !== null && distance <= config.closeEnough);
+    const ok = Boolean(color) && missingSizes.length === 0 && close;
+    cities[team.slug] = { color, approxHex: color ? hexOf(color) : null, target: target.name, targetHex: target.hex, distance, how, ok, variants: variantIds, missingSizes };
   }
   const matched = Object.values(cities).filter((c) => c.ok);
   const avg = matched.length ? matched.reduce((n, c) => n + (c.distance ?? 0), 0) / matched.length : Infinity;
-  return { cities, placeholder, colorsAvailable: [...byColor.keys()].sort(), score: matched.length, avgDistance: Math.round(avg * 10) / 10 };
+  return { cities, placeholder, colorsAvailable: colors.sort(), score: matched.length, avgDistance: Math.round(avg * 10) / 10 };
 }
 
-// Looks through Printify's catalog and saves the best setup it finds. Picks
-// the printer that can do the most cities in close colors, unless one is
-// pinned with PRINTIFY_PROVIDER_ID.
-export async function scanCatalog({ env, config, teams, storage, fetchImpl = fetch, now = () => new Date(), timeBudgetMs = 8000 }) {
-  const started = Date.now();
-  const settings = printifySettings(env);
-  if (!settings.tokenSet) return { error: 'Add PRINTIFY_API_TOKEN in Netlify first.' };
-  const call = printifyClient(env, fetchImpl);
+// Finds Printify's id for a garment, from the models printify.json lists in
+// order of preference ("PC54", then "3001", and so on), or a number to pin
+// one directly.
+export function pickBlueprint(blueprints, models) {
+  for (const m of models) {
+    if (typeof m === 'number') {
+      const hit = blueprints.find((b) => Number(b.id) === m);
+      if (hit) return hit;
+      continue;
+    }
+    const want = norm(m);
+    const hit = blueprints.find((b) => norm(b.model) === want) ?? blueprints.find((b) => String(b.title ?? '').split(/[\s()]+/).some((w) => norm(w) === want));
+    if (hit) return hit;
+  }
+  return null;
+}
 
+async function findShop(call, settings) {
   const shops = await call('GET', '/shops.json');
   const list = Array.isArray(shops) ? shops : (shops?.data ?? []);
   const shop = settings.shopId ? list.find((s) => String(s.id) === settings.shopId) : list.length === 1 ? list[0] : null;
-  if (!shop) {
-    return {
-      error: list.length
-        ? `There are ${list.length} stores in your Printify account. Set PRINTIFY_SHOP_ID in Netlify to the one to use: ${list.map((s) => `${s.id} (${s.title})`).join(', ')}.`
-        : 'Your Printify account has no store yet. In Printify, add a store and pick the API option, then scan again.',
-    };
+  if (shop) return { shop };
+  return {
+    error: list.length
+      ? `There are ${list.length} stores in your Printify account. Set PRINTIFY_SHOP_ID in Netlify to the one to use: ${list.map((s) => `${s.id} (${s.title})`).join(', ')}.`
+      : 'Your Printify account has no store yet. In Printify, add a store and pick the API option, then scan again.',
+  };
+}
+
+// Scans Printify's catalog for one garment and saves the best setup it finds,
+// next to what's already saved for the others. Picks the printer that can do
+// the most cities in close colors, unless one is pinned (PRINTIFY_PROVIDER_ID,
+// or `pinProvider` when the owner is only changing colors).
+export async function scanCatalog({ env, config, shop, photos, storage, productId, pinProvider = null, fetchImpl = fetch, now = () => new Date(), timeBudgetMs = 8000 }) {
+  const started = Date.now();
+  const settings = printifySettings(env);
+  if (!settings.tokenSet) return { error: 'Add PRINTIFY_API_TOKEN in Netlify first.' };
+  const productIds = printifyProducts(config, shop);
+  if (!productIds.includes(productId)) return { error: `Printify isn't set up for ${productId}.` };
+  const product = config.products[productId];
+  const catalogProduct = shop.catalog.products.find((p) => p.id === productId);
+  const call = printifyClient(env, fetchImpl);
+  const ful = storage.store('fulfillment');
+  const saved = (await ful.get(KEY_CATALOG)) ?? { products: {} };
+
+  const found = await findShop(call, settings);
+  if (found.error) return { error: found.error };
+
+  // Which Printify garment. Reuses the last answer while the list of models
+  // hasn't changed, because the full catalog is a big download.
+  const modelsKey = JSON.stringify(product.models);
+  const before = saved.products?.[productId];
+  let blueprint = before?.modelsKey === modelsKey ? { id: before.blueprintId, title: before.blueprintTitle, model: before.blueprintModel } : null;
+  if (!blueprint) {
+    const all = await call('GET', '/catalog/blueprints.json');
+    const hit = pickBlueprint(Array.isArray(all) ? all : (all?.data ?? []), product.models);
+    if (!hit) return { error: `Printify doesn't list any of these for ${catalogProduct.name}: ${product.models.join(', ')}. Add one it does carry in src/data/printify.json.` };
+    blueprint = { id: hit.id, title: [hit.brand, hit.model].filter(Boolean).join(' ') || hit.title, model: hit.model ?? '' };
   }
+  const siteStyle = photos?.garments?.[productId]?.style;
+  const sameGarment = Boolean(siteStyle) && norm(blueprint.model ?? saved.products?.[productId]?.blueprintModel) === norm(siteStyle);
 
-  const product = config.products['adult-tee'];
-  const blueprint = await call('GET', `/catalog/blueprints/${product.blueprintId}.json`);
-  let providers = await call('GET', `/catalog/blueprints/${product.blueprintId}/print_providers.json`);
-  const pinned = settings.providerId ?? config.printProviderId ?? null;
+  let providers = await call('GET', `/catalog/blueprints/${blueprint.id}/print_providers.json`);
+  const pinned = pinProvider ?? settings.providerId ?? null;
   if (pinned) providers = providers.filter((p) => Number(p.id) === Number(pinned));
-  if (!providers.length) return { error: pinned ? `Printer ${pinned} doesn't make this shirt. Clear PRINTIFY_PROVIDER_ID and scan again.` : 'Printify lists no printers for this shirt.' };
+  if (!providers.length) return { error: pinned ? `Printer ${pinned} doesn't make the ${blueprint.title}. Clear PRINTIFY_PROVIDER_ID and scan again.` : `Printify lists no printers for the ${blueprint.title}.` };
 
-  const overrides = (await storage.store('fulfillment').get(KEY_OVERRIDES)) ?? {};
+  const overrides = ((await ful.get(KEY_OVERRIDES)) ?? {})[productId] ?? {};
+  const shape = {
+    teams: shop.teams,
+    sizes: catalogProduct.variants.map((v) => v.size),
+    targets: targetsFor(productId, shop.teams, photos),
+    hexes: blankHexes(config, photos),
+    config,
+    overrides,
+    preferred: product.preferred ?? {},
+    sameGarment,
+  };
   const results = [];
   let partial = false;
   for (let i = 0; i < providers.length; i += 5) {
@@ -232,12 +273,11 @@ export async function scanCatalog({ env, config, teams, storage, fetchImpl = fet
       partial = true;
       break;
     }
-    const batch = providers.slice(i, i + 5);
     const scanned = await Promise.all(
-      batch.map(async (p) => {
+      providers.slice(i, i + 5).map(async (p) => {
         try {
-          const res = await call('GET', `/catalog/blueprints/${product.blueprintId}/print_providers/${p.id}/variants.json`);
-          return { provider: p, ...mapProvider({ variants: res?.variants ?? res ?? [], teams, config, overrides }) };
+          const res = await call('GET', `/catalog/blueprints/${blueprint.id}/print_providers/${p.id}/variants.json`);
+          return { provider: p, ...mapProvider({ variants: res?.variants ?? res ?? [], ...shape }) };
         } catch (err) {
           return { provider: p, error: err.message, score: -1 };
         }
@@ -250,34 +290,56 @@ export async function scanCatalog({ env, config, teams, storage, fetchImpl = fet
   usable.sort((a, b) => b.score - a.score || a.avgDistance - b.avgDistance);
   const best = usable[0];
 
+  const at = now().toISOString();
   const mapping = {
-    scannedAt: now().toISOString(),
-    shopId: shop.id,
-    shopTitle: shop.title,
-    blueprintId: product.blueprintId,
-    blueprintTitle: [blueprint?.brand, blueprint?.model].filter(Boolean).join(' ') || blueprint?.title || product.name,
-    providerId: best.provider.id,
-    providerTitle: best.provider.title,
-    placeholder: best.placeholder,
-    colorsAvailable: best.colorsAvailable,
-    cities: best.cities,
-    citiesReady: best.score,
-    providers: results.map((r) => ({ id: r.provider.id, title: r.provider.title, citiesReady: r.score, avgDistance: r.avgDistance ?? null, error: r.error ?? null })),
-    partial,
+    ...saved,
+    scannedAt: at,
+    shopId: found.shop.id,
+    shopTitle: found.shop.title,
+    products: {
+      ...(saved.products ?? {}),
+      [productId]: {
+        scannedAt: at,
+        modelsKey,
+        blueprintId: blueprint.id,
+        blueprintTitle: blueprint.title,
+        blueprintModel: blueprint.model ?? saved.products?.[productId]?.blueprintModel ?? '',
+        sameGarment,
+        providerId: best.provider.id,
+        providerTitle: best.provider.title,
+        placeholder: best.placeholder,
+        colorsAvailable: best.colorsAvailable,
+        cities: best.cities,
+        citiesReady: best.score,
+        providers: results.map((r) => ({ id: r.provider.id, title: r.provider.title, citiesReady: r.score, avgDistance: r.avgDistance ?? null, error: r.error ?? null })),
+        partial,
+      },
+    },
   };
-  await storage.store('fulfillment').set(KEY_CATALOG, mapping);
-  return { mapping };
+  await ful.set(KEY_CATALOG, mapping);
+  return { mapping, productId };
+}
+
+// A short summary of what's set up, for the setup report and the admin screen.
+export function printifySummary(mapping, config, shop) {
+  const ids = printifyProducts(config, shop);
+  return ids.map((id) => {
+    const m = mapping?.products?.[id];
+    const name = shop.catalog.products.find((p) => p.id === id)?.name ?? id;
+    return { id, name, scanned: Boolean(m), blueprint: m?.blueprintTitle ?? null, provider: m?.providerTitle ?? null, citiesReady: m?.citiesReady ?? 0, partial: Boolean(m?.partial) };
+  });
 }
 
 // Where the lettering sits: centered, near the top of the front print area,
 // sized to a share of its width.
-export function placementFor(config, mapping, designId) {
-  const scale = config.placement.widthOfPrintArea;
+export function placementFor(config, productId, productMapping, designId) {
+  const place = config.products[productId]?.placement ?? { widthOfPrintArea: 0.86, topMarginOfPrintAreaWidth: 0.09 };
+  const scale = place.widthOfPrintArea;
   const aspect = config.designs[designId]?.aspect;
-  const W = mapping?.placeholder?.width;
-  const H = mapping?.placeholder?.height;
-  if (!aspect || !W || !H) return { x: 0.5, y: 0.25, scale };
-  const top = config.placement.topMarginOfPrintAreaWidth * W;
+  const W = productMapping?.placeholder?.width;
+  const H = productMapping?.placeholder?.height;
+  if (!aspect || !W || !H) return { x: 0.5, y: 0.3, scale };
+  const top = place.topMarginOfPrintAreaWidth * W;
   const y = (top + 0.5 * scale * W * aspect) / H;
   return { x: 0.5, y: Math.round(y * 10000) / 10000, scale };
 }
@@ -288,22 +350,23 @@ export function buildPrintifyOrder({ order, mapping, config, shop, siteUrl }) {
   const line_items = [];
   (order.lines ?? []).forEach((l, i) => {
     const n = i + 1;
-    const product = config.products[l.product_id];
+    const pm = mapping.products?.[l.product_id];
     const team = shop.city(l.team_id);
     const design = shop.design(l.design_id);
-    const city = mapping.cities?.[l.team_id];
-    if (!product) return problems.push(`Item ${n}: Printify isn't set up for ${l.product_id}.`);
+    if (!config.products[l.product_id]) return problems.push(`Item ${n}: Printify isn't set up for ${l.product_id}.`);
+    if (!pm) return problems.push(`Item ${n}: scan Printify for ${l.product_id} in the admin screen first.`);
     if (!team || !design) return problems.push(`Item ${n}: unknown city or design.`);
-    if (!city?.color) return problems.push(`Item ${n}: no blank shirt color picked for ${team.name}. Pick one in the admin screen.`);
+    const city = pm.cities?.[l.team_id];
+    if (!city?.color) return problems.push(`Item ${n}: no blank color picked for ${team.name} on ${l.product_id}. Pick one in the admin screen.`);
     const variantId = city.variants?.[l.size];
     if (!variantId) return problems.push(`Item ${n}: this printer has no ${l.size} in ${city.color}.`);
     if (!config.designs[design.id]?.aspect) return problems.push(`Item ${n}: there's no print file for ${design.name} yet.`);
     line_items.push({
-      print_provider_id: mapping.providerId,
-      blueprint_id: product.blueprintId,
+      print_provider_id: pm.providerId,
+      blueprint_id: pm.blueprintId,
       variant_id: variantId,
       quantity: l.quantity ?? 1,
-      print_areas: { front: [{ src: `${siteUrl}/print/${printFileName(team, design)}`, ...placementFor(config, mapping, design.id), angle: 0 }] },
+      print_areas: { front: [{ src: `${siteUrl}/print/${printFileName(team, design)}`, ...placementFor(config, l.product_id, pm, design.id), angle: 0 }] },
     });
   });
   const s = order.shipTo;
@@ -334,6 +397,9 @@ export function buildPrintifyOrder({ order, mapping, config, shop, siteUrl }) {
   };
 }
 
+// True once an order belongs to Printify, so it's never printed anywhere else.
+export const inPrintify = (order) => Boolean(order?.printify?.printifyOrderId) || ['sending', 'on_hold', 'in_production'].includes(order?.printify?.status);
+
 // Sends one paid order to Printify, once. Safe to call again for the same
 // order. Returns { status } as one of:
 //   on_hold        created in Printify, waiting for approval there
@@ -343,7 +409,7 @@ export function buildPrintifyOrder({ order, mapping, config, shop, siteUrl }) {
 //   needs_setup    the catalog hasn't been scanned yet
 //   rejected       Printify or the checks here refused it. Needs fixing.
 //   failed         Printify couldn't be reached or had an error. Try again.
-//   not_configured / missing
+//   not_configured / missing / in_print_run
 // An order already in Printify is never sent twice, even by hand: Printify
 // would make a second order and print it twice.
 export async function submitToPrintify({ orderId, storage, shop, config, env, siteUrl, fetchImpl = fetch, now = () => new Date() }) {
@@ -352,6 +418,8 @@ export async function submitToPrintify({ orderId, storage, shop, config, env, si
   const orders = storage.store('orders');
   const order = await orders.get(`order/${orderId}`);
   if (!order) return { status: 'missing' };
+  // Already handed to the vendor in a print run: never print it twice.
+  if (order.printRun) return { status: 'in_print_run', error: `This order is in print run ${order.printRun}, so the vendor is printing it.` };
   const ful = storage.store('fulfillment');
   const key = orderKey(orderId);
   const prior = await ful.get(key);
@@ -366,7 +434,8 @@ export async function submitToPrintify({ orderId, storage, shop, config, env, si
   if (fresh) return { status: 'in_progress' };
 
   const mapping = await ful.get(KEY_CATALOG);
-  if (!mapping) {
+  const unscanned = [...new Set((order.lines ?? []).map((l) => l.product_id))].filter((id) => config.products[id] && !mapping?.products?.[id]);
+  if (!mapping || unscanned.length) {
     const error = 'Scan the Printify catalog in the admin screen first.';
     await save({ status: 'needs_setup', at: now().toISOString(), error });
     return { status: 'needs_setup', error };
@@ -441,15 +510,15 @@ export async function sendToProduction({ orderId, storage, env, fetchImpl = fetc
 
 // A sample order, created on hold and never sent to print, so the owner can
 // check the mockup in Printify before a real order comes in.
-export async function sendTestOrder({ storage, shop, config, env, siteUrl, fetchImpl = fetch, now = () => new Date(), slug = 'dallas', size = 'L' }) {
+export async function sendTestOrder({ storage, shop, config, env, siteUrl, fetchImpl = fetch, now = () => new Date(), slug = 'dallas', productId = 'adult-tee' }) {
   const mapping = await storage.store('fulfillment').get(KEY_CATALOG);
-  if (!mapping) return { error: 'Scan the Printify catalog first.' };
-  const stamp = now().getTime();
+  if (!mapping?.products?.[productId]) return { error: 'Scan Printify for this garment first.' };
+  const sizes = shop.catalog.products.find((p) => p.id === productId)?.variants.map((v) => v.size) ?? ['L'];
   const order = {
-    id: `test-${stamp}`,
+    id: `test-${now().getTime()}`,
     email: '',
     shipTo: { name: 'Test Order', line1: '1 Test Street', line2: '', city: 'New York', state: 'NY', postalCode: '10001', country: 'US' },
-    lines: [{ product_id: 'adult-tee', design_id: 'this-is-our-year', team_id: slug, size, quantity: 1 }],
+    lines: [{ product_id: productId, design_id: shop.catalog.designs.find((d) => d.status === 'live')?.id ?? 'this-is-our-year', team_id: slug, size: sizes[Math.floor(sizes.length / 2)], quantity: 1 }],
   };
   const built = buildPrintifyOrder({ order, mapping, config, shop, siteUrl });
   if (built.problems) return { error: built.problems.join(' ') };

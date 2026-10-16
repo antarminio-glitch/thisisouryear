@@ -7,6 +7,9 @@ import store from '../data/store.json';
 import palettes from '../data/palettes.json';
 import { shop } from '../lib/shop.js';
 import { teams, colorNames } from '../lib/cities.js';
+import { photosForBrowser } from '../lib/photos.js';
+import photos from '../data/garment-photos.json';
+import specs from '../data/specs.json';
 
 const data = {
   version: palettes.version,
@@ -36,6 +39,10 @@ const data = {
     contactEmail: store.contactEmail,
   },
   approvals: Object.fromEntries(teams.map((t) => [t.slug, shop.printApproval(t.slug)])),
+  // Which photo of the blank each city gets, per garment. See src/lib/photos.js.
+  photos: photosForBrowser(photos),
+  // What each garment is made of, so the "About" block can follow the picker.
+  specs: Object.fromEntries(Object.entries(specs.products).map(([id, s]) => [id, { fabric: s.fabric, fit: s.fit, care: s.care }])),
 };
 const safe = JSON.stringify(data).replace(/</g, '\\u003c');
 ---

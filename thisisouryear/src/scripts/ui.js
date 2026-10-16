@@ -2,17 +2,36 @@
 import { garmentSvg } from '../lib/garment.js';
 import { dollars } from '../lib/shop-core.js';
 import { data, shop, cities } from './shop-data.js';
+import { photoFor, productIdFor, photoCaption } from '../lib/photos.js';
 
 export { dollars };
+
+// What a stage shows before a city is picked.
+export const EMPTY_STAGE_TEXT = 'Pick your city to see it in your colors.';
+export const emptyStageHtml = () => `<div class="stage-empty" role="status"><p>${EMPTY_STAGE_TEXT}</p></div>`;
 
 export const designById = (id) => data.catalog.designs.find((d) => d.id === id) ?? data.catalog.designs[0];
 export const productFor = (style, audience) => shop.findProduct(style, audience);
 
-// Redraws the garment for a style, fit and design. Colors come from CSS
-// variables on a parent element, so changing city doesn't need a redraw.
-export function drawGarment(holder, { style, audience, designId }, label = '') {
+// Redraws the garment for a style, fit, design and city. Lettering colors come
+// from CSS variables on a parent element. The city picks which photo of the
+// blank is shown; a city with no photo gets the drawing. With no city chosen
+// there is no shirt at all, only the prompt to pick one: a blank garment in
+// no city's colors would not mean anything.
+export function drawGarment(holder, { style, audience, designId, slug = '', caption = true }, label = '') {
   if (!holder) return;
-  holder.innerHTML = garmentSvg({ style, audience, lines: designById(designId).lines, label, decorative: !label });
+  if (!slug) {
+    holder.innerHTML = emptyStageHtml();
+    return;
+  }
+  const photo = photoFor(data.photos, productIdFor(data.catalog.products, style, audience), slug);
+  holder.innerHTML = garmentSvg({ style, audience, lines: designById(designId).lines, label, decorative: !label, photo });
+  if (caption) {
+    const note = document.createElement('p');
+    note.className = 'garment-caption';
+    note.textContent = photoCaption(photo);
+    holder.append(note);
+  }
 }
 
 const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);

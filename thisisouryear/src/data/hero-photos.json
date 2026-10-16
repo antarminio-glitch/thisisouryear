@@ -1,0 +1,13 @@
+{
+  "_about": "The few on-model photos the site fetches from SanMar (npm run photos:models). Style numbers are the ones in garments.json; colors are SanMar color codes as they appear in garment-photos.json. These show only in the home hero, the shop and gift strips, and one small thumbnail on a city page whose blank matches.",
+  "models": [
+    { "style": "PC54", "color": "TrueRoyal" },
+    { "style": "PC54", "color": "Red" },
+    { "style": "PC54", "color": "JetBlack" },
+    { "style": "PC54", "color": "DarkGreen" },
+    { "style": "PC78H", "color": "TrueRoyal" },
+    { "style": "PC78H", "color": "JetBlack" },
+    { "style": "PC54Y", "color": "Red" },
+    { "style": "PC78YH", "color": "DarkGreen" }
+  ]
+}

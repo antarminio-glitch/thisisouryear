@@ -362,30 +362,17 @@ a {
   stroke-width: 4.5;
 }
 
-/* The lettering */
-.lt text {
-  font-family: var(--display);
-  text-anchor: middle;
-  /* Round joins. Sharp (miter) joins leave hairline spikes in this font. */
-  stroke-linejoin: round;
+/* The real photo. The lettering on it is the same vector artwork as on the
+   drawings, drawn solid: no opacity, blending or shadow to wash it out. */
+/* Photos come on white, so anything holding one goes white too. */
+.shirt-real {
+  background: #fff;
+  border-radius: 8px;
 }
-.lt-rim {
-  fill: var(--outline);
-  stroke: var(--outline);
+.stage:has(.shirt-real),
+.tile:has(.shirt-real) {
+  background: #fff;
 }
-.lt-gap {
-  fill: var(--shirt);
-  stroke: var(--shirt);
-}
-.lt-1 {
-  fill: var(--line1);
-  stroke: var(--line1);
-}
-.lt-2 {
-  fill: var(--line2);
-  stroke: var(--line2);
-}
-
 /* ---------- Shopping interface: stage, fields, size buttons ---------- */
 .stage {
   padding: 4% 6%;
@@ -397,6 +384,7 @@ a {
   --line1: #ffffff;
   --line2: #ffffff;
   --outline: #d7dadd;
+  --border: #3a3e43;
   background: var(--tile);
 }
 .concept {
@@ -901,4 +889,113 @@ tbody th {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* ---------- On-model photos: hero spots only ---------- */
+.shirt-model {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #fff;
+  border-radius: 8px;
+}
+.shirt-model .print {
+  opacity: 0.95;
+  filter: drop-shadow(0 0.4px 0.5px rgb(0 0 0 / 0.2));
+}
+.model-shot {
+  margin: 0;
+}
+.model-shot figcaption {
+  margin-top: 8px;
+  font-size: 0.9375rem;
+  color: var(--soft);
+}
+.hero-models {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 560px;
+  margin: 30px auto 0;
+  text-align: left;
+}
+.model-strip {
+  margin-top: 40px;
+}
+.model-strip h2 {
+  margin-bottom: 14px;
+  font-size: clamp(1.25rem, 4.6vw, 1.75rem);
+}
+.model-strip ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.model-strip .concept {
+  margin-top: 12px;
+}
+.model-thumb {
+  max-width: 180px;
+  margin: 16px 0 0;
+}
+@media (min-width: 720px) {
+  .model-strip ul {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .builder-stage .model-strip ul {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ---------- A stage with no city picked yet: no shirt, just the prompt ---------- */
+.stage-empty {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: 24px;
+  text-align: center;
+}
+.stage-empty p {
+  max-width: 18ch;
+  font: 600 1.25rem/1.3 var(--body);
+  color: var(--soft);
+  text-wrap: balance;
+}
+
+/* Every city exposes the same garment previews, including preview-only items. */
+.garment-caption {
+  margin: 8px 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: #394b52;
+}
+.garment-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+.garment-options[hidden] { display: none; }
+.garment-option {
+  min-width: 0;
+  padding: 6px;
+  border: 2px solid #aab5bc;
+  border-radius: 8px;
+  background: #fff;
+  color: #16252a;
+  font: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  cursor: pointer;
+}
+.garment-option[aria-pressed="true"] { border-color: #16252a; box-shadow: inset 0 0 0 1px #16252a; }
+.garment-option:focus-visible { outline: 3px solid var(--on-bg); outline-offset: 3px; }
+.garment-option-image, .garment-option small { display: block; }
+.garment-option small { margin-top: 4px; }
+.garment-option-image { margin-bottom: 6px; }
+@media (max-width: 380px) {
+  .garment-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
