@@ -172,7 +172,10 @@ async function setup(preloaded) {
     ['Order records', s.stripe.webhook ? 'On' : 'Off. Paid orders are not being recorded here.'],
     ['Saving things (orders, quotes, photos)', s.storage === 'unavailable' ? 'Not available' : 'Working'],
     ['Site address', s.siteUrl ?? 'Not set'],
-    ['Order email to the vendor', s.orderEmail.ready ? `On. Goes to ${s.orderEmail.to.join(', ')}${s.orderEmail.cc.length ? `, copy to ${s.orderEmail.cc.join(', ')}` : ''}.` : `Off. Missing: ${s.orderEmail.missing.join(', ')}.`],
+    ['How orders get made', s.fulfillment === 'printify'
+      ? `Printify. ${!s.printify.tokenSet ? 'Token missing.' : !s.printify.scanned ? 'Catalog not scanned yet.' : `${s.printify.provider}, ${s.printify.citiesReady} of ${s.colors.cities} cities ready.`} ${s.printify.autoSend ? 'Orders print right away.' : 'Orders wait for your OK.'}`
+      : 'Emailed to your vendor.'],
+    [s.fulfillment === 'printify' ? 'Heads-up email to you' : 'Order email to the vendor', s.orderEmail.ready ? `On. Goes to ${s.orderEmail.to.join(', ')}${s.orderEmail.cc.length ? `, copy to ${s.orderEmail.cc.join(', ')}` : ''}.` : `Off. Missing: ${s.orderEmail.missing.join(', ')}.`],
     ['Marketing email', s.email.ready ? 'Ready' : 'Off'],
     ['Color reference', `Version ${s.colors.version}. ${s.colors.appliedSurfaces} surfaces from the reference, ${s.colors.customSurfaces.length} custom.`],
     ['Cities with vendor-approved colors', `${s.colors.vendorApprovedCities} of ${s.colors.cities}`],
@@ -450,12 +453,124 @@ async function campaigns() {
   draw();
 }
 
+// ---------- Printify ----------
+const PRINTIFY_WORDS = {
+  on_hold: 'In Printify, waiting for your OK',
+  in_production: 'Printing',
+  sending: 'Sending',
+  failed: 'Failed. Stripe will retry on its own.',
+  rejected: 'Printify refused it',
+  needs_setup: 'Not sent: Printify isn\'t set up',
+  not_configured: 'Not sent: no Printify token',
+};
+function printifyWords(p) {
+  if (!p) return 'Not sent';
+  const base = PRINTIFY_WORDS[p.status] ?? words(p.status);
+  return [base, p.printifyOrderId ? `Printify order ${p.printifyOrderId}` : '', p.error && p.status !== 'in_production' && p.status !== 'on_hold' ? p.error : ''].filter(Boolean).join('. ');
+}
+
+// The Printify box at the top of Orders: which printer, a color for each
+// city, a test order, and a rescan.
+async function printifyPanel(redraw) {
+  const res = await call('printify.status');
+  if (!res.ok) return note(problem(res), 'bad');
+  const { mapping, overrides, autoSend, missing, cities: list } = res.body;
+  const out = h('div', { class: 'preview-out' });
+  const box = h('section', { class: 'card' }, h('h3', { text: 'Printify' }));
+
+  if (missing.length) box.append(note(`Add ${missing.join(', ')} in Netlify, then come back and scan.`, 'bad'));
+  box.append(
+    note(
+      mapping
+        ? `Printer: ${mapping.providerTitle}, on the ${mapping.blueprintTitle}. ${mapping.citiesReady} of ${list.length} cities have a close blank color. Scanned ${when(mapping.scannedAt)}.${mapping.partial ? ' Not every printer was checked in time. Scan again to finish.' : ''}`
+        : 'Not scanned yet. Scan once before the first order, so each city gets a printer and a blank shirt color.',
+      mapping && mapping.citiesReady === list.length ? '' : 'bad',
+    ),
+    note(autoSend ? 'New orders go straight to print.' : 'New orders wait in Printify for your OK. Approve each one below, or in Printify. Set PRINTIFY_AUTO_SEND to true in Netlify to skip this.'),
+  );
+
+  const scan = button('Scan Printify', null, false);
+  scan.addEventListener(
+    'click',
+    busy(scan, async () => {
+      out.replaceChildren(note('Scanning. This takes a few seconds.'));
+      const r = await call('printify.scan');
+      if (!r.ok) return out.replaceChildren(note(problem(r), 'bad'));
+      redraw(`Scanned. ${r.body.mapping.providerTitle} can do ${r.body.mapping.citiesReady} of ${list.length} cities.`);
+    }),
+  );
+  const testCity = citySelect('dallas');
+  const test = button('Send a test order', null);
+  test.addEventListener(
+    'click',
+    busy(test, async () => {
+      const r = await call('printify.test_order', { slug: testCity.value || 'dallas' });
+      out.replaceChildren(
+        r.ok
+          ? note(`Test order ${r.body.printifyOrderId} is in Printify, on hold. Open it there to check the mockup, then delete it. It is never printed unless you send it.`)
+          : note(problem(r), 'bad'),
+      );
+    }),
+  );
+  box.append(h('div', { class: 'btns' }, scan), out);
+  if (!mapping) return box;
+
+  box.append(
+    h('details', {}, h('summary', { text: 'Try a test order' }), field('City', testCity, 'Creates one large tee for a sample address, on hold. Nothing is charged or printed.'), test),
+  );
+
+  // A blank color for each city.
+  const picks = new Map();
+  const rows = list.map((c) => {
+    const m = mapping.cities[c.slug] ?? {};
+    const choice = select([['', `Closest match${m.manual ? '' : m.color ? ` (${m.color})` : ''}`], ...mapping.colorsAvailable.map((name) => [name, name])], overrides[c.slug] ?? '');
+    choice.setAttribute('aria-label', `Blank color for ${c.name}`);
+    picks.set(c.slug, choice);
+    const state = !m.ok ? (m.missingSizes?.length ? `Missing ${m.missingSizes.join(', ')}` : 'No close color. Pick one.') : m.manual ? 'Your pick' : 'Close';
+    return h(
+      'tr',
+      {},
+      h('th', { scope: 'row' }, h('span', { class: 'named' }, h('span', { class: 'swatch', style: `background:${c.shirt}` }), h('span', { text: c.name }))),
+      h('td', {}, h('span', { class: 'named' }, m.approxHex ? h('span', { class: 'swatch', style: `background:${m.approxHex}` }) : null, h('span', { text: m.color ?? 'None' }))),
+      h('td', {}, choice),
+      h('td', { text: state }),
+    );
+  });
+  const save = button('Save colors', null, false);
+  const saved = h('div');
+  save.addEventListener(
+    'click',
+    busy(save, async () => {
+      const next = {};
+      for (const [slug, s] of picks) if ((overrides[slug] ?? '') !== s.value) next[slug] = s.value;
+      if (!Object.keys(next).length) return saved.replaceChildren(note('Nothing changed.'));
+      const r = await call('printify.colors', { overrides: next });
+      if (!r.ok) return saved.replaceChildren(note(problem(r), 'bad'));
+      redraw('Colors saved. New orders use them now.');
+    }),
+  );
+  box.append(
+    h(
+      'details',
+      { open: mapping.citiesReady < list.length },
+      h('summary', { text: 'Blank color for each city' }),
+      h('p', { class: 'sub', text: 'The left swatch is the city\'s shirt color. The middle one is roughly what the blank looks like on a screen. Check real blanks in Printify before you trust a close call.' }),
+      h('div', { class: 'table-scroll' }, h('table', { class: 'wide blanks' }, h('thead', {}, h('tr', {}, h('th', { text: 'City' }), h('th', { text: 'Blank' }), h('th', { text: 'Change to' }), h('th', { text: 'Status' }))), h('tbody', {}, rows))),
+      h('div', { class: 'btns' }, save),
+      saved,
+    ),
+  );
+  return box;
+}
+
 // ---------- orders ----------
 async function orders() {
   const draw = async (message = '', kind = '') => {
     const res = await call('orders.list');
     if (!res.ok) return failed(res);
-    const { orders: list, orderEmail } = res.body;
+    const { orders: list, orderEmail, fulfillment } = res.body;
+    const viaPrintify = fulfillment === 'printify';
+    const pfBox = viaPrintify ? await printifyPanel(draw) : null;
 
     const out = h('div', { class: 'preview-out' });
     const testPreview = button('Preview the order email', null);
@@ -488,7 +603,7 @@ async function orders() {
         }),
       );
       const confirm = h('input', { type: 'text', autocomplete: 'off', spellcheck: false, placeholder: 'SEND' });
-      const resend = button('Send to the vendor again', null);
+      const resend = button(viaPrintify ? 'Send the heads-up again' : 'Send to the vendor again', null);
       resend.addEventListener(
         'click',
         busy(resend, async () => {
@@ -496,6 +611,34 @@ async function orders() {
           draw(r.ok ? `${o.ref} sent to ${r.body.to.join(', ')}.` : problem(r), r.ok ? '' : 'bad');
         }),
       );
+
+      // Printify controls: approve an order on hold, or send one that didn't go.
+      const pf = o.printify;
+      const pfControls = [];
+      if (viaPrintify && pf?.status === 'on_hold') {
+        const sure = h('input', { type: 'text', autocomplete: 'off', spellcheck: false, placeholder: 'PRINT' });
+        const go = button('Print it now', null, false);
+        go.addEventListener(
+          'click',
+          busy(go, async () => {
+            const r = await call('orders.produce', { id: o.id, confirm: sure.value.trim() });
+            draw(r.ok ? `${o.ref} is printing.` : problem(r), r.ok ? '' : 'bad');
+          }),
+        );
+        pfControls.push(h('details', { open: true }, h('summary', { text: 'Approve for printing' }), field('Type PRINT to confirm', sure, 'Printify charges your card on file and starts printing.'), go));
+      }
+      if (viaPrintify && !['on_hold', 'in_production', 'sending'].includes(pf?.status)) {
+        const sure = h('input', { type: 'text', autocomplete: 'off', spellcheck: false, placeholder: 'SEND' });
+        const go = button('Send to Printify', null, false);
+        go.addEventListener(
+          'click',
+          busy(go, async () => {
+            const r = await call('orders.printify', { id: o.id, confirm: sure.value.trim() });
+            draw(r.ok ? `${o.ref} is in Printify (${PRINTIFY_WORDS[r.body.status] ?? r.body.status}).` : problem(r), r.ok ? '' : 'bad');
+          }),
+        );
+        pfControls.push(h('details', { open: true }, h('summary', { text: 'Send this order to Printify' }), field('Type SEND to confirm', sure, 'Fix whatever stopped it first. The error is listed above.'), go));
+      }
       return h(
         'section',
         { class: 'card' },
@@ -508,23 +651,40 @@ async function orders() {
             ['Items', `${o.units}${o.bulkPercentOff ? `, bulk price ${o.bulkPercentOff}% off` : ''}`],
             ['Total', money(o.totalCents)],
             ['Ship to', o.shipTo ? [o.shipTo.name, [o.shipTo.city, o.shipTo.state].filter(Boolean).join(', ')].filter(Boolean).join(', ') : 'Not recorded'],
-            ['Vendor email', words],
+            viaPrintify || o.printify ? ['Printify', printifyWords(o.printify)] : null,
+            [viaPrintify ? 'Heads-up email' : 'Vendor email', words],
             ['Stripe reference', o.id],
-          ].map(([k, v]) => h('div', {}, h('dt', { text: k }), h('dd', { text: v }))),
+          ]
+            .filter(Boolean)
+            .map(([k, v]) => h('div', {}, h('dt', { text: k }), h('dd', { text: v }))),
         ),
+        pfControls,
         h('div', { class: 'btns' }, preview),
         holder,
-        h('details', {}, h('summary', { text: 'Send the vendor email again' }), field('Type SEND to confirm', confirm, 'Only if the vendor lost it. They get a second copy.'), resend),
+        h(
+          'details',
+          {},
+          h('summary', { text: viaPrintify ? 'Send the heads-up email again' : 'Send the vendor email again' }),
+          field('Type SEND to confirm', confirm, viaPrintify ? 'Sends you another copy of the order email.' : 'Only if the vendor lost it. They get a second copy.'),
+          resend,
+        ),
       );
     });
 
     fill(
       h('h2', { text: 'Orders' }),
-      h('p', { class: 'sub', text: 'Paid orders, from Stripe\'s signed messages. Each one is emailed to the vendor once, automatically. Stripe has the full details, including the customer\'s email.' }),
+      h(
+        'p',
+        { class: 'sub', text: viaPrintify
+          ? 'Paid orders, from Stripe\'s signed messages. Each one goes to Printify once, automatically, and you get a heads-up email. Stripe has the full details, including the customer\'s email.'
+          : 'Paid orders, from Stripe\'s signed messages. Each one is emailed to the vendor once, automatically. Stripe has the full details, including the customer\'s email.' },
+      ),
       message ? note(message, kind) : null,
+      pfBox,
+      viaPrintify ? h('h3', { text: 'Heads-up email' }) : null,
       orderEmail.ready
-        ? note(`Order emails go to ${orderEmail.to.join(', ')}${orderEmail.cc.length ? `, with a copy to ${orderEmail.cc.join(', ')}` : ''}.`)
-        : note(`Order emails are off. Missing: ${orderEmail.missing.join(', ')}.`, 'bad'),
+        ? note(`${viaPrintify ? 'Heads-up emails go' : 'Order emails go'} to ${orderEmail.to.join(', ')}${orderEmail.cc.length ? `, with a copy to ${orderEmail.cc.join(', ')}` : ''}.`)
+        : note(`${viaPrintify ? 'Heads-up emails are' : 'Order emails are'} off. Missing: ${orderEmail.missing.join(', ')}.`, 'bad'),
       h('div', { class: 'btns' }, testPreview, testSend),
       out,
       h('h3', { text: `Recent orders (${list.length})` }),

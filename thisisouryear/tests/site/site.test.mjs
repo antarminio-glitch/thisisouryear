@@ -184,3 +184,26 @@ test('no team, league or league-event names anywhere in the project or the built
   assert.ok(scanned > 100, `Only ${scanned} files were scanned, so something is off with this check.`);
   assert.deepEqual(problems.slice(0, 20), [], 'Found a name the site is not allowed to use. Say the city and the colors instead.');
 });
+
+// The print files Printify downloads: one per city for each design on sale,
+// transparent, and the shape the placement math expects.
+test('every city has a print file for each design on sale', () => {
+  const printify = read('printify.json');
+  const live = catalog.designs.filter((d) => d.status === 'live');
+  const files = fs.readdirSync(path.join(dist, 'print')).filter((f) => f.endsWith('.png'));
+  assert.equal(files.length, teams.length * live.length);
+  for (const team of teams) {
+    for (const design of live) {
+      const name = files.find((f) => new RegExp(`^${team.slug}-${design.id}-[0-9a-f]{8}\\.png$`).test(f));
+      assert.ok(name, `No print file for ${team.slug} ${design.id}`);
+      const png = fs.readFileSync(path.join(dist, 'print', name));
+      assert.equal(png.subarray(1, 4).toString(), 'PNG', name);
+      const width = png.readUInt32BE(16);
+      const height = png.readUInt32BE(20);
+      assert.equal(png[25], 6, `${name} needs a transparent background`);
+      assert.ok(width >= 3000, `${name} is only ${width}px wide`);
+      const aspect = printify.designs[design.id].aspect;
+      assert.ok(Math.abs(height / width - aspect) < 0.01, `${name} is ${width}x${height}; printify.json expects height/width ${aspect}`);
+    }
+  }
+});

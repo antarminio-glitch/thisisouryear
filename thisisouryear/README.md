@@ -218,6 +218,30 @@ Every Stripe order line carries this metadata: `team_id`, `city`, `colors`, `col
 
 All of this hangs on `STRIPE_WEBHOOK_SECRET`. With it, every paid order is recorded on the site and emailed to the vendor. Without it, nothing is recorded, no order email goes out, and you'd be filling orders from the Stripe dashboard by hand.
 
+### Or Printify, until you buy in bulk
+
+Set `FULFILLMENT` to `printify` and every paid order goes to Printify instead, which prints and ships it straight to the customer. Printify charges your card for each shirt. Set `FULFILLMENT` back to empty and orders go to the vendor by email again. Nothing else changes.
+
+How it works:
+
+- **The shirt** is the Bella+Canvas 3001 (`src/data/printify.json`). One printer makes all of them, picked by the scan below
+- **The artwork** is built with the site: one transparent PNG per city at `/print/<city>-<design>-<code>.png`, 3,300 pixels wide, with the outline and every color exact. The code changes whenever the colors or lettering change, so Printify never reuses an old file. Printify downloads it when the order is created, so the site must be online at `SITE_URL`
+- **The blank color** for each city is the closest one the printer stocks. `src/data/printify.json` has rough screen colors for Bella+Canvas blanks, used only for that match. Solid blanks beat heathers in a close call. Change any city's blank in the admin screen
+- **Each order** is sent once, even when Stripe repeats itself. It goes in on hold, so you can check it in Printify first. Once a few look right, set `PRINTIFY_AUTO_SEND` to `true` and they print right away. If Printify is down, Stripe is told and tries again. If Printify refuses an order (a bad address, say), you get an email saying why, and the admin screen has a button to send it once it's fixed. An order already in Printify is never sent twice
+- **You get a heads-up email** for every order, at `ORDER_EMAIL_CC`. The vendor address is ignored in this mode
+
+To set it up:
+
+1. Make a Printify account and add a card under **Billing**
+2. Add a store and choose **API** (or "custom integration") as the sales channel
+3. Click your profile icon, then **Connections**, then **Generate** a token with every scope. Save it in Netlify as `PRINTIFY_API_TOKEN`
+4. In Netlify, set `FULFILLMENT` to `printify` and trigger a deploy
+5. In the admin screen, open **Orders** and press **Scan Printify**. Check the blank color list, change any you don't like, and press **Save colors**
+6. Press **Send a test order**. Open it in Printify, check the mockup, then delete it
+7. When the first real orders look right, set `PRINTIFY_AUTO_SEND` to `true`
+
+Money: Printify's base price for this shirt is about $11, plus their shipping (about $4.50 for the first shirt, about $2.25 for each one after). The site charges one flat shipping price per order, so big bulk orders earn less per shirt. Check the numbers in Printify before a big league order.
+
 ---
 
 ## The admin screen
@@ -225,7 +249,7 @@ All of this hangs on `STRIPE_WEBHOOK_SECRET`. With it, every paid order is recor
 Open `/admin/` and enter the password you saved in Netlify as `ADMIN_TOKEN`. Six sections:
 
 - **Setup**: reads the real settings and says exactly what isn't set up yet, by name. Start here
-- **Orders**: every paid order, whether the vendor email went out, a preview of it, a test email to check the setup, and a resend button
+- **Orders**: every paid order, whether the vendor email went out, a preview of it, a test email to check the setup, and a resend button. With Printify on, also the printer, a blank color for each city, a test order, and buttons to approve an order on hold or send one that didn't go
 - **Season**: enter the round the season is in and each city's status, with where you checked it. Recording a loss changes nothing. A city only becomes "eliminated" when you say why (mathematically, or lost a playoff game) and cite a source. The bandwagon only shows survivors when the round is confirmed, recent, and all 32 cities have a confirmed status
 - **Campaigns**: all five start switched off. Turning one on takes typing `ACTIVATE` and its name. Window campaigns (schedule release, Week 1) need real dates for that season. The elimination follow-up has a dry run that shows who would get the email and the exact words, and sends nothing
 - **Quotes**: league quote requests, to answer by email and mark as answered or ordered
@@ -267,6 +291,11 @@ In Netlify, open the project, then **Project configuration > Environment variabl
 | `UNSUBSCRIBE_SECRET` | Any long random string (16+). Signs the unsubscribe links |
 | `ORDER_EMAIL_TO` | The vendor's email. Every paid order goes here. Several addresses can be separated by commas |
 | `ORDER_EMAIL_CC` | Your email, for a copy of every order. The vendor's replies come here. With only this set, orders come to you to forward |
+| `FULFILLMENT` | Empty: orders are emailed to the vendor. `printify`: orders go to Printify |
+| `PRINTIFY_API_TOKEN` | From Printify: profile icon, **Connections**, **Generate**. Needed when `FULFILLMENT` is `printify` |
+| `PRINTIFY_AUTO_SEND` | `true` prints each order right away. Anything else leaves it on hold in Printify for your OK |
+| `PRINTIFY_SHOP_ID` | Only if your Printify account has more than one store. The scan tells you the number |
+| `PRINTIFY_PROVIDER_ID` | Only to force one printer. Leave it out and the scan picks the best one |
 
 After adding a variable, go to **Deploys** and choose **Trigger deploy**.
 
@@ -321,7 +350,8 @@ netlify.toml           tells Netlify how to build and serve the site
 
 ## Not built yet
 
-- Sending orders into a print service's own system. Orders reach the vendor by email
+- Any print service besides Printify, and the Printify connection hasn't been exercised against the real service yet. Send a test order first
+- Following Printify's tracking back into the site. Printify emails the customer their tracking, and the admin screen shows what was sent, not what happened after
 - Real product photos
 - An email service other than Resend, and the Resend adapter hasn't been exercised against the real service
 - Anything that posts to social media. The repost queue is a to-do list for a person

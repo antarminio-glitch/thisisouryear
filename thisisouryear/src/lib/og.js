@@ -13,7 +13,7 @@ import { DEFAULT_LINES } from './garment.js';
 
 const fontDir = path.join(process.cwd(), 'public', 'fonts');
 let fonts;
-function loadFonts() {
+export function loadFonts() {
   fonts ??= {
     block: fontkit.openSync(path.join(fontDir, 'graduate.woff2')),
     text: fontkit.openSync(path.join(fontDir, 'barlow-semi-condensed-600.woff2')),
@@ -22,13 +22,13 @@ function loadFonts() {
   return fonts;
 }
 
-function measure(font, text, size, track = 0) {
+export function measure(font, text, size, track = 0) {
   const run = font.layout(text);
   return run.glyphs.reduce((w, g) => w + (g.advanceWidth / font.unitsPerEm) * size, 0) + track * size * Math.max(0, run.glyphs.length - 1);
 }
 
 // Turns a line of text into an SVG path. `anchor` is "start" or "middle".
-function textPath(font, text, x, y, size, { anchor = 'start', track = 0 } = {}) {
+export function textPath(font, text, x, y, size, { anchor = 'start', track = 0 } = {}) {
   const scale = size / font.unitsPerEm;
   let cursor = anchor === 'middle' ? x - measure(font, text, size, track) / 2 : x;
   let d = '';

@@ -33,15 +33,17 @@ const addresses = (v) =>
 
 export const orderRef = (orderId) => `TIOY-${sha256(String(orderId)).slice(0, 6).toUpperCase()}`;
 
-// What's set up, and what's missing, for order emails.
-export function orderEmailSettings(env) {
-  const to = addresses(env.ORDER_EMAIL_TO);
+// What's set up, and what's missing, for order emails. With `ownerOnly`
+// (orders go to Printify instead of a vendor), the email is just a heads-up
+// to the owner.
+export function orderEmailSettings(env, { ownerOnly = false } = {}) {
+  const to = ownerOnly ? [] : addresses(env.ORDER_EMAIL_TO);
   const cc = addresses(env.ORDER_EMAIL_CC);
   const missing = [];
   if (env.EMAIL_PROVIDER !== 'resend') missing.push('EMAIL_PROVIDER (set it to resend)');
   if (!env.RESEND_API_KEY) missing.push('RESEND_API_KEY');
   if (!env.EMAIL_FROM) missing.push('EMAIL_FROM');
-  if (!to.length && !cc.length) missing.push('ORDER_EMAIL_TO');
+  if (!to.length && !cc.length) missing.push(ownerOnly ? 'ORDER_EMAIL_CC' : 'ORDER_EMAIL_TO');
   // Nobody to send to directly? Send to the owner's copy address instead.
   return { ready: missing.length === 0, to: to.length ? to : cc, cc: to.length ? cc : [], replyTo: cc, missing, vendorSet: to.length > 0 };
 }
@@ -92,6 +94,18 @@ export function printColors(shop, palettes, slug) {
 const pad = (s, n) => String(s).padEnd(n, ' ');
 const COUNTRY = { US: 'United States' };
 
+// One line on what happened with Printify, for the owner's copy.
+export function printifyLine(p) {
+  if (!p) return '';
+  const id = p.printifyOrderId ? ` Printify order ${p.printifyOrderId}.` : '';
+  if (p.status === 'on_hold') return `Sent to Printify and waiting for your OK.${id} Approve it in Printify or the admin screen to print it.${p.error ? ` ${p.error}` : ''}`;
+  if (p.status === 'in_production') return `Sent to Printify and printing.${id} Printify ships it and emails the customer tracking.`;
+  if (p.status === 'needs_setup') return `NOT sent to Printify: ${p.error}`;
+  if (p.status === 'rejected') return `NOT sent to Printify: ${p.error} Fix it, then send it from the admin screen.`;
+  if (p.status === 'failed') return `NOT sent to Printify yet: ${p.error} It will be tried again.`;
+  return '';
+}
+
 export function orderEmailContent({ order, shop, palettes, timezone = 'America/New_York', test = false }) {
   const ref = orderRef(order.id);
   const units = (order.lines ?? []).reduce((n, l) => n + (l.quantity ?? 1), 0);
@@ -103,6 +117,10 @@ export function orderEmailContent({ order, shop, palettes, timezone = 'America/N
   if (test) say('THIS IS A TEST. Nothing was paid and nothing needs printing.\n');
   say(`New order to print and ship: ${ref}`);
   say('');
+  if (order.printify) {
+    say(`PRINTIFY: ${printifyLine(order.printify)}`);
+    say('');
+  }
   say(`Paid: ${when} (Eastern)`);
   say(`Items: ${units}`);
   say(`Stripe reference: ${order.id}`);
@@ -161,7 +179,8 @@ export function orderEmailContent({ order, shop, palettes, timezone = 'America/N
   say('');
   say('Questions about this order? Reply to this email.');
 
-  const subject = `${test ? '[TEST] ' : ''}New order ${ref}: ${units} ${units === 1 ? 'item' : 'items'} to print${s?.state ? `, ship to ${s.state}` : ''}`;
+  const via = order.printify ? ({ on_hold: ' (Printify, waiting for your OK)', in_production: ' (Printify, printing)' }[order.printify.status] ?? ' (NOT sent to Printify)') : '';
+  const subject = `${test ? '[TEST] ' : ''}New order ${ref}: ${units} ${units === 1 ? 'item' : 'items'} to print${s?.state ? `, ship to ${s.state}` : ''}${via}`;
   return { ref, subject, text: out.join('\n') };
 }
 
@@ -169,12 +188,12 @@ export function orderEmailContent({ order, shop, palettes, timezone = 'America/N
 // won't send twice unless `again` is set by the owner on purpose.
 // Returns { status } as one of: sent, already_sent, in_progress,
 // not_configured, missing, failed.
-export async function sendOrderEmail({ orderId, storage, shop, palettes, env, fetchImpl = fetch, now = () => new Date(), again = false }) {
+export async function sendOrderEmail({ orderId, storage, shop, palettes, env, fetchImpl = fetch, now = () => new Date(), again = false, ownerOnly = false }) {
   const orders = storage.store('orders');
   const order = await orders.get(`order/${orderId}`);
   if (!order) return { status: 'missing' };
 
-  const settings = orderEmailSettings(env);
+  const settings = orderEmailSettings(env, { ownerOnly });
   const key = `email/${orderId}`;
   const prior = await orders.get(key);
   const save = async (state) => {
