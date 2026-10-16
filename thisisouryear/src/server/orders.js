@@ -8,6 +8,7 @@
 // the site is never counted as a sale.
 import { json, sha256 } from './http.js';
 import { shipToFrom, sendOrderEmail } from './order-email.js';
+import { sendToPrintify } from './printify.js';
 
 const LINE_KEYS = [
   'team_id', 'design_id', 'product_id', 'product_style', 'audience', 'size', 'purchase_mode', 'bundle_id',
@@ -62,8 +63,9 @@ export async function markRefunded({ charge, storage, now }) {
   return { found: true, order };
 }
 
-// `shop` and `palettes` are only needed for the order email to the vendor.
-export function makeWebhookHandler({ env, stripeFor, getStorage, shop = null, palettes = null, fetchImpl = fetch, now = () => new Date() }) {
+// `shop` and `palettes` are only needed for the order email to the vendor,
+// and `printify` (src/data/printify.json) for sending orders to Printify.
+export function makeWebhookHandler({ env, stripeFor, getStorage, shop = null, palettes = null, printify = null, fetchImpl = fetch, now = () => new Date() }) {
   return async (req) => {
     if (req.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: { Allow: 'POST' } });
     const secret = env.STRIPE_WEBHOOK_SECRET;
@@ -91,11 +93,17 @@ export function makeWebhookHandler({ env, stripeFor, getStorage, shop = null, pa
           await recordPaidOrder({ session, stripe, storage, now });
           // Tell the vendor. Runs again on Stripe's repeats, but only ever
           // sends once. If it fails, Stripe is told, and tries again later.
+          let sent = null;
           if (shop) {
-            const sent = await sendOrderEmail({ orderId: session.id, storage, shop, palettes, env, fetchImpl, now });
-            if (sent.status === 'failed') throw new Error(`Order email failed: ${sent.error}`);
+            sent = await sendOrderEmail({ orderId: session.id, storage, shop, palettes, env, fetchImpl, now });
             if (sent.status === 'not_configured') console.warn(`Order ${session.id} recorded, but no order email went out. Missing: ${sent.missing.join(', ')}.`);
           }
+          // Printify prints and ships it. Also only ever once per order.
+          const made = printify ? await sendToPrintify({ orderId: session.id, storage, map: printify, env, fetchImpl, now }) : null;
+          if (made?.status === 'not_configured') console.warn(`Order ${session.id} recorded, but not sent to Printify. Missing: ${made.missing.join(', ')}.`);
+          if (made?.skipped?.length) console.warn(`Order ${session.id}: ${made.skipped.length} item(s) not sent to Printify. See the order email.`);
+          const failed = [sent?.status === 'failed' && `Order email failed: ${sent.error}`, made?.status === 'failed' && `Printify failed: ${made.error}`].filter(Boolean);
+          if (failed.length) throw new Error(failed.join(' '));
         }
       } else if (event.type === 'charge.refunded') {
         await markRefunded({ charge: event.data.object, storage, now });

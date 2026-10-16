@@ -12,10 +12,12 @@ import { moderate } from './fans.js';
 import { orderEmailSettings, orderEmailContent, sendOrderEmail, sampleOrder, orderRef } from './order-email.js';
 import { previewPrintRun, createPrintRun, listPrintRuns, runSheets, sheetText, emailPrintRun } from './print-runs.js';
 import { todayIn } from '../lib/counter.js';
+import { printifySettings } from './printify.js';
+import printifyMap from '../data/printify.json' with { type: 'json' };
 
 const QUOTE_STATUSES = ['new', 'answered', 'ordered', 'closed'];
 
-export function setupReport({ shop, palettes, history, env, storageKind, now }) {
+export function setupReport({ shop, palettes, history, env, storageKind, now, printify = printifyMap }) {
   const { store, catalog, teams } = shop;
   const present = (k) => typeof env[k] === 'string' && env[k].length > 0;
   const stripeMode = !present('STRIPE_SECRET_KEY') ? 'missing' : env.STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'live' : 'test';
@@ -42,6 +44,9 @@ export function setupReport({ shop, palettes, history, env, storageKind, now }) 
   if (!present('BUILD_HOOK_URL')) need('BUILD_HOOK_URL', 'The daily rebuild that keeps counters and share cards current does not run without it.');
   if (!orderEmail.ready) for (const m of orderEmail.missing) need(m.split(' ')[0], 'Order emails to the vendor do not go out without it. Paid orders are still in Stripe.');
   else if (!orderEmail.vendorSet) need('ORDER_EMAIL_TO', 'Order emails come to you only. Add the vendor\'s address to send them straight to the vendor.');
+  const printifyReady = printifySettings(env, printify);
+  for (const m of printifyReady.missing) need(m, m === 'PRINTIFY_API_TOKEN' ? 'Paid orders are not sent to Printify without it. Make one in Printify under Account, Connections.' : 'Which Printify shop to order from. Set shopId in src/data/printify.json or this setting.');
+  if (Object.keys(printify?.products ?? {}).length === 0) need('printify.json > products', 'No city is matched to a Printify product, so nothing is sent to Printify.');
   for (const p of products) if (!p.sellable) need(`catalog.json > ${p.id}`, `Not for sale. Fill in: ${p.missing.join(', ')}.`);
   for (const d of catalog.designs) if (d.status !== 'live') need(`catalog.json > designs > ${d.id}`, 'Concept only. Set status to "live", give it an artworkVersion and add it to a product\'s designs once the artwork is approved.');
   if (store.collectMarketingConsent !== true) need('store.json > collectMarketingConsent', 'Off, so checkout never asks about marketing email and no customer can be eligible for a campaign.');
