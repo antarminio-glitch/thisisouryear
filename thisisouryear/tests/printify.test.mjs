@@ -14,7 +14,11 @@ import { printFileName } from '../src/lib/print-file.js';
 import { orderRef } from '../src/server/order-email.js';
 
 const read = (f) => JSON.parse(fs.readFileSync(new URL(`../src/data/${f}`, import.meta.url), 'utf8'));
-const config = read('printify.json');
+// The real settings put Bella+Canvas 3001 first with a starting blank for
+// every city. These tests check the matching itself, so they run on the
+// same settings with SanMar first and no starting blanks.
+const real = read('printify.json');
+const config = { ...real, products: { ...real.products, 'adult-tee': { ...real.products['adult-tee'], models: ['PC54', '3001', '5000'], preferred: {} } } };
 const photos = read('garment-photos.json');
 const SECRET = 'whsec_unit_tests_only';
 const ADULT = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
@@ -396,4 +400,13 @@ test('color distance behaves', () => {
   assert.equal(colorDistance('#000000', '#000000'), 0);
   assert.ok(colorDistance('#000000', '#FFFFFF') > 90);
   assert.ok(colorDistance('#0C2340', '#1B2236') < colorDistance('#0C2340', '#1D4C9C'));
+});
+
+test('the tee prints on Bella+Canvas 3001 first, with a starting blank for every city', () => {
+  const tee = real.products['adult-tee'];
+  assert.equal(tee.models[0], '3001');
+  const slugs = realShop().teams.map((t) => t.slug).sort();
+  assert.deepEqual(Object.keys(tee.preferred).sort(), slugs);
+  assert.equal(tee.preferred.detroit, 'Columbia Blue');
+  assert.equal(tee.preferred.miami, 'Aqua');
 });

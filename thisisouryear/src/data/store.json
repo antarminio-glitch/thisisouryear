@@ -14,7 +14,7 @@
   "maxCartLines": 40,
   "automaticTax": false,
 
-  "collectMarketingConsent": false,
+  "collectMarketingConsent": true,
   "requireVendorApprovedColors": false,
   "giftNotes": false,
   "noteMaxLength": 200,
