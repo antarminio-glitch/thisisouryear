@@ -33,7 +33,7 @@ test('the original buy button still works: { slug, size } opens checkout for one
   assert.equal(p.payment_intent_data.metadata.team_id, 'dallas');
   assert.equal(p.success_url, 'https://example.test/success/');
   assert.equal(p.cancel_url, 'https://example.test/cancel/?city=dallas');
-  assert.equal(p.consent_collection, undefined, 'marketing consent is off until switched on');
+  assert.deepEqual(p.consent_collection, { promotions: 'auto' }, 'store.json asks for marketing consent');
   assert.equal(p.automatic_tax, undefined);
 });
 
@@ -154,9 +154,12 @@ test('a mixed-size league order checks out with exact quantities and its league 
 });
 
 test('marketing consent is only requested when the store setting is on', async () => {
-  const { stripe, handler } = setup(fixtureShop({ collectMarketingConsent: true }));
-  await handler(post({ slug: 'dallas', size: 'L' }));
-  assert.deepEqual(stripe.calls[0].consent_collection, { promotions: 'auto' });
+  const on = setup(fixtureShop({ collectMarketingConsent: true }));
+  await on.handler(post({ slug: 'dallas', size: 'L' }));
+  assert.deepEqual(on.stripe.calls[0].consent_collection, { promotions: 'auto' });
+  const off = setup(fixtureShop({ collectMarketingConsent: false }));
+  await off.handler(post({ slug: 'dallas', size: 'L' }));
+  assert.equal(off.stripe.calls[0].consent_collection, undefined);
 });
 
 test('the cart price check returns server prices and per-line problems', async () => {
