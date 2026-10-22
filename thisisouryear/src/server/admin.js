@@ -20,7 +20,8 @@ const QUOTE_STATUSES = ['new', 'answered', 'ordered', 'closed'];
 export function setupReport({ shop, palettes, history, env, storageKind, now, printifyMapping = null, printifyConfig = null }) {
   const { store, catalog, teams } = shop;
   const present = (k) => typeof env[k] === 'string' && env[k].length > 0;
-  const stripeMode = !present('STRIPE_SECRET_KEY') ? 'missing' : env.STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'live' : 'test';
+  // A live key is sk_live_ (full) or rk_live_ (restricted). Anything else is a test key.
+  const stripeMode = !present('STRIPE_SECRET_KEY') ? 'missing' : /^(sk|rk)_live_/.test(env.STRIPE_SECRET_KEY) ? 'live' : 'test';
 
   const products = catalog.products.map((p) => ({ id: p.id, name: p.name, sellable: shop.isSellable(p), missing: shop.isSellable(p) ? [] : shop.missingFor(p) }));
   const rows = Object.values(palettes.colorways).flatMap((c) => c.colors);
