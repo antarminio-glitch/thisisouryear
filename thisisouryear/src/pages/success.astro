@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Confirm from '../components/Confirm.astro';
 import product from '../data/store.json';
 ---
 
@@ -17,13 +16,13 @@ import product from '../data/store.json';
         <li>
           It ships to the address you gave at checkout and should arrive in about {product.shipMinDays} to {
             product.shipMaxDays
-          } business days. <Confirm />
+          } business days.
         </li>
       </ol>
 
       <p>
         Something wrong with your order? Email <a href={`mailto:${product.contactEmail}`}>{product.contactEmail}</a>
-        <Confirm /> and include the email address you used at checkout.
+        and include the email address you used at checkout.
       </p>
 
       <p>

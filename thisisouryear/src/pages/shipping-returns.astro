@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Confirm from '../components/Confirm.astro';
 import product from '../data/store.json';
 import { dollars } from '../lib/money.js';
 
@@ -19,13 +18,13 @@ const email = product.contactEmail;
       <ul>
         <li>
           {product.shippingLabel} is a flat {dollars(product.shippingCents)} per order, no matter how many shirts are in
-          it. <Confirm />
+          it.
         </li>
         <li>We ship to US addresses only for now.</li>
         <li>
           Every shirt is printed after you order it. Expect it at your door in about {product.shipMinDays} to {
             product.shipMaxDays
-          } business days. <Confirm />
+          } business days.
         </li>
         <li>Wrong address on your order? Email us right away and we'll fix it if it hasn't shipped yet.</li>
       </ul>
@@ -33,21 +32,21 @@ const email = product.contactEmail;
       <h2>Returns</h2>
       <p>
         Your shirt gets printed just for you, so we can't take returns or exchanges for the wrong size or a change of
-        heart. Check the <a href="/size-chart/">size chart</a> before you order. <Confirm />
+        heart. Check the <a href="/size-chart/">size chart</a> before you order.
       </p>
 
       <h2>If something's wrong with it</h2>
       <p>
         If your shirt arrives damaged, misprinted, or it's not the one you ordered, that's on us. Email
         <a href={`mailto:${email}`}>{email}</a>
-        <Confirm /> within 30 days of delivery with a photo and the email address you used at checkout. We'll send a
-        free replacement or refund you, your call. <Confirm />
+        within 30 days of delivery with a photo and the email address you used at checkout. We'll send a
+        free replacement or refund you, your call.
       </p>
 
       <h2>Canceling an order</h2>
       <p>
         Email us as soon as you can. If your shirt hasn't gone to print yet, we'll cancel it and refund you in full.
-        Once it's printed, it's yours. <Confirm />
+        Once it's printed, it's yours.
       </p>
     </div>
   </div>

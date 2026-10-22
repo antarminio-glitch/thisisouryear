@@ -4,7 +4,6 @@
 import Layout from '../layouts/Layout.astro';
 import Picker from '../components/Picker.astro';
 import ShopData from '../components/ShopData.astro';
-import Confirm from '../components/Confirm.astro';
 import ModelShot from '../components/ModelShot.astro';
 import ThisWeek from '../components/ThisWeek.astro';
 import teams from '../data/teams.json';
@@ -184,12 +183,12 @@ const counterData = {
         </div>
         <div>
           <dt>Print</dt>
-          <dd>Printed to order in {team.colors} <Confirm /></dd>
+          <dd>Printed to order in {team.colors}</dd>
         </div>
         <div>
           <dt>Shipping</dt>
           <dd>
-            {dollars(store.shippingCents)} flat in the US. Arrives in about {store.shipMinDays} to {store.shipMaxDays} business days <Confirm />
+            {dollars(store.shippingCents)} flat in the US. Arrives in about {store.shipMinDays} to {store.shipMaxDays} business days.
           </dd>
         </div>
       </dl>

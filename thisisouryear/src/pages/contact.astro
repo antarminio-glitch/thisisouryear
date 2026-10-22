@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Confirm from '../components/Confirm.astro';
 import product from '../data/store.json';
 
 const email = product.contactEmail;
@@ -12,8 +11,7 @@ const email = product.contactEmail;
       <h1>Contact</h1>
       <p class="lede">One person runs this shop, and he reads every email.</p>
       <p>
-        Email <a href={`mailto:${email}`}>{email}</a>
-        <Confirm />. You'll usually hear back within one business day. <Confirm />
+        Email <a href={`mailto:${email}`}>{email}</a>. You'll usually hear back within one business day.
       </p>
       <p>
         Asking about an order? Include the email address you used at checkout so we can find it fast.
