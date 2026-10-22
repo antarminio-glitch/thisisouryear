@@ -4,8 +4,9 @@ import ShopData from '../components/ShopData.astro';
 import Shirt from '../components/Shirt.astro';
 import catalog from '../data/catalog.json';
 import store from '../data/store.json';
+import { shop } from '../lib/shop.js';
 
-const tiers = [...(catalog.bulk?.tiers ?? [])].sort((a, b) => a.minQuantity - b.minQuantity);
+const tiers = shop.bulkTiers;
 // "12+ shirts: 10% off. 24+: 15% off. 48+: 20% off."
 const tierLine = tiers.map((t, i) => `${t.minQuantity}+${i === 0 ? ' shirts' : ''}: ${t.percentOff}% off`).join('. ');
 ---
@@ -248,8 +249,9 @@ const tierLine = tiers.map((t, i) => `${t.minQuantity}+${i === 0 ? ' shirts' : '
       $('[data-bulk-row]')!.hidden = !saving;
       $('[data-bulk-label]')!.textContent = tier ? `Bulk discount (${tier.percentOff}% off)` : 'Bulk discount';
       $('[data-bulk]')!.textContent = `−${dollars(saving)}`;
-      $('[data-shipping]')!.textContent = `${dollars(shop.store.shippingCents)} flat`;
-      $('[data-grand]')!.textContent = dollars(subtotal - saving + shop.store.shippingCents);
+      const ship = shop.shippingFor(subtotal - saving);
+      $('[data-shipping]')!.textContent = ship ? dollars(ship) : 'Free';
+      $('[data-grand]')!.textContent = dollars(subtotal - saving + ship);
     }
     const next = shop.nextTierFor(count);
     show(

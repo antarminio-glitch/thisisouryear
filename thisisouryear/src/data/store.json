@@ -4,7 +4,8 @@
   "timezone": "America/New_York",
   "contactEmail": "hello@thisisouryear.team",
 
-  "shippingCents": 499,
+  "shippingCents": 750,
+  "freeShippingMinCents": 10000,
   "shippingLabel": "Standard shipping",
   "shipMinDays": 5,
   "shipMaxDays": 10,

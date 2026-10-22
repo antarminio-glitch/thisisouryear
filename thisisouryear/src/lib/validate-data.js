@@ -113,7 +113,7 @@ export function validateData({ teams, palettes, catalog, store, history, stories
   }
 
   // ---- store settings
-  for (const k of ['shippingCents', 'maxQuantity', 'maxOrderQuantity', 'maxCartLines', 'shipMinDays', 'shipMaxDays', 'noteMaxLength', 'leagueNameMaxLength']) {
+  for (const k of ['shippingCents', 'freeShippingMinCents', 'maxQuantity', 'maxOrderQuantity', 'maxCartLines', 'shipMinDays', 'shipMaxDays', 'noteMaxLength', 'leagueNameMaxLength']) {
     if (!Number.isInteger(store?.[k]) || store[k] < 0) err(`store.json: ${k} must be a whole number.`);
   }
   if (!store?.contactEmail) err('store.json: contactEmail is missing.');

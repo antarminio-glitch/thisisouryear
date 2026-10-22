@@ -120,8 +120,10 @@ export function createShop({ teams, catalog, store, palettes = null, approvals =
 
   // Bulk pricing. Tiers come from catalog.json and count every item in the
   // order, whatever the size, color or kind of order. The best tier reached
-  // applies to every item.
-  const tiers = [...(catalog.bulk?.tiers ?? [])]
+  // applies to every item. Setting bulk.enabled to false in catalog.json
+  // switches the discounts off without losing the tiers; quote requests
+  // still work.
+  const tiers = (catalog.bulk?.enabled === false ? [] : [...(catalog.bulk?.tiers ?? [])])
     .filter((t) => Number.isInteger(t.minQuantity) && t.minQuantity > 0 && Number.isInteger(t.percentOff) && t.percentOff > 0 && t.percentOff < 100)
     .sort((a, b) => a.minQuantity - b.minQuantity);
 
@@ -136,6 +138,14 @@ export function createShop({ teams, catalog, store, palettes = null, approvals =
   }
   // The discounted price of one item, rounded to the cent.
   const bulkPrice = (unitCents, percentOff) => (percentOff ? Math.round((unitCents * (100 - percentOff)) / 100) : unitCents);
+
+  // Flat shipping, waived once the order (after any bulk discount) reaches
+  // freeShippingMinCents. No threshold set means shipping is always charged.
+  function shippingFor(subtotalCents) {
+    const min = store.freeShippingMinCents;
+    if (Number.isInteger(min) && min > 0 && subtotalCents >= min) return 0;
+    return store.shippingCents;
+  }
 
   // Checks a whole cart and prices it. Every line comes back marked ok or not,
   // with a plain-English reason. Totals are only given when every line is ok.
@@ -330,7 +340,7 @@ export function createShop({ teams, catalog, store, palettes = null, approvals =
 
     const ok = lines.every((l) => l.ok) && problems.length === 0;
     const subtotalCents = ok ? lines.reduce((sum, l) => sum + l.lineCents, 0) : 0;
-    const shippingCents = ok ? store.shippingCents : 0;
+    const shippingCents = ok ? shippingFor(subtotalCents) : 0;
     for (const l of lines) if (!l.ok) problems.push(l.message);
     return { ok, lines, problems, subtotalCents, shippingCents, totalCents: subtotalCents + shippingCents, bulk };
   }
@@ -354,6 +364,7 @@ export function createShop({ teams, catalog, store, palettes = null, approvals =
     bulkTierFor,
     nextTierFor,
     bulkPrice,
+    shippingFor,
     quote,
   };
 }

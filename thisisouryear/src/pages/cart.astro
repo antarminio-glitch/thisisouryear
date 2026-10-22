@@ -187,7 +187,7 @@ import ShopData from '../components/ShopData.astro';
       }
     }
     show($('[data-bulk-note]'), note);
-    $('[data-shipping]')!.textContent = ready ? dollars(q!.shippingCents) : dollars(shop.store.shippingCents);
+    $('[data-shipping]')!.textContent = ready ? (q!.shippingCents ? dollars(q!.shippingCents) : 'Free') : dollars(shop.store.shippingCents);
     $('[data-total]')!.textContent = ready ? dollars(q!.totalCents) : 'Not yet';
     const problem = q && !q.ok ? 'Fix or remove the flagged items to check out.' : '';
     show($('[data-problem]'), problem);

@@ -2,19 +2,19 @@
 // the whole order.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { realShop, fixtureShop, fakeStripe, post, data } from './fixtures.mjs';
+import { realShop, bulkShop, fixtureCatalog, fakeStripe, post, data } from './fixtures.mjs';
 import { createShop } from '../src/lib/shop-core.js';
 import { makeCheckoutHandler } from '../src/server/checkout.js';
 
 const tee = (over = {}) => ({ productId: 'adult-tee', designId: 'this-is-our-year', slug: 'dallas', size: 'L', quantity: 1, mode: 'standard', ...over });
 
 test('the tiers come from the catalog', () => {
-  const shop = realShop();
+  const shop = bulkShop();
   assert.deepEqual(shop.bulkTiers.map((t) => [t.minQuantity, t.percentOff]), [[12, 10], [24, 15], [48, 20]]);
 });
 
 test('the discount starts exactly at each tier', () => {
-  const shop = realShop();
+  const shop = bulkShop();
   const cases = [[1, 0, 2499], [11, 0, 2499], [12, 10, 2249], [23, 10, 2249], [24, 15, 2124], [47, 15, 2124], [48, 20, 1999]];
   for (const [n, pct, unit] of cases) {
     const q = shop.quote([tee({ quantity: n })]);
@@ -28,7 +28,7 @@ test('the discount starts exactly at each tier', () => {
 });
 
 test('every item in the order counts toward the tier: sizes, colors and kinds of order mixed', () => {
-  const shop = realShop();
+  const shop = bulkShop();
   const q = shop.quote([
     tee({ quantity: 5, size: 'M' }),
     tee({ quantity: 4, size: '2XL', slug: 'chicago' }),
@@ -42,10 +42,22 @@ test('every item in the order counts toward the tier: sizes, colors and kinds of
 });
 
 test('the next tier is reported, so the cart can say how close the shopper is', () => {
-  const shop = realShop();
+  const shop = bulkShop();
   assert.deepEqual(shop.quote([tee({ quantity: 9 })]).bulk.next, { minQuantity: 12, percentOff: 10, unitsAway: 3 });
   assert.deepEqual(shop.quote([tee({ quantity: 30 })]).bulk.next, { minQuantity: 48, percentOff: 20, unitsAway: 18 });
   assert.equal(shop.quote([tee({ quantity: 48 })]).bulk.next, null);
+});
+
+test('the live catalog has bulk discounts switched off, with the tiers kept for later', () => {
+  const shop = realShop();
+  assert.equal(data.catalog.bulk.enabled, false);
+  assert.deepEqual(shop.bulkTiers, []);
+  const q = shop.quote([tee({ quantity: 30 })]);
+  assert.equal(q.ok, true);
+  assert.equal(q.bulk.percentOff, 0);
+  assert.equal(q.bulk.next, null);
+  assert.equal(q.subtotalCents, 2499 * 30);
+  assert.equal(data.catalog.bulk.tiers.length, 3, 'the tiers are still in the file for when discounts come back');
 });
 
 test('no discount at all when the catalog has no tiers', () => {
@@ -58,7 +70,7 @@ test('no discount at all when the catalog has no tiers', () => {
 
 test('checkout charges the bulk price, says so on the line, and records it', async () => {
   const stripe = fakeStripe();
-  const handler = makeCheckoutHandler({ shop: realShop(), env: { STRIPE_SECRET_KEY: 'sk_test_unit_tests_only' }, stripeFor: () => stripe });
+  const handler = makeCheckoutHandler({ shop: bulkShop(), env: { STRIPE_SECRET_KEY: 'sk_test_unit_tests_only' }, stripeFor: () => stripe });
   const res = await handler(post({ items: [tee({ quantity: 10, size: 'M' }), tee({ quantity: 2, size: '3XL' })] }));
   assert.equal(res.status, 200);
   const p = stripe.calls[0];
@@ -71,14 +83,15 @@ test('checkout charges the bulk price, says so on the line, and records it', asy
 
 test('a made-up discount from the browser is ignored', async () => {
   const stripe = fakeStripe();
-  const handler = makeCheckoutHandler({ shop: realShop(), env: { STRIPE_SECRET_KEY: 'sk_test_unit_tests_only' }, stripeFor: () => stripe });
+  const handler = makeCheckoutHandler({ shop: bulkShop(), env: { STRIPE_SECRET_KEY: 'sk_test_unit_tests_only' }, stripeFor: () => stripe });
   await handler(post({ items: [tee({ quantity: 2, percentOff: 50, bulk: { percentOff: 50 }, unitCents: 1 })] }));
   assert.equal(stripe.calls[0].line_items[0].price_data.unit_amount, 2499);
   assert.equal(stripe.calls[0].line_items[0].price_data.product_data.description, undefined);
 });
 
 test('a matching set has no discount of its own, and counts toward bulk like anything else', () => {
-  const shop = fixtureShop();
+  const fixture = fixtureCatalog();
+  const shop = createShop({ ...data, catalog: { ...fixture, bulk: { ...fixture.bulk, enabled: true } } });
   const set = [
     { productId: 'adult-tee', designId: 'this-is-our-year', slug: 'chicago', size: 'L', quantity: 1, mode: 'matching_set', bundleId: 'B-AAAAAAAA' },
     { productId: 'kids-tee', designId: 'this-is-our-year', slug: 'chicago', size: 'YS', quantity: 1, mode: 'matching_set', bundleId: 'B-AAAAAAAA' },
