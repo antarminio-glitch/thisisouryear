@@ -10,16 +10,16 @@ test('the tee, the hoodie and the kids tee are for sale in the real catalog; the
   assert.equal(shop.isSellable(shop.product('kids-hoodie')), false);
   assert.ok(shop.missingFor(shop.product('kids-hoodie')).includes('priceCents'));
   assert.equal(shop.priceRange('kids-hoodie'), null);
-  assert.deepEqual(shop.priceRange('adult-tee'), { lowCents: 1999, highCents: 2199 });
+  assert.deepEqual(shop.priceRange('adult-tee'), { lowCents: 2499, highCents: 2699 });
   assert.deepEqual(shop.priceRange('adult-hoodie'), { lowCents: 4999, highCents: 5199 });
-  assert.deepEqual(shop.priceRange('kids-tee'), { lowCents: 999, highCents: 999 });
+  assert.deepEqual(shop.priceRange('kids-tee'), { lowCents: 1499, highCents: 1499 });
 });
 
-test('prices come from the catalog: $19.99, and $2 more for 2XL and 3XL', () => {
+test('prices come from the catalog: $24.99, and $2 more for 2XL and 3XL', () => {
   const shop = realShop();
-  assert.equal(shop.availability(tee()).priceCents, 1999);
-  assert.equal(shop.availability(tee({ size: '2XL' })).priceCents, 2199);
-  assert.equal(shop.availability(tee({ size: '3XL' })).priceCents, 2199);
+  assert.equal(shop.availability(tee()).priceCents, 2499);
+  assert.equal(shop.availability(tee({ size: '2XL' })).priceCents, 2699);
+  assert.equal(shop.availability(tee({ size: '3XL' })).priceCents, 2699);
 });
 
 test('a size is never chosen for you', () => {
@@ -60,20 +60,20 @@ test('a quote prices every line on the server and adds flat shipping once', () =
   const shop = realShop();
   const q = shop.quote([tee({ quantity: 2 }), tee({ slug: 'green-bay', size: '3XL' })]);
   assert.equal(q.ok, true);
-  assert.equal(q.lines[0].lineCents, 3998);
-  assert.equal(q.lines[1].unitCents, 2199);
-  assert.equal(q.subtotalCents, 3998 + 2199);
+  assert.equal(q.lines[0].lineCents, 4998);
+  assert.equal(q.lines[1].unitCents, 2699);
+  assert.equal(q.subtotalCents, 4998 + 2699);
   assert.equal(q.shippingCents, 499);
-  assert.equal(q.totalCents, 3998 + 2199 + 499);
+  assert.equal(q.totalCents, 4998 + 2699 + 499);
   assert.equal(q.lines[0].name, 'This Is Our Year Tee, Dallas, Navy / Silver, Size L');
 });
 
 test('a price sent by the browser is ignored, and a stale one is pointed out', () => {
   const shop = realShop();
   const q = shop.quote([tee({ seenPriceCents: 1, unitCents: 1, priceCents: 1 })]);
-  assert.equal(q.lines[0].unitCents, 1999);
+  assert.equal(q.lines[0].unitCents, 2499);
   assert.equal(q.lines[0].notices[0].code, 'price_changed');
-  assert.match(q.lines[0].notices[0].message, /\$0\.01 to \$19\.99/);
+  assert.match(q.lines[0].notices[0].message, /\$0\.01 to \$24\.99/);
 });
 
 test('every line carries the order details the brief asks for', () => {
@@ -135,7 +135,7 @@ test('a matching set is two real lines sharing a bundle id', () => {
   assert.equal(q.lines.length, 2);
   assert.deepEqual(q.lines.map((l) => l.metadata.bundle_id), ['B-1', 'B-1']);
   assert.deepEqual(q.lines.map((l) => l.audience), ['adult', 'kids']);
-  assert.equal(q.subtotalCents, 1999 + 1500, 'no discount is invented');
+  assert.equal(q.subtotalCents, 2499 + 1500, 'no discount is invented');
 });
 
 test('a matching set never goes through as half a set without saying why', () => {
@@ -168,7 +168,7 @@ test('with the real catalog a tee and kids tee set goes through, and a set with 
     { productId: 'kids-tee', designId: 'this-is-our-year', slug: 'dallas', size: 'M', quantity: 1, mode: 'matching_set', bundleId: 'B-5' },
   ]);
   assert.equal(good.ok, true);
-  assert.equal(good.subtotalCents, 1999 + 999);
+  assert.equal(good.subtotalCents, 2499 + 1499);
   const held = realShop().quote([
     tee({ mode: 'matching_set', bundleId: 'B-6' }),
     { productId: 'kids-hoodie', designId: 'this-is-our-year', slug: 'dallas', size: 'M', quantity: 1, mode: 'matching_set', bundleId: 'B-6' },
@@ -184,7 +184,7 @@ test('a league order is mixed sizes in the winner\'s colors under one league id'
     tee({ mode: 'fantasy_punishment', slug: 'kansas-city', size, quantity, leagueOrderId: 'LG-ABC', leagueName: '  The   Sunday Regrets ' }));
   const q = shop.quote(rows);
   assert.equal(q.ok, true);
-  assert.equal(q.subtotalCents, 2 * 1999 + 3 * 1999 + 2199);
+  assert.equal(q.subtotalCents, 2 * 2499 + 3 * 2499 + 2699);
   assert.ok(q.lines.every((l) => l.metadata.league_order_id === 'LG-ABC' && l.metadata.league_name === 'The Sunday Regrets'));
   assert.equal(shop.quote([tee({ mode: 'fantasy_punishment' })]).lines[0].code, 'league_required');
   assert.equal(shop.quote([tee({ mode: 'fantasy_punishment', leagueOrderId: 'LG-1', leagueName: 'x'.repeat(61) })]).lines[0].code, 'league_name_too_long');

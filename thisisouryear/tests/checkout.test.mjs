@@ -21,7 +21,7 @@ test('the original buy button still works: { slug, size } opens checkout for one
   const p = stripe.calls[0];
   assert.equal(p.mode, 'payment');
   assert.equal(p.line_items.length, 1);
-  assert.equal(p.line_items[0].price_data.unit_amount, 1999);
+  assert.equal(p.line_items[0].price_data.unit_amount, 2499);
   assert.equal(p.line_items[0].price_data.product_data.name, 'This Is Our Year Tee, Dallas, Navy / Silver, Size L');
   // Capped one below the first bulk tier, so nobody pays full price for 12.
   assert.deepEqual(p.line_items[0].adjustable_quantity, { enabled: true, minimum: 1, maximum: 11 });
@@ -100,7 +100,7 @@ test('a matching set checks out as two line items with one bundle id', async () 
   const p = stripe.calls[0];
   assert.equal(p.line_items.length, 2);
   assert.deepEqual(p.line_items.map((l) => l.price_data.product_data.metadata.bundle_id), ['B-77', 'B-77']);
-  assert.deepEqual(p.line_items.map((l) => l.price_data.unit_amount), [1999, 1500]);
+  assert.deepEqual(p.line_items.map((l) => l.price_data.unit_amount), [2499, 1500]);
   assert.equal(p.metadata.bundle_ids, 'B-77');
   assert.equal(p.metadata.purchase_modes, 'matching_set');
 });
@@ -145,7 +145,7 @@ test('a mixed-size league order checks out with exact quantities and its league 
   assert.equal(res.status, 200);
   const p = stripe.calls[0];
   assert.deepEqual(p.line_items.map((l) => l.quantity), [2, 4, 1]);
-  assert.deepEqual(p.line_items.map((l) => l.price_data.unit_amount), [1999, 1999, 2199]);
+  assert.deepEqual(p.line_items.map((l) => l.price_data.unit_amount), [2499, 2499, 2699]);
   assert.equal(p.metadata.league_order_ids, 'LG-9');
   assert.equal(p.metadata.league_name, 'Sunday Regrets');
   assert.equal(p.metadata.item_count, '7');
@@ -165,7 +165,7 @@ test('the cart price check returns server prices and per-line problems', async (
   const body = await res.json();
   assert.equal(body.ok, false);
   assert.equal(body.lines[0].ok, true);
-  assert.equal(body.lines[0].unitCents, 1999);
+  assert.equal(body.lines[0].unitCents, 2499);
   assert.equal(body.lines[0].notices[0].code, 'price_changed');
   assert.equal(body.lines[1].code, 'product_unavailable');
   assert.equal(body.totalCents, 0);
@@ -248,7 +248,7 @@ test('a bulk quote request is really saved, with what could be bought today', as
   const saved = await storage.store('quotes').get(`quote/${body.reference}`);
   assert.equal(saved.totalQuantity, 14);
   assert.equal(saved.rows[0].availableNow, true);
-  assert.equal(saved.rows[0].unitCentsToday, 1999);
+  assert.equal(saved.rows[0].unitCentsToday, 2499);
   assert.equal(saved.rows[1].availableNow, false);
   assert.equal(saved.regularTotalCentsToday, null, 'no total is invented when a row has no price');
   assert.equal(body.regularTotal, null);

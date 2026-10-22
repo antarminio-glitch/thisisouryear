@@ -387,11 +387,6 @@ a {
   --border: #3a3e43;
   background: var(--tile);
 }
-.concept {
-  margin-top: 8px;
-  font-size: 0.9375rem;
-  color: var(--soft);
-}
 .btn-quiet {
   background: transparent;
   color: var(--on-bg);
@@ -934,9 +929,6 @@ tbody th {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
-.model-strip .concept {
-  margin-top: 12px;
-}
 .model-thumb {
   max-width: 180px;
   margin: 16px 0 0;
@@ -966,12 +958,6 @@ tbody th {
 }
 
 /* Every city exposes the same garment previews, including preview-only items. */
-.garment-caption {
-  margin: 8px 0 0;
-  font-size: 0.8125rem;
-  line-height: 1.4;
-  color: #394b52;
-}
 .garment-options {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
