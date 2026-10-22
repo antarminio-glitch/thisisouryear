@@ -63,9 +63,20 @@ test('a quote prices every line on the server and adds flat shipping once', () =
   assert.equal(q.lines[0].lineCents, 4998);
   assert.equal(q.lines[1].unitCents, 2699);
   assert.equal(q.subtotalCents, 4998 + 2699);
-  assert.equal(q.shippingCents, 499);
-  assert.equal(q.totalCents, 4998 + 2699 + 499);
+  assert.equal(q.shippingCents, 750);
+  assert.equal(q.totalCents, 4998 + 2699 + 750);
   assert.equal(q.lines[0].name, 'This Is Our Year Tee, Dallas, Navy / Silver, Size L');
+});
+
+test('shipping is free once the order reaches the free-shipping minimum', () => {
+  const shop = realShop();
+  assert.equal(shop.shippingFor(9999), 750);
+  assert.equal(shop.shippingFor(10000), 0);
+  const q = shop.quote([tee({ quantity: 5 })]);
+  assert.equal(q.ok, true);
+  assert.ok(q.subtotalCents >= 10000);
+  assert.equal(q.shippingCents, 0);
+  assert.equal(q.totalCents, q.subtotalCents);
 });
 
 test('a price sent by the browser is ignored, and a stale one is pointed out', () => {

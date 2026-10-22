@@ -248,8 +248,9 @@ const tierLine = tiers.map((t, i) => `${t.minQuantity}+${i === 0 ? ' shirts' : '
       $('[data-bulk-row]')!.hidden = !saving;
       $('[data-bulk-label]')!.textContent = tier ? `Bulk discount (${tier.percentOff}% off)` : 'Bulk discount';
       $('[data-bulk]')!.textContent = `−${dollars(saving)}`;
-      $('[data-shipping]')!.textContent = `${dollars(shop.store.shippingCents)} flat`;
-      $('[data-grand]')!.textContent = dollars(subtotal - saving + shop.store.shippingCents);
+      const ship = shop.shippingFor(subtotal - saving);
+      $('[data-shipping]')!.textContent = ship ? dollars(ship) : 'Free';
+      $('[data-grand]')!.textContent = dollars(subtotal - saving + ship);
     }
     const next = shop.nextTierFor(count);
     show(

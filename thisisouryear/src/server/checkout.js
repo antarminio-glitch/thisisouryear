@@ -129,8 +129,10 @@ export function makeCheckoutHandler({ shop, env, stripeFor }) {
           // page. Sets and league orders keep the exact quantities chosen.
           // The most it allows stays under the first bulk tier, so nobody pays
           // full price for an order that should have been discounted.
+          // It also stays under the free-shipping line when this order is
+          // below it, since the shipping charge can't change on that page.
           ...(one && one.mode === 'standard' && order.single
-            ? { adjustable_quantity: { enabled: true, minimum: 1, maximum: Math.max(1, Math.min(store.maxQuantity, (shop.bulkTiers[0]?.minQuantity ?? store.maxQuantity + 1) - 1)) } }
+            ? { adjustable_quantity: { enabled: true, minimum: 1, maximum: Math.max(1, Math.min(store.maxQuantity, (shop.bulkTiers[0]?.minQuantity ?? store.maxQuantity + 1) - 1, quote.shippingCents > 0 && store.freeShippingMinCents > 0 ? Math.floor((store.freeShippingMinCents - 1) / l.unitCents) : Infinity)) } }
             : {}),
           price_data: {
             currency: catalog.currency,
@@ -148,8 +150,8 @@ export function makeCheckoutHandler({ shop, env, stripeFor }) {
           {
             shipping_rate_data: {
               type: 'fixed_amount',
-              display_name: store.shippingLabel,
-              fixed_amount: { amount: store.shippingCents, currency: catalog.currency },
+              display_name: quote.shippingCents > 0 ? store.shippingLabel : 'Free shipping',
+              fixed_amount: { amount: quote.shippingCents, currency: catalog.currency },
               ...(tax ? { tax_behavior: 'exclusive' } : {}),
               delivery_estimate: {
                 minimum: { unit: 'business_day', value: store.shipMinDays },

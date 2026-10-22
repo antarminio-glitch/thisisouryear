@@ -18,7 +18,7 @@ const email = product.contactEmail;
       <ul>
         <li>
           {product.shippingLabel} is a flat {dollars(product.shippingCents)} per order, no matter how many shirts are in
-          it.
+          it. Orders of {dollars(product.freeShippingMinCents)} or more ship free.
         </li>
         <li>We ship to US addresses only for now.</li>
         <li>
