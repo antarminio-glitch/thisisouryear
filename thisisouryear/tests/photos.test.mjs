@@ -117,3 +117,19 @@ test('all four configured garments resolve identically on the server and browser
     }
   }
 });
+
+test('a city is one color scheme: the tee, hoodie, kids tee and kids hoodie are all the same blank color', () => {
+  const garments = ['adult-tee', 'adult-hoodie', 'kids-tee', 'kids-hoodie'];
+  const photos = JSON.parse(fs.readFileSync(new URL('../src/data/garment-photos.json', import.meta.url), 'utf8'));
+  // SanMar calls the same burgundy "Athletic Maroon" on tees and "Maroon" on hoodies.
+  const shade = (name) => name.replace(/^Athletic /, '');
+  for (const t of data.teams) {
+    const names = garments.map((id) => {
+      const g = photos.garments[id];
+      const city = g.cities?.[t.slug];
+      assert.ok(city, `${t.slug} has no ${id} blank`);
+      return shade(g.colors[city.color].name);
+    });
+    assert.equal(new Set(names).size, 1, `${t.slug} mixes blanks: ${names.join(' / ')}`);
+  }
+});

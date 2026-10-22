@@ -60,8 +60,8 @@ test('a city gets the model photo of its own blank, or nothing, and a missing fi
   assert.ok(buffalo);
   assert.equal(buffalo.color, 'TrueRoyal');
   assert.equal(buffalo.productId, 'adult-tee');
-  // Cleveland prints on Dark Chocolate Brown, which has none.
-  assert.equal(modelPhotoForCity(models, photos, 'cleveland'), null);
+  // Detroit prints on Royal, which has none.
+  assert.equal(modelPhotoForCity(models, photos, 'detroit'), null);
   assert.equal(modelPhotoForCity(models, photos, 'not-a-city'), null);
   assert.equal(modelPhotoForCity(null, photos, 'buffalo'), null);
   // Only the products asked for are considered: the adult hoodie in True
