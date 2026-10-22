@@ -93,10 +93,12 @@ test('search engines are only told about things that can really be bought', () =
 test('items that are not for sale show no price anywhere on a city page', () => {
   if (catalog.products.every((p) => p.sellable === true)) return;
   const allowed = new Set(sellable.flatMap((p) => p.variants.map((v) => ((p.priceCents + (v.extraCents ?? 0)) / 100).toFixed(2))));
-  const shipping = (read('store.json').shippingCents / 100).toFixed(2);
+  const store = read('store.json');
+  // The shipping fee and the free-shipping minimum are prices too.
+  for (const cents of [store.shippingCents, store.freeShippingMinCents]) if (cents) allowed.add((cents / 100).toFixed(2));
   for (const t of teams) {
     for (const m of text(page(t.slug)).matchAll(/\$(\d+\.\d{2})/g)) {
-      assert.ok(allowed.has(m[1]) || m[1] === shipping, `${t.slug} shows $${m[1]}, which is not a catalog price`);
+      assert.ok(allowed.has(m[1]), `${t.slug} shows $${m[1]}, which is not a catalog price`);
     }
   }
 });
