@@ -120,8 +120,10 @@ export function createShop({ teams, catalog, store, palettes = null, approvals =
 
   // Bulk pricing. Tiers come from catalog.json and count every item in the
   // order, whatever the size, color or kind of order. The best tier reached
-  // applies to every item.
-  const tiers = [...(catalog.bulk?.tiers ?? [])]
+  // applies to every item. Setting bulk.enabled to false in catalog.json
+  // switches the discounts off without losing the tiers; quote requests
+  // still work.
+  const tiers = (catalog.bulk?.enabled === false ? [] : [...(catalog.bulk?.tiers ?? [])])
     .filter((t) => Number.isInteger(t.minQuantity) && t.minQuantity > 0 && Number.isInteger(t.percentOff) && t.percentOff > 0 && t.percentOff < 100)
     .sort((a, b) => a.minQuantity - b.minQuantity);
 

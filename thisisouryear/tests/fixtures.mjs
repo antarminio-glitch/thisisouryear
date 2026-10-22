@@ -21,6 +21,8 @@ export const data = {
 };
 
 export const realShop = () => createShop(data);
+// The real catalog with bulk discounts switched on, for testing the tiers.
+export const bulkShop = () => createShop({ ...data, catalog: { ...data.catalog, bulk: { ...data.catalog.bulk, enabled: true } } });
 
 export function fixtureCatalog() {
   const catalog = structuredClone(data.catalog);
