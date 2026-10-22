@@ -295,3 +295,10 @@ test('the quote screen gets the price floor for every size and for each request'
   assert.equal(body.quotes.find((q) => q.reference === 'Q-FLOOR').floorTotalCents, Math.ceil(((12 * 1375 + 2900 + 479) * 115) / 100));
   assert.equal(body.quotes.find((q) => q.reference === 'Q-ODD').floorTotalCents, null, 'a size with no cost has no floor');
 });
+
+test('the setup report calls a restricted live key live, and a test key test', async () => {
+  for (const [key, mode] of [['rk_live_abc123secret', 'live'], ['sk_live_abc123secret', 'live'], ['sk_test_abc123secret', 'test'], ['rk_test_abc123secret', 'test']]) {
+    const { call } = adminSetup({ STRIPE_SECRET_KEY: key });
+    assert.equal((await call({ action: 'status' })).body.stripe.mode, mode, key);
+  }
+});
