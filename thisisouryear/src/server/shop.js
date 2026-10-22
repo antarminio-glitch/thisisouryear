@@ -7,7 +7,8 @@ import palettes from '../data/palettes.json' with { type: 'json' };
 import history from '../data/history.json' with { type: 'json' };
 import photos from '../data/garment-photos.json' with { type: 'json' };
 import printifyConfig from '../data/printify.json' with { type: 'json' };
+import costs from '../data/costs.json' with { type: 'json' };
 import { createShop } from '../lib/shop-core.js';
 
 export const shop = createShop({ teams, catalog, store, palettes });
-export { teams, catalog, store, palettes, history, photos, printifyConfig };
+export { teams, catalog, store, palettes, history, photos, printifyConfig, costs };

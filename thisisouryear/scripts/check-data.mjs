@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateData } from '../src/lib/validate-data.js';
+import { checkMargins } from '../src/lib/margin.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const read = (name) => JSON.parse(fs.readFileSync(path.join(root, 'src/data', name), 'utf8'));
@@ -16,6 +17,7 @@ try {
     store: read('store.json'),
     history: read('history.json'),
     stories: read('stories.json'),
+    costs: read('costs.json'),
   };
 } catch (e) {
   console.error(`Couldn't read a data file: ${e.message}`);
@@ -24,6 +26,11 @@ try {
 }
 
 const { errors, warnings } = validateData(data);
+// Prices against what Printify charges us. A price under cost plus the
+// minimum margin stops the build, same as a broken data file.
+const margins = checkMargins(data);
+errors.push(...margins.errors);
+warnings.push(...margins.warnings);
 for (const w of warnings) console.log(`note: ${w}`);
 if (errors.length) {
   console.error(`\n${errors.length} problem(s) in the data files:`);

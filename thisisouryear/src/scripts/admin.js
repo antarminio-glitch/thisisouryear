@@ -874,6 +874,30 @@ async function runs() {
 }
 
 // ---------- quotes ----------
+// The price floor for each size, from costs.json: the least a shirt can sell
+// for and still keep the minimum margin over what Printify charges us.
+function floorTable(floors, marginPercent) {
+  if (!Array.isArray(floors) || !floors.length) return note('No costs.json on the server, so there are no price floors to show.', 'bad');
+  const rows = floors.map((f) =>
+    h(
+      'tr',
+      {},
+      h('td', { text: `${f.productName} ${f.size}` }),
+      h('td', { text: money(f.priceCents) }),
+      h('td', { text: f.costCents == null ? 'Missing' : money(f.costCents) }),
+      h('td', { text: f.floorCents == null ? 'Missing' : money(f.floorCents) }),
+      h('td', { text: f.shippedFloorCents == null ? `Missing: ${f.missing.join(', ')}` : money(f.shippedFloorCents) }),
+    ),
+  );
+  return h(
+    'section',
+    { class: 'card' },
+    h('h3', { text: `Price floors, ${marginPercent}% over cost` }),
+    h('p', { class: 'sub', text: 'From costs.json. "Alone" is a shirt the buyer pays shipping on. "We ship it" is a shirt inside a bulk or free-shipping order, where its shipping comes out of the price. Quote at or above the "We ship it" column.' }),
+    h('div', { class: 'table-scroll' }, h('table', { class: 'wide' }, h('thead', {}, h('tr', {}, h('th', { text: 'Size' }), h('th', { text: 'Price now' }), h('th', { text: 'Cost' }), h('th', { text: 'Floor, alone' }), h('th', { text: 'Floor, we ship it' }))), h('tbody', {}, rows))),
+  );
+}
+
 async function quotes() {
   const draw = async (message = '', kind = '') => {
     const res = await call('quotes.list');
@@ -901,6 +925,7 @@ async function quotes() {
             ['From', [q.name, q.email].filter(Boolean).join(', ')],
             ['League', q.leagueName || 'Not given'],
             ['Regular price today', q.regularTotalCentsToday == null ? 'Some rows are not for sale yet, so there is no total.' : `${money(q.regularTotalCentsToday)} before shipping. Not a quote.`],
+            ['Lowest you can quote', q.floorTotalCents == null ? 'Unknown: a cost or shipping rate is missing in costs.json.' : `${money(q.floorTotalCents)} with shipping included. That is cost, Printify shipping, and ${res.body.marginPercent}% on top. Never go under it.`],
             ['Notes', q.notes || 'None'],
           ].map(([k, v]) => h('div', {}, h('dt', { text: k }), h('dd', { text: v }))),
         ),
@@ -918,6 +943,7 @@ async function quotes() {
       h('h2', { text: 'Quote requests' }),
       h('p', { class: 'sub', text: 'From the fantasy league page. Nothing is charged and no order exists until you reply and they pay.' }),
       message ? note(message, kind) : null,
+      floorTable(res.body.floors, res.body.marginPercent),
       items.length ? items : note('No quote requests yet.'),
     );
   };

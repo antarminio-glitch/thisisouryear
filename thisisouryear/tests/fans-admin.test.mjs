@@ -111,9 +111,9 @@ test('if a photo cannot be saved the fan is told, not shown a fake success', asy
 
 // ---------- admin
 const TOKEN = 'correct-horse-battery-staple';
-function adminSetup(env = {}, shop = realShop()) {
+function adminSetup(env = {}, shop = realShop(), extra = {}) {
   const storage = memoryStorage();
-  const handler = makeAdminHandler({ shop, palettes: data.palettes, history: data.history, env: { ADMIN_TOKEN: TOKEN, ...env }, getStorage: async () => storage, now });
+  const handler = makeAdminHandler({ shop, palettes: data.palettes, history: data.history, env: { ADMIN_TOKEN: TOKEN, ...env }, getStorage: async () => storage, now, ...extra });
   const call = async (body, token = TOKEN) => {
     const res = await handler(post(body, 'https://example.test/.netlify/functions/admin', token ? { Authorization: `Bearer ${token}` } : {}));
     return { status: res.status, body: await res.json() };
@@ -202,7 +202,9 @@ test('campaigns cannot be switched on through the admin endpoint without the con
 test('quotes and fan photos can be worked from the admin endpoint, and changes are logged', async () => {
   const { storage, call } = adminSetup();
   await storage.store('quotes').set('quote/Q-TEST1234', { reference: 'Q-TEST1234', status: 'new', createdAt: NOW.toISOString(), email: 'c@example.com', rows: [] });
-  assert.equal((await call({ action: 'quotes.list' })).body.quotes.length, 1);
+  const listed0 = (await call({ action: 'quotes.list' })).body;
+  assert.equal(listed0.quotes.length, 1);
+  assert.equal(listed0.floors, null, 'no costs given, so no floors');
   assert.equal((await call({ action: 'quotes.update', reference: 'Q-TEST1234', status: 'answered', ownerNote: 'Emailed' })).body.quote.status, 'answered');
   assert.equal((await call({ action: 'quotes.update', reference: 'Q-TEST1234', status: 'bogus' })).status, 400);
 
@@ -271,4 +273,25 @@ test('once the refresh date passes, the setup report says the title history is o
   const day = new Date(`${data.history.refreshBy}T17:00:00Z`);
   assert.equal(at(day), true);
   assert.equal(at(new Date(day.getTime() - 86_400_000)), false);
+});
+
+test('the quote screen gets the price floor for every size and for each request', async () => {
+  const costs = {
+    minimumMarginPercent: 15,
+    products: {
+      'adult-tee': { sizes: { S: 1175, M: 1175, L: 1175, XL: 1175, '2XL': 1500, '3XL': 1600 }, shipping: { firstItemCents: 495, extraItemCents: 200 } },
+      'adult-hoodie': { sizes: { S: 2267, M: 2267, L: 2267, XL: 2267, '2XL': 2500, '3XL': 2669 }, shipping: { firstItemCents: 879, extraItemCents: 400 } },
+      'kids-tee': { sizes: { XS: 924, S: 924, M: 924, L: 924, XL: 924 }, shipping: { firstItemCents: 495, extraItemCents: 200 } },
+    },
+  };
+  const { storage, call } = adminSetup({}, realShop(), { costs });
+  await storage.store('quotes').set('quote/Q-FLOOR', { reference: 'Q-FLOOR', status: 'new', createdAt: NOW.toISOString(), email: 'c@example.com', rows: [{ productId: 'adult-tee', size: 'L', quantity: 12 }, { productId: 'adult-hoodie', size: '2XL', quantity: 1 }] });
+  await storage.store('quotes').set('quote/Q-ODD', { reference: 'Q-ODD', status: 'new', createdAt: NOW.toISOString(), email: 'c@example.com', rows: [{ productId: 'adult-tee', size: '9XL', quantity: 1 }] });
+  const body = (await call({ action: 'quotes.list' })).body;
+  assert.equal(body.marginPercent, 15);
+  assert.equal(body.floors.length, 17, 'one row per size on sale');
+  assert.deepEqual(body.floors.find((f) => f.productId === 'adult-tee' && f.size === 'L'), { productId: 'adult-tee', productName: 'Tee', size: 'L', priceCents: 2499, costCents: 1175, floorCents: 1352, shippedFloorCents: 1582, missing: [] });
+  // 12 tees and a hoodie, shipped free: 12 x (11.75 + 2.00) + (25.00 + 4.00) + (8.79 - 4.00), plus 15%.
+  assert.equal(body.quotes.find((q) => q.reference === 'Q-FLOOR').floorTotalCents, Math.ceil(((12 * 1375 + 2900 + 479) * 115) / 100));
+  assert.equal(body.quotes.find((q) => q.reference === 'Q-ODD').floorTotalCents, null, 'a size with no cost has no floor');
 });

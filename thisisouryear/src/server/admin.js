@@ -13,6 +13,7 @@ import { orderEmailSettings, orderEmailContent, sendOrderEmail, sampleOrder, ord
 import { printifySettings, printifyProducts, printifySummary, scanCatalog, submitToPrintify, sendToProduction, sendTestOrder, KEY_CATALOG, KEY_OVERRIDES } from './printify.js';
 import { previewPrintRun, createPrintRun, listPrintRuns, runSheets, sheetText, emailPrintRun } from './print-runs.js';
 import { todayIn } from '../lib/counter.js';
+import { priceFloors, orderFloorCents } from '../lib/margin.js';
 
 const QUOTE_STATUSES = ['new', 'answered', 'ordered', 'closed'];
 
@@ -102,7 +103,7 @@ export function setupReport({ shop, palettes, history, env, storageKind, now, pr
 
 // `photos` is garment-photos.json: it says which vendor blank each city is
 // printed on, which the print run sheets need.
-export function makeAdminHandler({ shop, palettes, history, env, getStorage, photos = null, printifyConfig = null, fetchImpl = fetch, now = () => new Date() }) {
+export function makeAdminHandler({ shop, palettes, history, env, getStorage, photos = null, printifyConfig = null, costs = null, fetchImpl = fetch, now = () => new Date() }) {
   const slugs = shop.teams.map((t) => t.slug);
 
   return async (req) => {
@@ -377,7 +378,11 @@ export function makeAdminHandler({ shop, palettes, history, env, getStorage, pho
       // ---- quotes
       case 'quotes.list': {
         const quotes = await readAll(storage.store('quotes'), 'quote/');
-        return json({ quotes: quotes.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))) });
+        // The price floors from costs.json, so a hand quote never goes under
+        // cost plus the minimum margin: one per size, and one per request.
+        const floors = costs ? priceFloors({ catalog: shop.catalog, costs }) : null;
+        for (const q of quotes) q.floorTotalCents = costs ? orderFloorCents(costs, q.rows ?? []) : null;
+        return json({ quotes: quotes.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))), floors, marginPercent: costs?.minimumMarginPercent ?? null });
       }
       case 'quotes.update': {
         const store = storage.store('quotes');

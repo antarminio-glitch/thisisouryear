@@ -1,0 +1,52 @@
+{
+  "about": "What each item costs us at Printify, in cents, and what Printify charges to ship it (US Standard, 2 to 5 business days). The build stops if any price on the site, any order that ships alone, or any order that gets free shipping would keep less than minimumMarginPercent on top of cost. Read these from the catalog page for each blank: Choose manually, then Provider info on SwiftPOD, grouped by size, and its Shipping tab. Update this file when Printify changes its prices.",
+  "provider": "Printify, SwiftPOD, standard plan, US Standard shipping",
+  "checkedOn": "2026-10-22",
+  "minimumMarginPercent": 15,
+  "products": {
+    "adult-tee": {
+      "blank": "Bella+Canvas 3001",
+      "sizes": {
+        "S": 1175,
+        "M": 1175,
+        "L": 1175,
+        "XL": 1175,
+        "2XL": 1437,
+        "3XL": 1675
+      },
+      "shipping": {
+        "firstItemCents": 495,
+        "extraItemCents": 240
+      }
+    },
+    "adult-hoodie": {
+      "blank": "Gildan 18500",
+      "sizes": {
+        "S": 2267,
+        "M": 2267,
+        "L": 2267,
+        "XL": 2267,
+        "2XL": 2484,
+        "3XL": 2608
+      },
+      "shipping": {
+        "firstItemCents": 879,
+        "extraItemCents": 209
+      }
+    },
+    "kids-tee": {
+      "blank": "Gildan 5000B",
+      "sizes": {
+        "XS": 924,
+        "S": 924,
+        "M": 924,
+        "L": 924,
+        "XL": 924
+      },
+      "shipping": {
+        "firstItemCents": 495,
+        "extraItemCents": 240
+      }
+    }
+  }
+}
