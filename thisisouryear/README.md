@@ -275,6 +275,31 @@ Every Stripe order line carries this metadata: `team_id`, `city`, `colors`, `col
 
 All of this hangs on `STRIPE_WEBHOOK_SECRET`. With it, every paid order is recorded on the site and emailed to the vendor. Without it, nothing is recorded, no order email goes out, and you'd be filling orders from the Stripe dashboard by hand.
 
+### Or Printify, until you buy in bulk
+
+Set `FULFILLMENT` to `printify` and every paid order goes to Printify instead, which prints and ships it straight to the customer. Printify charges your card for each item. Set `FULFILLMENT` back to empty and orders go to the vendor by email again. Nothing else changes.
+
+How it works:
+
+- **The garments**: `src/data/printify.json` lists, for the tee, the hoodie and the kids tee, which Printify garments to look for, best first. First choice is the same SanMar blank the site shows (PC54, PC78H, PC54Y). If Printify doesn't carry it, the next one on the list (Bella+Canvas 3001, Gildan 18500, Gildan 5000B, and so on)
+- **The artwork** is built with the site, from the same letter shapes as every mockup: one transparent PNG per city at `/print/<city>-<design>-<code>.png`, 12 inches across at 300 dpi. The code changes whenever the colors or lettering change, so Printify never reuses an old file. Printify downloads it when the order is created, so the site must be online at `SITE_URL`
+- **The blank color** for each city: when Printify has the very garment the site shows, it's the same blank, by name. Otherwise it's the closest color Printify has, with solid colors beating heathers in a close call. Change any city's blank, per garment, in the admin screen
+- **Each order** is sent once, even when Stripe repeats itself. It goes in on hold, so you can check it in Printify first. Once a few look right, set `PRINTIFY_AUTO_SEND` to `true` and they print right away. If Printify is down, Stripe is told and tries again. If Printify refuses an order (a bad address, say), you get an email saying why, and the admin screen has a button to send it once it's fixed. An order already in Printify is never sent twice
+- **Print runs** skip anything sent to Printify, and an order already in a print run is never sent to Printify, so nothing is printed twice. An order Printify refused stays in the print run list, in case you'd rather have the vendor do it
+- **You get a heads-up email** for every order, at `ORDER_EMAIL_CC`. The vendor address is ignored in this mode
+
+To set it up:
+
+1. Make a Printify account and add a card under **Billing**
+2. Add a store and choose **API** (or "custom integration") as the sales channel
+3. Click your profile icon, then **Connections**, then **Generate** a token with every scope. Save it in Netlify as `PRINTIFY_API_TOKEN`
+4. In Netlify, set `FULFILLMENT` to `printify` and trigger a deploy
+5. In the admin screen, open **Orders** and press **Scan Printify**. It goes through each garment. Check the blank color list for each, change any you don't like, and press **Save colors**
+6. Press **Send a test order** for each garment. Open it in Printify, check the mockup, then delete it
+7. When the first real orders look right, set `PRINTIFY_AUTO_SEND` to `true`
+
+Money: check each garment's base price and shipping in Printify before going live. As a guide, a basic tee is about $11 plus about $4.50 shipping for the first item and about $2.25 for each one after, and hoodies cost more. The site charges one flat shipping price per order, so big bulk orders earn less per item.
+
 ---
 
 ## The admin screen
@@ -282,7 +307,7 @@ All of this hangs on `STRIPE_WEBHOOK_SECRET`. With it, every paid order is recor
 Open `/admin/` and enter the password you saved in Netlify as `ADMIN_TOKEN`. Six sections:
 
 - **Setup**: reads the real settings and says exactly what isn't set up yet, by name. Start here
-- **Orders**: every paid order, whether the vendor email went out, a preview of it, a test email to check the setup, and a resend button
+- **Orders**: every paid order, whether the vendor email went out, a preview of it, a test email to check the setup, and a resend button. With Printify on, also the printer, a blank color for each city, a test order, and buttons to approve an order on hold or send one that didn't go
 - **Print runs**: the bulk order sheet. Everything paid and not yet printed, grouped by blank and size, as two downloadable sheets. Starting a run stamps those orders so the next run only has new ones. See "Print runs" below
 - **Season**: enter the round the season is in and each city's status, with where you checked it. Recording a loss changes nothing. A city only becomes "eliminated" when you say why (mathematically, or lost a playoff game) and cite a source. The bandwagon only shows survivors when the round is confirmed, recent, and all 32 cities have a confirmed status
 - **Campaigns**: all five start switched off. Turning one on takes typing `ACTIVATE` and its name. Window campaigns (schedule release, Week 1) need real dates for that season. The elimination follow-up has a dry run that shows who would get the email and the exact words, and sends nothing
@@ -338,6 +363,11 @@ In Netlify, open the project, then **Project configuration > Environment variabl
 | `UNSUBSCRIBE_SECRET` | Any long random string (16+). Signs the unsubscribe links |
 | `ORDER_EMAIL_TO` | The vendor's email. Every paid order goes here. Several addresses can be separated by commas |
 | `ORDER_EMAIL_CC` | Your email, for a copy of every order. The vendor's replies come here. With only this set, orders come to you to forward |
+| `FULFILLMENT` | Empty: orders are emailed to the vendor. `printify`: orders go to Printify |
+| `PRINTIFY_API_TOKEN` | From Printify: profile icon, **Connections**, **Generate**. Needed when `FULFILLMENT` is `printify` |
+| `PRINTIFY_AUTO_SEND` | `true` prints each order right away. Anything else leaves it on hold in Printify for your OK |
+| `PRINTIFY_SHOP_ID` | Only if your Printify account has more than one store. The scan tells you the number |
+| `PRINTIFY_PROVIDER_ID` | Only to force one printer for every garment. Leave it out and the scan picks the best one for each |
 
 After adding a variable, go to **Deploys** and choose **Trigger deploy**.
 
@@ -392,7 +422,8 @@ netlify.toml           tells Netlify how to build and serve the site
 
 ## Not built yet
 
-- Sending orders into a print service's own system. Orders reach the vendor by email
+- Any print service besides Printify, and the Printify connection hasn't been exercised against the real service yet. Send a test order first
+- Following Printify's tracking back into the site. Printify emails the customer their tracking, and the admin screen shows what was sent, not what happened after
 - Photos of the finished, printed shirts. The site shows the vendor's blanks with the design placed on them digitally
 - An email service other than Resend, and the Resend adapter hasn't been exercised against the real service
 - Anything that posts to social media. The repost queue is a to-do list for a person
