@@ -39,7 +39,7 @@ test('every size on sale has a chest width and a fit range, and lengths are inch
 test('the hoodie and the kids tee are priced as agreed and carry the maker\'s sizes', () => {
   assert.equal(shop.product('adult-hoodie').priceCents, 4999);
   assert.deepEqual(shop.product('adult-hoodie').variants.map((v) => v.size), ['S', 'M', 'L', 'XL', '2XL', '3XL']);
-  assert.equal(shop.product('kids-tee').priceCents, 999);
+  assert.equal(shop.product('kids-tee').priceCents, 1499);
   assert.deepEqual(shop.product('kids-tee').variants.map((v) => v.size), ['XS', 'S', 'M', 'L', 'XL']);
   assert.equal(shop.product('adult-hoodie').sizeChart, '/size-chart/#adult-hoodie');
   assert.equal(shop.product('kids-tee').sizeChart, '/size-chart/#kids-tee');

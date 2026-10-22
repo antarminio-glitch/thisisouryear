@@ -12,7 +12,7 @@ test('the tee, the hoodie and the kids tee are for sale in the real catalog; the
   assert.equal(shop.priceRange('kids-hoodie'), null);
   assert.deepEqual(shop.priceRange('adult-tee'), { lowCents: 2499, highCents: 2699 });
   assert.deepEqual(shop.priceRange('adult-hoodie'), { lowCents: 4999, highCents: 5199 });
-  assert.deepEqual(shop.priceRange('kids-tee'), { lowCents: 999, highCents: 999 });
+  assert.deepEqual(shop.priceRange('kids-tee'), { lowCents: 1499, highCents: 1499 });
 });
 
 test('prices come from the catalog: $24.99, and $2 more for 2XL and 3XL', () => {
@@ -168,7 +168,7 @@ test('with the real catalog a tee and kids tee set goes through, and a set with 
     { productId: 'kids-tee', designId: 'this-is-our-year', slug: 'dallas', size: 'M', quantity: 1, mode: 'matching_set', bundleId: 'B-5' },
   ]);
   assert.equal(good.ok, true);
-  assert.equal(good.subtotalCents, 2499 + 999);
+  assert.equal(good.subtotalCents, 2499 + 1499);
   const held = realShop().quote([
     tee({ mode: 'matching_set', bundleId: 'B-6' }),
     { productId: 'kids-hoodie', designId: 'this-is-our-year', slug: 'dallas', size: 'M', quantity: 1, mode: 'matching_set', bundleId: 'B-6' },
