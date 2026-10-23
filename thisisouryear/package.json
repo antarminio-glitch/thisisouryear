@@ -16,7 +16,7 @@
     "verify": "npm run build && npm test && npm run test:site"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.23.4"
   },
   "dependencies": {
     "@netlify/blobs": "^10.7.13",
